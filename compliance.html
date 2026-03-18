@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contractor Compliance — Elite Hub</title>
+<style>
+  :root {
+    --navy:        #1B2A4A;
+    --blue:        #1F5FAD;
+    --blue-light:  #2E74CC;
+    --blue-pale:   #EAF1FB;
+    --accent:      #C8A84B;
+    --white:       #FFFFFF;
+    --gray-50:     #F8FAFC;
+    --gray-100:    #F4F6FA;
+    --gray-200:    #E2E8F2;
+    --gray-300:    #CBD5E1;
+    --gray-400:    #94A3B8;
+    --gray-600:    #64748B;
+    --gray-800:    #334155;
+    --text:        #1B2A4A;
+    --green:       #16A34A;
+    --green-pale:  #DCFCE7;
+    --yellow:      #D97706;
+    --yellow-pale: #FEF9C3;
+    --red:         #DC2626;
+    --red-pale:    #FEE2E2;
+    --orange:      #EA580C;
+    --orange-pale: #FFF7ED;
+    --page-color:  #F97316;
+    --page-pale:   #FFF7ED;
+    --shadow-sm:   0 1px 3px rgba(27,42,74,.08);
+    --shadow-md:   0 4px 16px rgba(27,42,74,.12);
+    --shadow-lg:   0 8px 32px rgba(27,42,74,.18);
+    --shadow-xl:   0 16px 48px rgba(27,42,74,.22);
+    --radius:      8px;
+    --radius-lg:   12px;
+    --radius-xl:   16px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    background: var(--gray-100); color: var(--text);
+    min-height: 100vh; display: flex; flex-direction: column;
+  }
+
+  /* ══ HEADER ══════════════════════════════════════════════════ */
+  .elite-header {
+    background: var(--navy);
+    display: grid; grid-template-columns: 6px 200px 1fr auto;
+    align-items: center; height: 68px;
+    position: sticky; top: 0; z-index: 200;
+    box-shadow: var(--shadow-lg);
+  }
+  .header-accent { background: var(--page-color); height: 100%; }
+  .header-logo {
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 22px; border-right: 1px solid rgba(255,255,255,.1);
+  }
+  .logo-mark {
+    width: 40px; height: 40px; background: var(--page-color);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  }
+  .logo-mark span { color: white; font-weight: 700; font-size: 13px; }
+  .logo-text .brand { color: white; font-size: 14px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+  .logo-text .sub   { color: rgba(255,255,255,.45); font-size: 10px; letter-spacing: .8px; text-transform: uppercase; margin-top: 1px; }
+  .header-title { padding: 0 28px; }
+  .header-title .page-name  { color: white; font-size: 16px; font-weight: 700; }
+  .header-title .breadcrumb { color: rgba(255,255,255,.45); font-size: 11px; margin-top: 2px; }
+  .header-meta { padding: 0 22px; display: flex; align-items: center; gap: 18px; }
+  .meta-item { text-align: right; }
+  .meta-label { color: rgba(255,255,255,.4); font-size: 10px; letter-spacing: .8px; text-transform: uppercase; }
+  .meta-val   { color: rgba(255,255,255,.88); font-size: 12px; font-weight: 700; margin-top: 1px; }
+  .hdr-divider { width: 1px; height: 30px; background: rgba(255,255,255,.12); }
+  .sub-bar { background: var(--page-color); height: 3px; }
+
+  /* ══ BACK NAV ════════════════════════════════════════════════ */
+  .back-nav { background: var(--navy); padding: 0 32px; border-bottom: 1px solid rgba(255,255,255,.07); }
+  .back-nav a {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: rgba(255,255,255,.5); font-size: 11px; text-decoration: none;
+    padding: 8px 0; transition: color .15s;
+  }
+  .back-nav a:hover { color: white; }
+
+  /* ══ MAIN ════════════════════════════════════════════════════ */
+  main { flex: 1; padding: 28px 32px; max-width: 1600px; width: 100%; margin: 0 auto; }
+
+  /* ══ ELITE STANDARD HEADINGS ═════════════════════════════════ */
+  .sh {
+    font-size: 11px; font-weight: 700; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--navy);
+    padding-bottom: 7px; border-bottom: 2px solid var(--page-color);
+    display: inline-block;
+  }
+  .section-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px; flex-wrap: wrap; gap: 10px;
+  }
+
+  /* ══ CALLOUT ═════════════════════════════════════════════════ */
+  .callout {
+    background: var(--page-pale); border-left: 4px solid var(--page-color);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 12px 18px; margin-bottom: 28px;
+    font-size: 12.5px; color: var(--navy); line-height: 1.5;
+  }
+  .callout strong { font-weight: 700; }
+
+  /* ══ KPI STRIP ═══════════════════════════════════════════════ */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px; margin-bottom: 28px;
+  }
+  .kpi-card {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius); padding: 16px 18px;
+    position: relative; overflow: hidden; box-shadow: var(--shadow-sm);
+    transition: box-shadow .15s;
+  }
+  .kpi-card:hover { box-shadow: var(--shadow-md); }
+  .kpi-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background: var(--page-color);
+  }
+  .kpi-card.alert-card::before { background: var(--red); }
+  .kpi-card.warn-card::before  { background: var(--yellow); }
+  .kpi-card.good-card::before  { background: var(--green); }
+  .kpi-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-400); margin-bottom: 8px; }
+  .kpi-value { font-size: 28px; font-weight: 700; color: var(--navy); line-height: 1; }
+  .kpi-value .unit { font-size: 12px; font-weight: 400; color: var(--gray-400); }
+  .kpi-sub  { font-size: 11px; color: var(--gray-400); margin-top: 5px; }
+  .kpi-icon { position: absolute; top: 14px; right: 14px; font-size: 18px; opacity: .13; }
+
+  /* ══ ALERT BANNER ════════════════════════════════════════════ */
+  .alert-banner {
+    background: var(--red-pale); border: 1px solid #FECACA;
+    border-left: 4px solid var(--red); border-radius: var(--radius-lg);
+    padding: 14px 18px; margin-bottom: 24px;
+    display: none;
+  }
+  .alert-banner.visible { display: block; }
+  .alert-banner-title { font-size: 12px; font-weight: 700; color: var(--red); margin-bottom: 8px; letter-spacing: .5px; text-transform: uppercase; }
+  .alert-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .alert-chip {
+    background: white; border: 1px solid #FECACA;
+    border-radius: 20px; padding: 4px 12px;
+    font-size: 11px; color: var(--red); font-weight: 600;
+    cursor: pointer; transition: background .15s;
+  }
+  .alert-chip:hover { background: var(--red-pale); }
+
+  /* ══ FILTERS & SEARCH ════════════════════════════════════════ */
+  .filter-bar {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg); padding: 14px 18px;
+    margin-bottom: 20px; box-shadow: var(--shadow-sm);
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .search-box {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--gray-50); border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius); padding: 0 12px; flex: 1; min-width: 200px;
+  }
+  .search-box input {
+    border: none; outline: none; font-size: 13px; padding: 9px 0;
+    font-family: Arial, sans-serif; color: var(--text); width: 100%;
+    background: transparent;
+  }
+  .search-box input::placeholder { color: var(--gray-400); }
+  .filter-divider { width: 1px; height: 28px; background: var(--gray-200); }
+  .filter-pill {
+    padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    letter-spacing: .3px; border: 1.5px solid var(--gray-200); background: white;
+    cursor: pointer; transition: all .15s; font-family: Arial, sans-serif; color: var(--gray-600);
+  }
+  .filter-pill:hover  { border-color: var(--page-color); color: var(--page-color); }
+  .filter-pill.active { background: var(--page-pale); border-color: var(--page-color); color: var(--page-color); }
+  .filter-pill.red-pill.active    { background: var(--red-pale);    border-color: var(--red);    color: var(--red); }
+  .filter-pill.yellow-pill.active { background: var(--yellow-pale); border-color: var(--yellow); color: var(--yellow); }
+  .filter-pill.green-pill.active  { background: var(--green-pale);  border-color: var(--green);  color: var(--green); }
+  .filter-select {
+    padding: 7px 12px; border: 1.5px solid var(--gray-200); border-radius: var(--radius);
+    font-size: 12px; font-family: Arial, sans-serif; color: var(--gray-600);
+    background: white; cursor: pointer; outline: none;
+  }
+  .filter-select:focus { border-color: var(--page-color); }
+
+  /* ══ CONTRACTOR TABLE ════════════════════════════════════════ */
+  .table-card {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl); box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+  .table-header {
+    background: var(--navy); padding: 13px 20px;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  }
+  .table-header .th-title { color: white; font-size: 13px; font-weight: 700; }
+  .table-header .th-sub   { color: rgba(255,255,255,.4); font-size: 11px; margin-top: 1px; }
+  .table-header .th-actions { display: flex; gap: 8px; }
+
+  .comp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .comp-table th {
+    text-align: left; font-size: 10px; font-weight: 700;
+    letter-spacing: 1.2px; text-transform: uppercase; color: var(--gray-400);
+    padding: 10px 14px; border-bottom: 2px solid var(--gray-200);
+    background: var(--gray-50); white-space: nowrap;
+  }
+  .comp-table th.sortable { cursor: pointer; transition: color .15s; }
+  .comp-table th.sortable:hover { color: var(--navy); }
+  .comp-table td {
+    padding: 11px 14px; border-bottom: 1px solid var(--gray-200);
+    vertical-align: middle;
+  }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .comp-table tr:hover td { background: var(--page-pale); cursor: pointer; }
+
+  /* Name cell */
+  .contractor-name { font-weight: 700; color: var(--navy); font-size: 13px; }
+  .contractor-trade { font-size: 11px; color: var(--gray-400); margin-top: 1px; }
+
+  /* Status badges */
+  .badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 20px; white-space: nowrap;
+  }
+  .badge-compliant  { background: var(--green-pale);  color: var(--green); }
+  .badge-expired    { background: var(--red-pale);    color: var(--red); }
+  .badge-expiring30 { background: var(--red-pale);    color: var(--red); }
+  .badge-expiring60 { background: var(--yellow-pale); color: var(--yellow); }
+  .badge-missing    { background: var(--gray-200);    color: var(--gray-600); }
+  .badge-active     { background: var(--green-pale);  color: var(--green); }
+  .badge-inactive   { background: var(--gray-200);    color: var(--gray-600); }
+  .badge-pending    { background: var(--yellow-pale); color: var(--yellow); }
+  .badge-blue       { background: var(--blue-pale);   color: var(--blue); }
+
+  /* Expiry cell */
+  .expiry-date { font-size: 12px; font-weight: 600; }
+  .expiry-date.expired    { color: var(--red); }
+  .expiry-date.expiring30 { color: var(--red); }
+  .expiry-date.expiring60 { color: var(--yellow); }
+  .expiry-date.ok         { color: var(--green); }
+  .expiry-date.missing    { color: var(--gray-400); font-style: italic; }
+
+  /* Travel indicator */
+  .travel-badge {
+    font-size: 10px; color: var(--gray-600);
+    display: flex; align-items: center; gap: 3px;
+  }
+
+  /* Action buttons */
+  .row-actions { display: flex; gap: 5px; }
+  .row-btn {
+    padding: 4px 8px; border-radius: 5px; font-size: 10px; font-weight: 700;
+    border: 1.5px solid var(--gray-200); background: white; cursor: pointer;
+    color: var(--gray-600); font-family: Arial, sans-serif; transition: all .15s;
+    white-space: nowrap;
+  }
+  .row-btn:hover { border-color: var(--page-color); color: var(--page-color); background: var(--page-pale); }
+  .row-btn.upload-btn-sm:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-pale); }
+
+  /* ══ EMPTY STATE ═════════════════════════════════════════════ */
+  .empty-state { padding: 48px 20px; text-align: center; }
+  .empty-state .es-icon  { font-size: 48px; margin-bottom: 12px; opacity: .35; }
+  .empty-state .es-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+  .empty-state .es-sub   { font-size: 12px; color: var(--gray-400); line-height: 1.6; }
+
+  /* ══ DETAIL MODAL ════════════════════════════════════════════ */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(27,42,74,.7); backdrop-filter: blur(4px);
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white; border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl); width: 100%; max-width: 680px;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-header {
+    background: var(--navy); padding: 16px 22px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .modal-header .mh-title { color: white; font-size: 15px; font-weight: 700; }
+  .modal-header .mh-sub   { color: rgba(255,255,255,.45); font-size: 11px; margin-top: 2px; }
+  .modal-header button { background: none; border: none; color: rgba(255,255,255,.6); font-size: 20px; cursor: pointer; line-height: 1; }
+  .modal-body { padding: 22px; }
+
+  /* Detail sections */
+  .detail-section { margin-bottom: 22px; }
+  .detail-section-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--gray-400); margin-bottom: 12px;
+    padding-bottom: 6px; border-bottom: 1px solid var(--gray-200);
+  }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .detail-item .di-label { font-size: 10px; color: var(--gray-400); letter-spacing: .5px; text-transform: uppercase; margin-bottom: 3px; }
+  .detail-item .di-val   { font-size: 13px; font-weight: 600; color: var(--navy); }
+  .detail-item .di-val.missing { color: var(--gray-400); font-style: italic; font-weight: 400; }
+
+  /* Upload zone in modal */
+  .upload-zone {
+    border: 2px dashed var(--gray-300); border-radius: var(--radius-lg);
+    padding: 20px; text-align: center; cursor: pointer;
+    transition: all .2s; background: var(--gray-50);
+    margin-top: 12px;
+  }
+  .upload-zone:hover, .upload-zone.dragging { border-color: var(--blue); background: var(--blue-pale); }
+  .upload-zone .uz-icon  { font-size: 28px; margin-bottom: 6px; }
+  .upload-zone .uz-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+  .upload-zone .uz-sub   { font-size: 11px; color: var(--gray-400); }
+  .upload-zone input[type=file] { display: none; }
+
+  .doc-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .doc-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--gray-50); border: 1px solid var(--gray-200);
+    border-radius: var(--radius); padding: 8px 12px;
+  }
+  .doc-item .doc-icon { font-size: 16px; }
+  .doc-item .doc-name { font-size: 12px; font-weight: 600; color: var(--navy); flex: 1; }
+  .doc-item .doc-date { font-size: 10px; color: var(--gray-400); }
+  .doc-item a { font-size: 11px; color: var(--blue); text-decoration: none; font-weight: 700; }
+
+  /* ══ ADD CONTRACTOR MODAL ════════════════════════════════════ */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 11px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--gray-600); }
+  .form-group input,
+  .form-group select { 
+    border: 1.5px solid var(--gray-200); border-radius: var(--radius);
+    padding: 9px 12px; font-size: 13px; font-family: Arial, sans-serif;
+    color: var(--text); outline: none; transition: border-color .15s; background: white;
+  }
+  .form-group input:focus,
+  .form-group select:focus { border-color: var(--page-color); }
+  .modal-footer { padding: 16px 22px; border-top: 1px solid var(--gray-200); display: flex; justify-content: flex-end; gap: 8px; }
+
+  /* ══ BUTTONS ═════════════════════════════════════════════════ */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: var(--radius);
+    font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+    cursor: pointer; border: none; font-family: Arial, sans-serif;
+    transition: opacity .2s, transform .1s;
+  }
+  .btn:hover { opacity: .85; transform: translateY(-1px); }
+  .btn-primary { background: var(--page-color); color: white; }
+  .btn-blue    { background: var(--blue); color: white; }
+  .btn-outline { background: transparent; color: var(--gray-600); border: 1.5px solid var(--gray-300); }
+  .btn-outline:hover { border-color: var(--page-color); color: var(--page-color); }
+  .btn-sm { padding: 6px 12px; font-size: 10px; }
+
+  /* ══ FOOTER ══════════════════════════════════════════════════ */
+  footer {
+    background: var(--navy); border-top: 3px solid var(--page-color);
+    padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between; margin-top: auto;
+  }
+  .footer-brand { color: rgba(255,255,255,.4); font-size: 11px; }
+  .footer-brand strong { color: rgba(255,255,255,.65); }
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a { color: rgba(255,255,255,.35); font-size: 11px; text-decoration: none; transition: color .2s; }
+  .footer-links a:hover { color: rgba(255,255,255,.75); }
+
+  /* ══ TOAST ═══════════════════════════════════════════════════ */
+  .toast {
+    position: fixed; bottom: 28px; right: 24px; z-index: 9999;
+    background: var(--navy); color: white; padding: 14px 20px;
+    border-radius: 10px; font-size: 12.5px; box-shadow: var(--shadow-xl);
+    max-width: 340px; line-height: 1.5; animation: slideUp .25s ease;
+  }
+  @keyframes slideUp { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)} }
+
+  @media (max-width: 1100px) {
+    .comp-table th:nth-child(n+7),
+    .comp-table td:nth-child(n+7) { display: none; }
+  }
+  @media (max-width: 900px) {
+    main { padding: 20px 16px; }
+    .elite-header { grid-template-columns: 4px 1fr auto; }
+    .header-logo { display: none; }
+    .detail-grid, .form-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="elite-header">
+  <div class="header-accent"></div>
+  <div class="header-logo">
+    <div class="logo-mark"><span>ECS</span></div>
+    <div class="logo-text">
+      <div class="brand">Elite Hub</div>
+      <div class="sub" id="hdrSub">Compliance</div>
+    </div>
+  </div>
+  <div class="header-title">
+    <div class="page-name" id="hdrPageName">Contractor Compliance</div>
+    <div class="breadcrumb">Elite Hub &rsaquo; <span id="hdrRegion">—</span> &rsaquo; Contractor Compliance</div>
+  </div>
+  <div class="header-meta">
+    <div class="meta-item">
+      <div class="meta-label">Region</div>
+      <div class="meta-val" id="hdrAbbr">—</div>
+    </div>
+    <div class="hdr-divider"></div>
+    <div class="meta-item">
+      <div class="meta-label">Contractors</div>
+      <div class="meta-val" id="hdrTotal">—</div>
+    </div>
+    <div class="hdr-divider"></div>
+    <div class="meta-item">
+      <div class="meta-label">Alerts</div>
+      <div class="meta-val" id="hdrAlerts">—</div>
+    </div>
+  </div>
+</header>
+<div class="sub-bar"></div>
+
+<!-- BACK NAV -->
+<nav class="back-nav">
+  <a id="backToHub" href="#">← <span id="navRegion">Region</span> Hub &rsaquo; Contractor Compliance</a>
+</nav>
+
+<main>
+  <div class="callout" id="pageCallout">
+    <strong>Contractor Compliance</strong> — Track GL and WC insurance, licensing, contract status, and trades for all contractors in this region. Alerts fire at 60 days, 30 days, and on expiration. Upload insurance docs directly to each contractor record.
+  </div>
+
+  <!-- ALERT BANNER -->
+  <div class="alert-banner" id="alertBanner">
+    <div class="alert-banner-title">⚠️ Compliance Alerts — Action Required</div>
+    <div class="alert-list" id="alertList"></div>
+  </div>
+
+  <!-- KPI STRIP -->
+  <div class="section-row">
+    <span class="sh">Compliance Overview</span>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Contractor</button>
+      <button class="btn btn-outline btn-sm" onclick="syncData()">↻ Sync</button>
+    </div>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi-card good-card"><div class="kpi-icon">✅</div><div class="kpi-label">Total Contractors</div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-sub">This region</div></div>
+    <div class="kpi-card good-card"><div class="kpi-icon">🟢</div><div class="kpi-label">Fully Compliant</div><div class="kpi-value" id="kpiCompliant">—</div><div class="kpi-sub" id="kpiCompliantPct">—</div></div>
+    <div class="kpi-card alert-card"><div class="kpi-icon">🔴</div><div class="kpi-label">Expired</div><div class="kpi-value" id="kpiExpired">—</div><div class="kpi-sub">GL or WC expired</div></div>
+    <div class="kpi-card alert-card"><div class="kpi-icon">⚠️</div><div class="kpi-label">Expiring 30 Days</div><div class="kpi-value" id="kpiExp30">—</div><div class="kpi-sub">Immediate action</div></div>
+    <div class="kpi-card warn-card"><div class="kpi-icon">🕐</div><div class="kpi-label">Expiring 60 Days</div><div class="kpi-value" id="kpiExp60">—</div><div class="kpi-sub">Monitor closely</div></div>
+    <div class="kpi-card"><div class="kpi-icon">📄</div><div class="kpi-label">Missing Docs</div><div class="kpi-value" id="kpiMissing">—</div><div class="kpi-sub">No GL or WC on file</div></div>
+    <div class="kpi-card"><div class="kpi-icon">🏠</div><div class="kpi-label">Active Contracts</div><div class="kpi-value" id="kpiActive">—</div><div class="kpi-sub">Contract status active</div></div>
+    <div class="kpi-card"><div class="kpi-icon">✈️</div><div class="kpi-label">Will Travel</div><div class="kpi-value" id="kpiTravel">—</div><div class="kpi-sub">Available for travel</div></div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="search-box">
+      <span style="color:var(--gray-400);">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search contractors, trade, market..." oninput="applyFilters()">
+    </div>
+    <div class="filter-divider"></div>
+    <button class="filter-pill active" onclick="setStatusFilter('all',this)">All</button>
+    <button class="filter-pill red-pill" onclick="setStatusFilter('expired',this)">Expired</button>
+    <button class="filter-pill red-pill" onclick="setStatusFilter('expiring30',this)">30 Days</button>
+    <button class="filter-pill yellow-pill" onclick="setStatusFilter('expiring60',this)">60 Days</button>
+    <button class="filter-pill green-pill" onclick="setStatusFilter('compliant',this)">Compliant</button>
+    <button class="filter-pill" onclick="setStatusFilter('missing',this)">Missing Docs</button>
+    <div class="filter-divider"></div>
+    <select class="filter-select" id="tradeFilter" onchange="applyFilters()">
+      <option value="">All Trades</option>
+      <option value="Roofing">Roofing</option>
+      <option value="Gutters">Gutters</option>
+      <option value="Siding">Siding</option>
+      <option value="Windows">Windows</option>
+    </select>
+    <select class="filter-select" id="contractFilter" onchange="applyFilters()">
+      <option value="">All Contracts</option>
+      <option value="Active">Active</option>
+      <option value="Inactive">Inactive</option>
+      <option value="Pending">Pending</option>
+    </select>
+  </div>
+
+  <!-- CONTRACTOR TABLE -->
+  <div class="table-card">
+    <div class="table-header">
+      <div>
+        <div class="th-title">Contractor Records</div>
+        <div class="th-sub" id="tableCount">Loading...</div>
+      </div>
+      <div class="th-actions">
+        <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th class="sortable" onclick="sortBy('name')">Contractor ↕</th>
+            <th class="sortable" onclick="sortBy('trade')">Trade ↕</th>
+            <th class="sortable" onclick="sortBy('market')">Market / Brand</th>
+            <th class="sortable" onclick="sortBy('gl_status')">GL Status ↕</th>
+            <th class="sortable" onclick="sortBy('wc_status')">WC Status ↕</th>
+            <th class="sortable" onclick="sortBy('gl_expiry')">GL Expiry ↕</th>
+            <th class="sortable" onclick="sortBy('wc_expiry')">WC Expiry ↕</th>
+            <th>Contract</th>
+            <th>Travel</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="contractorTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-brand">
+    <strong>Elite Family of Brands</strong> &nbsp;·&nbsp; <span id="footerRegion">Region</span> Compliance &nbsp;·&nbsp; Internal Use Only
+  </div>
+  <div class="footer-links">
+    <a id="footerHubLink" href="#">← Region Hub</a>
+    <a href="#" onclick="exportCSV()">Export</a>
+    <a href="#">Support</a>
+  </div>
+</footer>
+
+<!-- CONTRACTOR DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal" onclick="if(event.target===this)closeDetailModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="mh-title" id="detailName">—</div>
+        <div class="mh-sub" id="detailSub">—</div>
+      </div>
+      <button onclick="closeDetailModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Contact -->
+      <div class="detail-section">
+        <div class="detail-section-title">Contact Information</div>
+        <div class="detail-grid">
+          <div class="detail-item"><div class="di-label">Phone</div><div class="di-val" id="dPhone">—</div></div>
+          <div class="detail-item"><div class="di-label">Email</div><div class="di-val" id="dEmail">—</div></div>
+          <div class="detail-item"><div class="di-label">Contact Name</div><div class="di-val" id="dContact">—</div></div>
+          <div class="detail-item"><div class="di-label">Market / Brand</div><div class="di-val" id="dMarket">—</div></div>
+        </div>
+      </div>
+      <!-- Insurance -->
+      <div class="detail-section">
+        <div class="detail-section-title">Insurance</div>
+        <div class="detail-grid">
+          <div class="detail-item"><div class="di-label">GL Policy #</div><div class="di-val" id="dGLPolicy">—</div></div>
+          <div class="detail-item"><div class="di-label">GL Expiry</div><div class="di-val" id="dGLExpiry">—</div></div>
+          <div class="detail-item"><div class="di-label">WC Policy #</div><div class="di-val" id="dWCPolicy">—</div></div>
+          <div class="detail-item"><div class="di-label">WC Expiry</div><div class="di-val" id="dWCExpiry">—</div></div>
+          <div class="detail-item"><div class="di-label">GL Status</div><div class="di-val" id="dGLStatus">—</div></div>
+          <div class="detail-item"><div class="di-label">WC Status</div><div class="di-val" id="dWCStatus">—</div></div>
+        </div>
+      </div>
+      <!-- Trades & Contract -->
+      <div class="detail-section">
+        <div class="detail-section-title">Trades & Contract</div>
+        <div class="detail-grid">
+          <div class="detail-item"><div class="di-label">Trade 1</div><div class="di-val" id="dTrade1">—</div></div>
+          <div class="detail-item"><div class="di-label">Trade 2</div><div class="di-val" id="dTrade2">—</div></div>
+          <div class="detail-item"><div class="di-label">Trade 3</div><div class="di-val" id="dTrade3">—</div></div>
+          <div class="detail-item"><div class="di-label">Contract Status</div><div class="di-val" id="dContractStatus">—</div></div>
+          <div class="detail-item"><div class="di-label">Will Travel</div><div class="di-val" id="dTravel">—</div></div>
+          <div class="detail-item"><div class="di-label">Travel Distance</div><div class="di-val" id="dTravelDist">—</div></div>
+          <div class="detail-item"><div class="di-label">Notes</div><div class="di-val" id="dNotes">—</div></div>
+        </div>
+      </div>
+      <!-- Document Upload -->
+      <div class="detail-section">
+        <div class="detail-section-title">Insurance Documents</div>
+        <div class="doc-list" id="docList"></div>
+        <div class="upload-zone" id="uploadZone"
+             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)"
+             onclick="document.getElementById('docFileInput').click()">
+          <div class="uz-icon">📎</div>
+          <div class="uz-title">Drop insurance docs here or click to browse</div>
+          <div class="uz-sub">PDF, JPG, PNG, Word, Excel accepted</div>
+          <input type="file" id="docFileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" onchange="uploadDocs(this.files)">
+        </div>
+        <div id="uploadStatus" style="margin-top:8px;font-size:12px;color:var(--gray-400);"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CONTRACTOR MODAL -->
+<div class="modal-overlay" id="addModal" onclick="if(event.target===this)closeAddModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="mh-title">Add Contractor</div></div>
+      <button onclick="closeAddModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Company Name *</label><input type="text" id="fCompany" placeholder="ABC Roofing LLC"></div>
+        <div class="form-group"><label>Contact Name</label><input type="text" id="fContact" placeholder="John Smith"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Phone</label><input type="text" id="fPhone" placeholder="555-000-0000"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="fEmail" placeholder="john@example.com"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Market / Brand</label><input type="text" id="fMarket" placeholder="ASP Cleveland"></div>
+        <div class="form-group"><label>Contract Status</label>
+          <select id="fContract"><option value="Active">Active</option><option value="Inactive">Inactive</option><option value="Pending">Pending</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Primary Trade</label>
+          <select id="fTrade1"><option value="">Select...</option><option>Roofing</option><option>Gutters</option><option>Siding</option><option>Windows</option></select>
+        </div>
+        <div class="form-group"><label>Trade 2</label>
+          <select id="fTrade2"><option value="">None</option><option>Roofing</option><option>Gutters</option><option>Siding</option><option>Windows</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>GL Policy #</label><input type="text" id="fGLPolicy" placeholder="Policy number"></div>
+        <div class="form-group"><label>GL Expiry Date</label><input type="date" id="fGLExpiry"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>WC Policy #</label><input type="text" id="fWCPolicy" placeholder="Policy number"></div>
+        <div class="form-group"><label>WC Expiry Date</label><input type="date" id="fWCExpiry"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Will Travel</label>
+          <select id="fTravel"><option value="No">No</option><option value="Yes">Yes</option></select>
+        </div>
+        <div class="form-group"><label>Travel Distance (miles)</label><input type="number" id="fTravelDist" placeholder="e.g. 50"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Notes</label><input type="text" id="fNotes" placeholder="Optional notes..."></div>
+        <div class="form-group"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveContractor()">Save Contractor</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   CONFIGURATION
+══════════════════════════════════════════════════════════════ */
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec';
+
+const REGION_MAP = {
+  cleveland:    { city: 'Cleveland',    abbr: 'CLE', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_cleveland.html' },
+  phoenix:      { city: 'Phoenix',      abbr: 'PHX', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_phoenix.html' },
+  albuquerque:  { city: 'Albuquerque',  abbr: 'ABQ', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_albuquerque.html' },
+  minneapolis:  { city: 'Minneapolis',  abbr: 'MSP', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_minneapolis.html' },
+  stlouis:      { city: 'St. Louis',    abbr: 'STL', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_stlouis.html' },
+  chicago:      { city: 'Chicago',      abbr: 'CHI', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_chicago.html' },
+  indianapolis: { city: 'Indianapolis', abbr: 'IND', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_indianapolis.html' },
+  pittsburgh:   { city: 'Pittsburgh',   abbr: 'PIT', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_pittsburgh.html' },
+  milwaukee:    { city: 'Milwaukee',    abbr: 'MKE', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_milwaukee.html' },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════════ */
+const params    = new URLSearchParams(window.location.search);
+const regionKey = params.get('region') || 'cleveland';
+const region    = REGION_MAP[regionKey] || { city: regionKey, abbr: '—', hubUrl: '#' };
+
+let allContractors  = [];
+let filtered        = [];
+let statusFilter    = 'all';
+let sortField       = 'name';
+let sortDir         = 1;
+let currentContractor = null;
+
+/* ══════════════════════════════════════════════════════════════
+   EXPIRY STATUS HELPERS
+══════════════════════════════════════════════════════════════ */
+function getExpiryStatus(dateStr) {
+  if (!dateStr || dateStr === '' || dateStr === 'null') return 'missing';
+  const exp  = new Date(dateStr);
+  const now  = new Date();
+  const days = Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
+  if (days < 0)   return 'expired';
+  if (days <= 30) return 'expiring30';
+  if (days <= 60) return 'expiring60';
+  return 'ok';
+}
+
+function getOverallStatus(c) {
+  const glS = getExpiryStatus(c.gl_expiry);
+  const wcS = getExpiryStatus(c.wc_expiry);
+  const statuses = [glS, wcS];
+  if (statuses.includes('missing'))    return 'missing';
+  if (statuses.includes('expired'))    return 'expired';
+  if (statuses.includes('expiring30')) return 'expiring30';
+  if (statuses.includes('expiring60')) return 'expiring60';
+  return 'compliant';
+}
+
+function statusBadge(status) {
+  const map = {
+    compliant:  ['badge-compliant',  '✓ Compliant'],
+    expired:    ['badge-expired',    '✗ Expired'],
+    expiring30: ['badge-expiring30', '⚠ 30 Days'],
+    expiring60: ['badge-expiring60', '⏰ 60 Days'],
+    missing:    ['badge-missing',    '— Missing'],
+    ok:         ['badge-compliant',  '✓ OK'],
+  };
+  const [cls, label] = map[status] || ['badge-missing', '—'];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function expiryCell(dateStr) {
+  const status = getExpiryStatus(dateStr);
+  if (status === 'missing') return `<span class="expiry-date missing">Not on file</span>`;
+  const formatted = formatDate(dateStr);
+  return `<span class="expiry-date ${status}">${formatted}</span>`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SYNC DATA FROM BACKEND
+══════════════════════════════════════════════════════════════ */
+async function syncData() {
+  document.getElementById('tableCount').textContent = 'Loading...';
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=complianceData&region=${regionKey}`);
+    const data = await res.json();
+    allContractors = (data.data || []).map(normalizeContractor);
+    renderAll();
+  } catch(e) {
+    document.getElementById('tableCount').textContent = 'Error loading data — check backend';
+    showToast('Could not load contractor data', 'error');
+  }
+}
+
+function normalizeContractor(r) {
+  // Maps Google Sheet column names to our internal keys
+  // Sheet columns: id, region, name, contact_name, phone, email, market,
+  //   trade1, trade2, trade3, gl_policy, gl_expiry, wc_policy, wc_expiry,
+  //   license, contract_status, will_travel, travel_distance, notes
+  return {
+    id:              r['id']               || Math.random().toString(36).slice(2),
+    name:            r['name']             || r['company_name'] || '—',
+    contact:         r['contact_name']     || '',
+    phone:           r['phone']            || '',
+    email:           r['email']            || '',
+    market:          r['market']           || r['brand']        || '',
+    trade:           r['trade1']           || r['trade']        || '',
+    trade2:          r['trade2']           || '',
+    trade3:          r['trade3']           || '',
+    gl_policy:       r['gl_policy']        || '',
+    gl_expiry:       r['gl_expiry']        || '',
+    wc_policy:       r['wc_policy']        || '',
+    wc_expiry:       r['wc_expiry']        || '',
+    contract_status: r['contract_status']  || '',
+    will_travel:     r['will_travel']      || '',
+    travel_distance: r['travel_distance']  || '',
+    notes:           r['notes']            || '',
+    region:          r['region']           || regionKey,
+  };
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RENDER ALL
+══════════════════════════════════════════════════════════════ */
+function renderAll() {
+  updateKPIs();
+  updateAlertBanner();
+  applyFilters();
+}
+
+/* ══ KPIs ════════════════════════════════════════════════════ */
+function updateKPIs() {
+  const total      = allContractors.length;
+  const statuses   = allContractors.map(c => getOverallStatus(c));
+  const compliant  = statuses.filter(s => s === 'compliant').length;
+  const expired    = statuses.filter(s => s === 'expired').length;
+  const exp30      = statuses.filter(s => s === 'expiring30').length;
+  const exp60      = statuses.filter(s => s === 'expiring60').length;
+  const missing    = statuses.filter(s => s === 'missing').length;
+  const active     = allContractors.filter(c => (c.contract_status||'').toLowerCase() === 'active').length;
+  const travel     = allContractors.filter(c => (c.will_travel||'').toLowerCase() === 'yes').length;
+  const alerts     = expired + exp30;
+
+  document.getElementById('kpiTotal').textContent      = total;
+  document.getElementById('kpiCompliant').textContent  = compliant;
+  document.getElementById('kpiCompliantPct').textContent = total ? Math.round((compliant/total)*100) + '% compliant' : '—';
+  document.getElementById('kpiExpired').textContent    = expired;
+  document.getElementById('kpiExp30').textContent      = exp30;
+  document.getElementById('kpiExp60').textContent      = exp60;
+  document.getElementById('kpiMissing').textContent    = missing;
+  document.getElementById('kpiActive').textContent     = active;
+  document.getElementById('kpiTravel').textContent     = travel;
+  document.getElementById('hdrTotal').textContent      = total;
+  document.getElementById('hdrAlerts').textContent     = alerts;
+}
+
+/* ══ ALERT BANNER ════════════════════════════════════════════ */
+function updateAlertBanner() {
+  const alerts = allContractors.filter(c => {
+    const s = getOverallStatus(c);
+    return s === 'expired' || s === 'expiring30';
+  });
+  const banner = document.getElementById('alertBanner');
+  const list   = document.getElementById('alertList');
+  if (!alerts.length) { banner.classList.remove('visible'); return; }
+  banner.classList.add('visible');
+  list.innerHTML = alerts.map(c => {
+    const s = getOverallStatus(c);
+    return `<div class="alert-chip" onclick="openDetail(${JSON.stringify(c).replace(/"/g,'&quot;')})">
+      ${s === 'expired' ? '🔴' : '⚠️'} ${c.name}
+    </div>`;
+  }).join('');
+}
+
+/* ══ FILTER & SORT ════════════════════════════════════════════ */
+function setStatusFilter(filter, btn) {
+  statusFilter = filter;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function applyFilters() {
+  const search   = document.getElementById('searchInput').value.toLowerCase();
+  const trade    = document.getElementById('tradeFilter').value;
+  const contract = document.getElementById('contractFilter').value;
+
+  filtered = allContractors.filter(c => {
+    const status = getOverallStatus(c);
+    if (statusFilter !== 'all' && status !== statusFilter) return false;
+    if (trade    && c.trade !== trade)                      return false;
+    if (contract && c.contract_status !== contract)         return false;
+    if (search && ![c.name, c.trade, c.market, c.contact, c.email].join(' ').toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  // Sort
+  filtered.sort((a, b) => {
+    const av = a[sortField] || '';
+    const bv = b[sortField] || '';
+    return sortDir * av.toString().localeCompare(bv.toString());
+  });
+
+  renderTable();
+}
+
+function sortBy(field) {
+  if (sortField === field) sortDir *= -1;
+  else { sortField = field; sortDir = 1; }
+  applyFilters();
+}
+
+/* ══ RENDER TABLE ════════════════════════════════════════════ */
+function renderTable() {
+  const tbody = document.getElementById('contractorTableBody');
+  document.getElementById('tableCount').textContent =
+    `${filtered.length} of ${allContractors.length} contractors`;
+
+  if (!filtered.length) {
+    tbody.innerHTML = `
+      <tr><td colspan="11">
+        <div class="empty-state">
+          <div class="es-icon">📋</div>
+          <div class="es-title">${allContractors.length === 0 ? 'No contractors loaded' : 'No results'}</div>
+          <div class="es-sub">
+            ${allContractors.length === 0
+              ? 'Add contractor data to your <strong>COMPLIANCE_Data</strong> tab in Google Sheets.<br>See the column guide below for the exact headers needed.'
+              : 'Try adjusting your filters or search term'}
+          </div>
+        </div>
+      </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(c => {
+    const glStatus  = getExpiryStatus(c.gl_expiry);
+    const wcStatus  = getExpiryStatus(c.wc_expiry);
+    const contractBadge = c.contract_status === 'Active' ? 'badge-active' : c.contract_status === 'Pending' ? 'badge-pending' : 'badge-inactive';
+    const travelStr = c.will_travel === 'Yes' ? `✈ ${c.travel_distance ? c.travel_distance + ' mi' : 'Yes'}` : '—';
+
+    return `
+      <tr onclick="openDetail(${JSON.stringify(c).replace(/"/g,'&quot;')})">
+        <td>
+          <div class="contractor-name">${c.name}</div>
+          <div class="contractor-trade">${c.contact || ''}</div>
+        </td>
+        <td><span class="badge badge-blue">${c.trade || '—'}</span></td>
+        <td style="font-size:12px;color:var(--gray-600);">${c.market || '—'}</td>
+        <td>${statusBadge(glStatus)}</td>
+        <td>${statusBadge(wcStatus)}</td>
+        <td>${expiryCell(c.gl_expiry)}</td>
+        <td>${expiryCell(c.wc_expiry)}</td>
+        <td><span class="badge ${contractBadge}">${c.contract_status || '—'}</span></td>
+        <td style="font-size:11px;color:var(--gray-600);">${travelStr}</td>
+        <td onclick="event.stopPropagation()">
+          <div class="row-actions">
+            <button class="row-btn" onclick="openDetail(${JSON.stringify(c).replace(/"/g,'&quot;')})">View</button>
+            <button class="row-btn upload-btn-sm" onclick="openDetailUpload(${JSON.stringify(c).replace(/"/g,'&quot;')})">📎 Docs</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+/* ══ DETAIL MODAL ════════════════════════════════════════════ */
+function openDetail(c) {
+  if (typeof c === 'string') c = JSON.parse(c);
+  currentContractor = c;
+
+  document.getElementById('detailName').textContent = c.name;
+  document.getElementById('detailSub').textContent  = `${c.trade || '—'} · ${c.market || '—'} · ${region.city}`;
+
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent   = val || '—';
+    el.className     = 'di-val' + (val ? '' : ' missing');
+  };
+
+  set('dPhone',          c.phone);
+  set('dEmail',          c.email);
+  set('dContact',        c.contact);
+  set('dMarket',         c.market);
+  set('dGLPolicy',       c.gl_policy);
+  set('dGLExpiry',       c.gl_expiry ? formatDate(c.gl_expiry) : '');
+  set('dWCPolicy',       c.wc_policy);
+  set('dWCExpiry',       c.wc_expiry ? formatDate(c.wc_expiry) : '');
+  set('dTrade1',         c.trade);
+  set('dTrade2',         c.trade2);
+  set('dTrade3',         c.trade3);
+  set('dContractStatus', c.contract_status);
+  set('dTravel',         c.will_travel);
+  set('dTravelDist',     c.travel_distance ? c.travel_distance + ' miles' : '');
+  set('dNotes',          c.notes);
+
+  // GL/WC status display
+  document.getElementById('dGLStatus').innerHTML = statusBadge(getExpiryStatus(c.gl_expiry));
+  document.getElementById('dWCStatus').innerHTML = statusBadge(getExpiryStatus(c.wc_expiry));
+
+  loadContractorDocs(c.id);
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function openDetailUpload(c) {
+  if (typeof c === 'string') c = JSON.parse(c);
+  openDetail(c);
+  // Scroll to upload zone after modal opens
+  setTimeout(() => {
+    document.getElementById('uploadZone').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 300);
+}
+
+function closeDetailModal() {
+  document.getElementById('detailModal').classList.remove('open');
+  currentContractor = null;
+}
+
+/* ══ DOCUMENT UPLOAD ═════════════════════════════════════════ */
+async function loadContractorDocs(contractorId) {
+  const list = document.getElementById('docList');
+  list.innerHTML = '<div style="font-size:12px;color:var(--gray-400);">Loading documents...</div>';
+
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=listFiles&region=${regionKey}&folder=contractor_${contractorId}`);
+    const data = await res.json();
+    const files = data.files || [];
+
+    if (!files.length) {
+      list.innerHTML = '<div style="font-size:12px;color:var(--gray-400);font-style:italic;">No documents uploaded yet</div>';
+      return;
+    }
+
+    list.innerHTML = files.map(f => `
+      <div class="doc-item">
+        <div class="doc-icon">${docIcon(f.name)}</div>
+        <div class="doc-name">${f.name}</div>
+        <div class="doc-date">${formatDate(f.uploaded)}</div>
+        <a href="${f.viewUrl}" target="_blank">View</a>
+      </div>`).join('');
+  } catch(e) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--gray-400);">Could not load documents</div>';
+  }
+}
+
+function handleDragOver(e)  { e.preventDefault(); document.getElementById('uploadZone').classList.add('dragging'); }
+function handleDragLeave(e) { document.getElementById('uploadZone').classList.remove('dragging'); }
+function handleDrop(e)      { e.preventDefault(); document.getElementById('uploadZone').classList.remove('dragging'); uploadDocs(e.dataTransfer.files); }
+
+async function uploadDocs(files) {
+  if (!currentContractor) return;
+  const status = document.getElementById('uploadStatus');
+
+  for (const file of Array.from(files)) {
+    status.textContent = `Uploading ${file.name}...`;
+    try {
+      const b64 = await fileToBase64(file);
+      const res = await fetch(BACKEND_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action:   'uploadFile',
+          region:   regionKey,
+          folder:   `contractor_${currentContractor.id}`,
+          fileName: file.name,
+          mimeType: file.type,
+          data:     b64,
+        })
+      });
+      const result = await res.json();
+      if (result.success) {
+        status.textContent = `✓ ${file.name} uploaded`;
+        status.style.color = 'var(--green)';
+      } else {
+        status.textContent = `✗ Failed: ${result.error}`;
+        status.style.color = 'var(--red)';
+      }
+    } catch(err) {
+      status.textContent = `✗ Upload error`;
+      status.style.color = 'var(--red)';
+    }
+  }
+  loadContractorDocs(currentContractor.id);
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function docIcon(name) {
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  if (ext === 'pdf')  return '📕';
+  if (['jpg','jpeg','png'].includes(ext)) return '🖼️';
+  if (['doc','docx'].includes(ext)) return '📘';
+  if (['xls','xlsx'].includes(ext)) return '📗';
+  return '📄';
+}
+
+/* ══ ADD CONTRACTOR ══════════════════════════════════════════ */
+function openAddModal()  { document.getElementById('addModal').classList.add('open'); }
+function closeAddModal() { document.getElementById('addModal').classList.remove('open'); }
+
+async function saveContractor() {
+  const name = document.getElementById('fCompany').value.trim();
+  if (!name) { showToast('Please enter a company name.', 'warn'); return; }
+
+  const contractor = {
+    id:              'new-' + Date.now(),
+    region:          regionKey,
+    name,
+    contact_name:    document.getElementById('fContact').value.trim(),
+    phone:           document.getElementById('fPhone').value.trim(),
+    email:           document.getElementById('fEmail').value.trim(),
+    market:          document.getElementById('fMarket').value.trim(),
+    contract_status: document.getElementById('fContract').value,
+    trade1:          document.getElementById('fTrade1').value,
+    trade2:          document.getElementById('fTrade2').value,
+    gl_policy:       document.getElementById('fGLPolicy').value.trim(),
+    gl_expiry:       document.getElementById('fGLExpiry').value,
+    wc_policy:       document.getElementById('fWCPolicy').value.trim(),
+    wc_expiry:       document.getElementById('fWCExpiry').value,
+    will_travel:     document.getElementById('fTravel').value,
+    travel_distance: document.getElementById('fTravelDist').value,
+    notes:           document.getElementById('fNotes').value.trim(),
+  };
+
+  allContractors.unshift(normalizeContractor(contractor));
+  closeAddModal();
+  renderAll();
+  showToast(`${name} added.`, 'info');
+
+  // Save to backend
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'writeRow', tab: 'COMPLIANCE_Data', row: Object.values(contractor) })
+    });
+  } catch(e) { /* silent */ }
+}
+
+/* ══ EXPORT ══════════════════════════════════════════════════ */
+function exportCSV() {
+  if (!filtered.length) { showToast('No data to export.', 'warn'); return; }
+  const headers = ['Name','Contact','Phone','Email','Market','Trade','GL Policy','GL Expiry','WC Policy','WC Expiry','Contract Status','Will Travel','Travel Distance','Notes'];
+  const rows = filtered.map(c => [
+    c.name, c.contact, c.phone, c.email, c.market, c.trade,
+    c.gl_policy, c.gl_expiry, c.wc_policy, c.wc_expiry,
+    c.contract_status, c.will_travel, c.travel_distance, c.notes
+  ].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
+  const csv  = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a    = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${regionKey}_compliance_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+}
+
+/* ══ HELPERS ═════════════════════════════════════════════════ */
+function formatDate(raw) {
+  if (!raw) return '—';
+  try { return new Date(raw).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); }
+  catch { return raw; }
+}
+
+function showToast(msg, type = 'info') {
+  const colors = { info:'var(--page-color)', warn:'#92400E', error:'#991B1B' };
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.style.borderLeft = `4px solid ${colors[type]}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeDetailModal(); closeAddModal(); }
+});
+
+/* ══ INIT ════════════════════════════════════════════════════ */
+function initPage() {
+  document.title = `${region.city} Compliance — Elite Hub`;
+  document.getElementById('hdrSub').textContent       = region.abbr + ' Compliance';
+  document.getElementById('hdrPageName').textContent  = region.city + ' — Contractor Compliance';
+  document.getElementById('hdrRegion').textContent    = region.city;
+  document.getElementById('hdrAbbr').textContent      = region.abbr;
+  document.getElementById('navRegion').textContent    = region.city;
+  document.getElementById('footerRegion').textContent = region.city;
+  document.getElementById('backToHub').href           = region.hubUrl || '#';
+  document.getElementById('footerHubLink').href       = region.hubUrl || '#';
+  document.getElementById('pageCallout').innerHTML    =
+    `<strong>${region.city} — Contractor Compliance</strong> — GL and WC insurance tracking, license status, contract management, and document uploads for all contractors in the ${region.city} region. Data synced from Google Sheets (<strong>COMPLIANCE_Data</strong> tab).`;
+  syncData();
+}
+
+initPage();
+</script>
+</body>
+</html>
