@@ -591,6 +591,100 @@
     </div>
   </div>
 
+
+  <!-- ══ SCORE WEIGHTS ════════════════════════════════════════ -->
+  <div class="scoring-card" id="card-weights" style="border-top:4px solid var(--accent);">
+    <div class="sc-header" onclick="toggleCard('weights')">
+      <div class="sc-header-left">
+        <div class="sc-icon" style="background:#FEF9C3;color:#A8922E;">⚖️</div>
+        <div>
+          <div class="sc-title">Health Score Weights</div>
+          <div class="sc-subtitle">How much each section contributes to the 300–850 regional health score</div>
+        </div>
+      </div>
+      <div class="sc-header-right">
+        <span class="sc-status live" id="weights-total-badge">Must = 100%</span>
+        <span class="sc-chevron open" id="chevron-weights">▼</span>
+      </div>
+    </div>
+    <div class="sc-body open" id="body-weights">
+      <div class="formula-box">
+        <div class="f-title">Formula</div>
+        <div class="f-line">Health Score = 300 + (Weighted Average × 5.5)</div>
+        <div class="f-line">Weighted Average = (Compliance × <span id="preview-wCompliance">40</span>%) + (Fleet × <span id="preview-wFleet">25</span>%) + (Reviews × <span id="preview-wReviews">25</span>%) + (Licensing × <span id="preview-wLicensing">10</span>%)</div>
+        <div class="f-comment">// All weights must add up to 100% · Score range: 300 (Poor) → 850 (Excellent)</div>
+      </div>
+      <div class="rules-grid">
+        <div class="rule-section">
+          <div class="rule-section-title">📋 Section Weights</div>
+          <div class="rule-row">
+            <div>
+              <div class="rule-label">Compliance Weight</div>
+              <div class="rule-desc">Contractor GL/WC insurance</div>
+            </div>
+            <div class="rule-input-wrap">
+              <input type="number" class="rule-input" id="r-wCompliance" value="40" step="5" min="0" max="100"
+                oninput="markChanged(this);updateWeightsPreview()">
+              <span class="rule-unit">%</span>
+            </div>
+          </div>
+          <div class="rule-row">
+            <div>
+              <div class="rule-label">Fleet Weight</div>
+              <div class="rule-desc">Vehicle management score</div>
+            </div>
+            <div class="rule-input-wrap">
+              <input type="number" class="rule-input" id="r-wFleet" value="25" step="5" min="0" max="100"
+                oninput="markChanged(this);updateWeightsPreview()">
+              <span class="rule-unit">%</span>
+            </div>
+          </div>
+          <div class="rule-row">
+            <div>
+              <div class="rule-label">Reviews Weight</div>
+              <div class="rule-desc">Star ratings & reputation</div>
+            </div>
+            <div class="rule-input-wrap">
+              <input type="number" class="rule-input" id="r-wReviews" value="25" step="5" min="0" max="100"
+                oninput="markChanged(this);updateWeightsPreview()">
+              <span class="rule-unit">%</span>
+            </div>
+          </div>
+          <div class="rule-row">
+            <div>
+              <div class="rule-label">Licensing Weight</div>
+              <div class="rule-desc">State licenses & legal</div>
+            </div>
+            <div class="rule-input-wrap">
+              <input type="number" class="rule-input" id="r-wLicensing" value="10" step="5" min="0" max="100"
+                oninput="markChanged(this);updateWeightsPreview()">
+              <span class="rule-unit">%</span>
+            </div>
+          </div>
+        </div>
+        <div class="rule-section">
+          <div class="rule-section-title">📊 Total Check</div>
+          <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius);padding:16px;text-align:center;">
+            <div style="font-size:11px;color:var(--gray-400);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Current Total</div>
+            <div style="font-size:36px;font-weight:700;" id="weightsTotal">100</div>
+            <div style="font-size:11px;margin-top:4px;" id="weightsTotalNote" style="color:var(--green);">✓ Weights add up correctly</div>
+          </div>
+          <div style="margin-top:14px;font-size:11.5px;color:var(--gray-600);line-height:1.7;">
+            Weights must add up to exactly <strong>100%</strong>.<br>
+            Sections not yet built (Fleet, Reviews, Licensing) will use <strong>100% of what's available</strong> until their data feeds are live.
+          </div>
+        </div>
+      </div>
+      <div class="save-bar">
+        <div class="save-bar-note">Weights apply to all regions on next sync</div>
+        <div class="save-bar-actions">
+          <button class="btn btn-outline btn-sm" onclick="resetWeights()">Reset to Default</button>
+          <button class="btn btn-primary btn-sm" onclick="saveWeights()">💾 Save Weights</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <footer>
@@ -771,6 +865,89 @@ function showToast(msg, type = 'info') {
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 4000);
 }
+
+/* ══ WEIGHTS ══════════════════════════════════════════════════ */
+const WEIGHT_FIELDS   = ['wCompliance', 'wFleet', 'wReviews', 'wLicensing'];
+const WEIGHT_DEFAULTS = { wCompliance: 40, wFleet: 25, wReviews: 25, wLicensing: 10 };
+
+function updateWeightsPreview() {
+  let total = 0;
+  WEIGHT_FIELDS.forEach(f => {
+    const el  = document.getElementById('r-' + f);
+    const pre = document.getElementById('preview-' + f);
+    const val = parseFloat(el?.value) || 0;
+    if (pre) pre.textContent = val;
+    total += val;
+  });
+  const totalEl = document.getElementById('weightsTotal');
+  const noteEl  = document.getElementById('weightsTotalNote');
+  const badgeEl = document.getElementById('weights-total-badge');
+  if (totalEl) totalEl.textContent = total;
+  if (total === 100) {
+    if (totalEl) totalEl.style.color = 'var(--green)';
+    if (noteEl)  noteEl.innerHTML = '✓ Weights add up correctly';
+    if (badgeEl) { badgeEl.textContent = '✓ 100%'; badgeEl.className = 'sc-status live'; }
+  } else {
+    if (totalEl) totalEl.style.color = 'var(--red)';
+    if (noteEl)  noteEl.innerHTML = `⚠ Must equal 100% (currently ${total}%)`;
+    if (badgeEl) { badgeEl.textContent = `⚠ ${total}% — must = 100%`; badgeEl.className = 'sc-status pending'; }
+  }
+}
+
+function resetWeights() {
+  WEIGHT_FIELDS.forEach(f => {
+    const el = document.getElementById('r-' + f);
+    if (el) { el.value = WEIGHT_DEFAULTS[f]; el.classList.remove('changed'); }
+  });
+  updateWeightsPreview();
+  showToast('Weights reset to defaults (40/25/25/10).', 'info');
+}
+
+async function saveWeights() {
+  let total = 0;
+  const rules = {};
+  WEIGHT_FIELDS.forEach(f => {
+    const el = document.getElementById('r-' + f);
+    const val = parseFloat(el?.value) || 0;
+    rules[f] = val;
+    total += val;
+    if (el) el.classList.remove('changed');
+  });
+
+  if (total !== 100) {
+    showToast(`Weights must add up to 100% (currently ${total}%).`, 'error');
+    return;
+  }
+
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'saveScoringRules', rules })
+    });
+    updateWeightsPreview();
+    showToast('Score weights saved.', 'success');
+  } catch(e) {
+    showToast('Could not save — check backend connection.', 'error');
+  }
+}
+
+// Load weights when page loads
+async function loadWeights() {
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=getScoringRules`);
+    const data = await res.json();
+    if (data.rules) {
+      WEIGHT_FIELDS.forEach(f => {
+        const el = document.getElementById('r-' + f);
+        if (el && data.rules[f] !== undefined) el.value = data.rules[f];
+      });
+    }
+  } catch(e) {}
+  updateWeightsPreview();
+}
+
+loadWeights();
+
 </script>
 </body>
 </html>
