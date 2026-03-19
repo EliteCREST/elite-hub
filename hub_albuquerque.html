@@ -560,40 +560,29 @@ async function syncData() {
     set('kpiFleet',       data.fleet);
     set('kpiReviews',     data.reviews);
 
-    // Pull live compliance stats directly
+    // Pull live compliance stats directly — small delay to avoid GAS rate limit
+    await new Promise(r => setTimeout(r, 800));
     try {
       const compRes  = await fetch(`${BACKEND_URL}?action=complianceData&region=${REGION.key}`);
       const compData = await compRes.json();
-      const total     = compData.total     || 0;
-      const compliant = compData.compliant || 0;
-      const alerts    = (compData.data || []).filter(c => {
-        const gl = c.gl_expiry ? Math.ceil((new Date(c.gl_expiry) - new Date()) / 86400000) : -1;
-        const wc = c.wc_expiry ? Math.ceil((new Date(c.wc_expiry) - new Date()) / 86400000) : -1;
-        return gl < 0 || wc < 0 || (gl <= 30) || (wc <= 30);
-      }).length;
-      const compPct = compData.compliancePct ? compData.compliancePct + '%' : '—';
-      const el = (id) => document.getElementById(id);
-      // KPI cards
-      if (el('kpiContractors')) el('kpiContractors').textContent = total;
-      if (el('kpiCompliant'))   el('kpiCompliant').textContent   = compliant;
-      if (el('kpiAlerts'))      el('kpiAlerts').textContent      = alerts;
-      // Tile stats
-      if (el('comp-total'))     el('comp-total').textContent     = total;
-      if (el('comp-alerts'))    el('comp-alerts').textContent    = alerts;
-      // Health score bar
-      if (el('smCompliance'))   el('smCompliance').textContent   = compPct;
-      // Push compliance % to hub summary for leaderboard
-      if (compData.compliancePct !== undefined) {
-        fetch(BACKEND_URL, {
-          method: 'POST',
-          body: JSON.stringify({
-            action: 'pushRegionSummary',
-            region: REGION.key,
-            data: { compliance: compData.compliancePct, status: 'Active' }
-          })
-        }).catch(() => {});
+      if (compData && !compData.error) {
+        const total     = compData.total     || 0;
+        const compliant = compData.compliant || 0;
+        const alerts    = (compData.data || []).filter(c => {
+          const gl = c.gl_expiry ? Math.ceil((new Date(c.gl_expiry) - new Date()) / 86400000) : -1;
+          const wc = c.wc_expiry ? Math.ceil((new Date(c.wc_expiry) - new Date()) / 86400000) : -1;
+          return gl < 0 || wc < 0 || gl <= 30 || wc <= 30;
+        }).length;
+        const compPct = compData.compliancePct !== undefined ? compData.compliancePct + '%' : '—';
+        const el = (id) => document.getElementById(id);
+        if (el('kpiContractors')) el('kpiContractors').textContent = total;
+        if (el('kpiCompliant'))   el('kpiCompliant').textContent   = compliant;
+        if (el('kpiAlerts'))      el('kpiAlerts').textContent      = alerts;
+        if (el('comp-total'))     el('comp-total').textContent     = total;
+        if (el('comp-alerts'))    el('comp-alerts').textContent    = alerts;
+        if (el('smCompliance'))   el('smCompliance').textContent   = compPct;
       }
-    } catch(e) {}
+    } catch(e) { console.error('Compliance fetch error:', e); }
     set('kpiCFB',         data.openCFB);
     set('kpiLicenses',    data.licenses);
     set('kpiRank',        data.rank);
