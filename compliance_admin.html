@@ -276,17 +276,47 @@
   .modal-header .mh-title { color: white; font-size: 15px; font-weight: 700; }
   .modal-header .mh-sub   { color: rgba(255,255,255,.45); font-size: 11px; margin-top: 2px; }
   .modal-header .close-btn { background: none; border: none; color: rgba(255,255,255,.6); font-size: 20px; cursor: pointer; line-height: 1; padding: 0; }
-  .modal-body { padding: 24px; }
+  .modal-body { padding: 16px; }
   .modal-footer { padding: 16px 22px; border-top: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .modal-footer-right { display: flex; gap: 8px; }
 
   /* ══ FORM ════════════════════════════════════════════════════ */
-  .form-section-title {
-    font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
-    color: var(--gray-400); margin-bottom: 12px; padding-bottom: 6px;
-    border-bottom: 1px solid var(--gray-200);
+  .form-section {
+    margin-bottom: 16px;
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    border-left: 4px solid transparent;
   }
-  .form-section { margin-bottom: 22px; }
+  .form-section-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase;
+    margin-bottom: 14px; padding-bottom: 7px;
+    border-bottom: 1px solid rgba(0,0,0,.07);
+  }
+  /* Section color variants */
+  .fs-contact  { background: #EAF1FB; border-left-color: #1F5FAD; }
+  .fs-contact  .form-section-title { color: #1F5FAD; }
+  .fs-contact  .form-group input,
+  .fs-contact  .form-group select { background: white; }
+
+  .fs-region   { background: #F0F4FF; border-left-color: #4F46E5; }
+  .fs-region   .form-section-title { color: #4F46E5; }
+  .fs-region   .form-group input,
+  .fs-region   .form-group select { background: white; }
+
+  .fs-gl       { background: #DCFCE7; border-left-color: #16A34A; }
+  .fs-gl       .form-section-title { color: #16A34A; }
+  .fs-gl       .form-group input,
+  .fs-gl       .form-group select { background: white; }
+
+  .fs-wc       { background: #FEF9C3; border-left-color: #D97706; }
+  .fs-wc       .form-section-title { color: #D97706; }
+  .fs-wc       .form-group input,
+  .fs-wc       .form-group select { background: white; }
+
+  .fs-ins      { background: #FFF7ED; border-left-color: #C8A84B; }
+  .fs-ins      .form-section-title { color: #A8922E; }
+  .fs-ins      .form-group input,
+  .fs-ins      .form-group select { background: white; }
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
   .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
   .form-group { display: flex; flex-direction: column; gap: 5px; }
@@ -536,8 +566,8 @@
     </div>
     <div class="modal-body">
 
-      <div class="form-section">
-        <div class="form-section-title">Company & Contact</div>
+      <div class="form-section fs-contact">
+        <div class="form-section-title">🏢 Company & Contact</div>
         <div class="form-row">
           <div class="form-group"><label>Company Name *</label><input type="text" id="fCompany" placeholder="ABC Roofing LLC"></div>
           <div class="form-group"><label>Status</label>
@@ -567,8 +597,8 @@
         </div>
       </div>
 
-      <div class="form-section">
-        <div class="form-section-title">Region & Trades</div>
+      <div class="form-section fs-region">
+        <div class="form-section-title">📍 Region & Trades</div>
         <div class="form-row">
           <div class="form-group"><label>Region(s)</label><input type="text" id="fRegion" placeholder="CLE, PIT"></div>
           <div class="form-group"><label>From</label><input type="text" id="fFrom" placeholder="Source / referral"></div>
@@ -597,8 +627,8 @@
         </div>
       </div>
 
-      <div class="form-section">
-        <div class="form-section-title">GL Insurance</div>
+      <div class="form-section fs-gl">
+        <div class="form-section-title">🛡 GL Insurance</div>
         <div class="form-row">
           <div class="form-group"><label>GL Policy #</label><input type="text" id="fGLPolicy" placeholder="Policy number"></div>
           <div class="form-group"><label>GL Expiry Date</label><input type="date" id="fGLExpiry"></div>
@@ -609,8 +639,8 @@
         </div>
       </div>
 
-      <div class="form-section">
-        <div class="form-section-title">WC Insurance</div>
+      <div class="form-section fs-wc">
+        <div class="form-section-title">⚠️ WC Insurance</div>
         <div class="form-row">
           <div class="form-group"><label>WC Policy #</label><input type="text" id="fWCPolicy" placeholder="Policy number"></div>
           <div class="form-group"><label>WC Expiry Date</label><input type="date" id="fWCExpiry"></div>
@@ -621,8 +651,8 @@
         </div>
       </div>
 
-      <div class="form-section">
-        <div class="form-section-title">Insurance Contact</div>
+      <div class="form-section fs-ins">
+        <div class="form-section-title">📞 Insurance Contact</div>
         <div class="form-row">
           <div class="form-group"><label>Insurance Company</label><input type="text" id="fInsCompany" placeholder="Insurance company name"></div>
           <div class="form-group"><label>Ins. Contact Name</label><input type="text" id="fInsContact" placeholder="Agent name"></div>
