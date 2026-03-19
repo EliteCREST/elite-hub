@@ -471,10 +471,11 @@
     </select>
     <select class="filter-select" id="tradeFilter" onchange="applyFilters()">
       <option value="">All Trades</option>
-      <option>Roofing</option>
-      <option>Gutters</option>
-      <option>Siding</option>
-      <option>Windows</option>
+      <option value="ROOFING">Roofing</option>
+      <option value="GUTTERS">Gutters</option>
+      <option value="SIDING">Siding</option>
+      <option value="WINDOWS">Windows</option>
+      <option value="SERVICE">Service</option>
     </select>
   </div>
 
@@ -623,12 +624,12 @@
       <div class="form-section">
         <div class="form-section-title">Insurance Contact</div>
         <div class="form-row">
+          <div class="form-group"><label>Insurance Company</label><input type="text" id="fInsCompany" placeholder="Insurance company name"></div>
           <div class="form-group"><label>Ins. Contact Name</label><input type="text" id="fInsContact" placeholder="Agent name"></div>
-          <div class="form-group"><label>Ins. Phone</label><input type="text" id="fInsPhone" placeholder="555-000-0000"></div>
         </div>
         <div class="form-row">
+          <div class="form-group"><label>Ins. Phone</label><input type="text" id="fInsPhone" placeholder="555-000-0000"></div>
           <div class="form-group"><label>Ins. Email</label><input type="email" id="fInsEmail" placeholder="agent@insurer.com"></div>
-          <div class="form-group"></div>
         </div>
       </div>
 
@@ -729,6 +730,7 @@ function normalizeContractor(r) {
     city:            String(r['city']            || ''),
     state:           String(r['state']           || ''),
     zip:             String(r['zip']             || ''),
+    ins_company:     String(r['ins_company']     || ''),
     ins_contact:     String(r['ins_contact']     || ''),
     ins_phone:       String(r['ins_phone']       || ''),
     ins_email:       String(r['ins_email']       || ''),
@@ -884,7 +886,7 @@ function applyFilters() {
       const parts = (c.region || '').toUpperCase().split(/[\s,]+/);
       if (!parts.includes(region)) return false;
     }
-    if (trade && c.trade1 !== trade && c.trade2 !== trade && c.trade3 !== trade && c.trade4 !== trade) return false;
+    if (trade) { const t = trade.toUpperCase(); const trades = [c.trade1, c.trade2, c.trade3, c.trade4].map(x => (x||'').toUpperCase()); if (!trades.includes(t)) return false; }
     if (search && ![c.name, c.contact, c.trade1, c.region, c.email, c.supervisor].join(' ').toLowerCase().includes(search)) return false;
     return true;
   });
@@ -1000,7 +1002,7 @@ function clearForm() {
   ['fCompany','fContact','fContact2','fPhone','fEmail','fEmail2','fSupervisor',
    'fAddress','fCity','fStateZip','fRegion','fFrom',
    'fGLPolicy','fGLExpiry','fGLCoverage','fWCPolicy','fWCExpiry','fWCCoverage',
-   'fInsContact','fInsPhone','fInsEmail','fTravelDist']
+   'fInsCompany','fInsContact','fInsPhone','fInsEmail','fTravelDist']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   ['fStatus','fTrade1','fTrade2','fTrade3','fTrade4','fTravel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.selectedIndex = 0; });
@@ -1033,6 +1035,7 @@ function populateForm(c) {
   set('fWCPolicy',   c.wc_policy);
   set('fWCExpiry',   c.wc_expiry);
   set('fWCCoverage', c.wc_coverage);
+  set('fInsCompany', c.ins_company);
   set('fInsContact', c.ins_contact);
   set('fInsPhone',   c.ins_phone);
   set('fInsEmail',   c.ins_email);
@@ -1067,6 +1070,7 @@ function getFormValues() {
     wc_policy:       g('fWCPolicy'),
     wc_expiry:       g('fWCExpiry'),
     wc_coverage:     g('fWCCoverage'),
+    ins_company:     g('fInsCompany'),
     ins_contact:     g('fInsContact'),
     ins_phone:       g('fInsPhone'),
     ins_email:       g('fInsEmail'),
