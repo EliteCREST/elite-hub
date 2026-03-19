@@ -1172,13 +1172,18 @@ async function saveContractor() {
   const vals = getFormValues();
   if (!vals.name) { showToast('Company name is required.', 'warn'); return; }
 
-  if (editingId) {
-    // Update existing
-    const idx = allContractors.findIndex(c => c.id === editingId);
+  // Capture these BEFORE closing modal or modifying allContractors
+  const isEdit    = !!editingId;
+  const currentId = editingId;
+  const existing  = isEdit ? allContractors.find(c => c.id === currentId) : null;
+  const sheetRow  = existing ? existing._row  : null;
+  const hubId     = existing ? existing.hub_id : null;
+
+  if (isEdit) {
+    const idx = allContractors.findIndex(c => c.id === currentId);
     if (idx >= 0) allContractors[idx] = { ...allContractors[idx], ...vals };
     showToast(`${vals.name} updated.`, 'info');
   } else {
-    // Add new
     const newC = normalizeContractor({ ...vals, id: 'new-' + Date.now() });
     allContractors.unshift(newC);
     showToast(`${vals.name} added.`, 'info');
@@ -1189,13 +1194,12 @@ async function saveContractor() {
 
   // Push to backend
   try {
-    const existing = editingId ? allContractors.find(c => c.id === editingId) : null;
     await fetch(BACKEND_URL, {
       method: 'POST',
       body: JSON.stringify({
-        action:     editingId ? 'updateContractor' : 'addContractor',
-        id:         editingId,
-        sheetRow:   existing ? existing._row : null,
+        action:     isEdit ? 'updateContractor' : 'addContractor',
+        id:         hubId || currentId,
+        sheetRow:   sheetRow,
         region:     vals.region,
         contractor: vals,
       })
