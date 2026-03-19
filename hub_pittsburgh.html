@@ -559,6 +559,22 @@ async function syncData() {
     set('kpiAlerts',      data.alerts);
     set('kpiFleet',       data.fleet);
     set('kpiReviews',     data.reviews);
+
+    // Pull live compliance stats directly
+    try {
+      const compRes  = await fetch(`${BACKEND_URL}?action=complianceData&region=${REGION.key}`);
+      const compData = await compRes.json();
+      const total    = compData.total    || 0;
+      const alerts   = (compData.data || []).filter(c => {
+        const gl = c.gl_expiry ? Math.ceil((new Date(c.gl_expiry) - new Date()) / 86400000) : -1;
+        const wc = c.wc_expiry ? Math.ceil((new Date(c.wc_expiry) - new Date()) / 86400000) : -1;
+        return gl < 0 || wc < 0 || (gl <= 30) || (wc <= 30);
+      }).length;
+      const el = (id) => document.getElementById(id);
+      if (el('comp-total'))  el('comp-total').textContent  = total;
+      if (el('comp-alerts')) el('comp-alerts').textContent = alerts;
+      if (el('smCompliance')) el('smCompliance').textContent = compData.compliancePct ? compData.compliancePct + '%' : '—';
+    } catch(e) {}
     set('kpiCFB',         data.openCFB);
     set('kpiLicenses',    data.licenses);
     set('kpiRank',        data.rank);

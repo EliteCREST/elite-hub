@@ -759,6 +759,29 @@ async function syncData() {
     const data = await res.json();
     allContractors = (data.data || []).map(normalizeContractor);
     renderAll();
+
+    // Push compliance summary back to HUB_SUMMARY so region hub KPIs update
+    if (data.total !== undefined) {
+      const alerts = allContractors.filter(c => {
+        const s = getOverallStatus(c);
+        return s === 'expired' || s === 'expiring30';
+      }).length;
+      fetch(BACKEND_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'pushRegionSummary',
+          region: regionKey,
+          data: {
+            compliance: data.compliancePct,
+            status: 'Active',
+          }
+        })
+      }).catch(() => {});
+
+      // Update page tile stats on the region hub
+      document.getElementById('hdrTotal').textContent  = data.total;
+      document.getElementById('hdrAlerts').textContent = alerts;
+    }
   } catch(e) {
     document.getElementById('tableCount').textContent = 'Error loading data — check backend';
     showToast('Could not load contractor data', 'error');
