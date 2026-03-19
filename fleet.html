@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fleet Management — Elite Hub</title>
+<style>
+  :root {
+    --navy:        #1B2A4A;
+    --blue:        #1F5FAD;
+    --blue-light:  #2E74CC;
+    --blue-pale:   #EAF1FB;
+    --accent:      #C8A84B;
+    --accent-dark: #A8922E;
+    --white:       #FFFFFF;
+    --gray-50:     #F8FAFC;
+    --gray-100:    #F4F6FA;
+    --gray-200:    #E2E8F2;
+    --gray-300:    #CBD5E1;
+    --gray-400:    #94A3B8;
+    --gray-600:    #64748B;
+    --gray-800:    #334155;
+    --text:        #1B2A4A;
+    --green:       #16A34A;
+    --green-pale:  #DCFCE7;
+    --yellow:      #D97706;
+    --yellow-pale: #FEF9C3;
+    --red:         #DC2626;
+    --red-pale:    #FEE2E2;
+    --page-color:  #0369A1;
+    --page-pale:   #E0F2FE;
+    --shadow-sm:   0 1px 3px rgba(27,42,74,.08);
+    --shadow-md:   0 4px 16px rgba(27,42,74,.12);
+    --shadow-lg:   0 8px 32px rgba(27,42,74,.18);
+    --shadow-xl:   0 16px 48px rgba(27,42,74,.22);
+    --radius:      8px;
+    --radius-lg:   12px;
+    --radius-xl:   16px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    background: var(--gray-100); color: var(--text);
+    min-height: 100vh; display: flex; flex-direction: column;
+  }
+
+  /* ══ HEADER ══════════════════════════════════════════════════ */
+  .elite-header {
+    background: var(--navy);
+    display: grid; grid-template-columns: 6px 200px 1fr auto;
+    align-items: center; height: 68px;
+    position: sticky; top: 0; z-index: 200;
+    box-shadow: var(--shadow-lg);
+  }
+  .header-accent { background: var(--page-color); height: 100%; }
+  .header-logo {
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 22px; border-right: 1px solid rgba(255,255,255,.1);
+  }
+  .logo-mark {
+    width: 40px; height: 40px; background: var(--page-color);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  }
+  .logo-mark span { color: white; font-weight: 700; font-size: 13px; }
+  .logo-text .brand { color: white; font-size: 14px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+  .logo-text .sub   { color: rgba(255,255,255,.45); font-size: 10px; letter-spacing: .8px; text-transform: uppercase; margin-top: 1px; }
+  .header-title { padding: 0 28px; }
+  .header-title .page-name  { color: white; font-size: 16px; font-weight: 700; }
+  .header-title .breadcrumb { color: rgba(255,255,255,.45); font-size: 11px; margin-top: 2px; }
+  .header-meta { padding: 0 22px; display: flex; align-items: center; gap: 18px; }
+  .meta-item { text-align: right; }
+  .meta-label { color: rgba(255,255,255,.4); font-size: 10px; letter-spacing: .8px; text-transform: uppercase; }
+  .meta-val   { color: rgba(255,255,255,.88); font-size: 12px; font-weight: 700; margin-top: 1px; }
+  .hdr-divider { width: 1px; height: 30px; background: rgba(255,255,255,.12); }
+  .sub-bar { background: var(--page-color); height: 3px; }
+
+  /* ══ BACK NAV ════════════════════════════════════════════════ */
+  .back-nav { background: var(--navy); padding: 0 32px; border-bottom: 1px solid rgba(255,255,255,.07); }
+  .back-nav a {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: rgba(255,255,255,.5); font-size: 11px; text-decoration: none;
+    padding: 8px 0; transition: color .15s;
+  }
+  .back-nav a:hover { color: white; }
+
+  /* ══ MAIN ════════════════════════════════════════════════════ */
+  main { flex: 1; padding: 28px 32px; max-width: 1800px; width: 100%; margin: 0 auto; }
+
+  /* ══ SECTION HEADING ═════════════════════════════════════════ */
+  .sh {
+    font-size: 11px; font-weight: 700; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--navy);
+    padding-bottom: 7px; border-bottom: 2px solid var(--page-color);
+    display: inline-block;
+  }
+  .section-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px; flex-wrap: wrap; gap: 10px;
+  }
+
+  /* ══ CALLOUT ═════════════════════════════════════════════════ */
+  .callout {
+    background: var(--page-pale); border-left: 4px solid var(--page-color);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 12px 18px; margin-bottom: 28px;
+    font-size: 12.5px; color: var(--navy); line-height: 1.5;
+  }
+
+  /* ══ KPI STRIP ═══════════════════════════════════════════════ */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 14px; margin-bottom: 28px;
+  }
+  .kpi-card {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius); padding: 14px 16px;
+    position: relative; overflow: hidden; box-shadow: var(--shadow-sm);
+  }
+  .kpi-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background: var(--page-color);
+  }
+  .kpi-card.alert-card::before { background: var(--red); }
+  .kpi-card.warn-card::before  { background: var(--yellow); }
+  .kpi-card.good-card::before  { background: var(--green); }
+  .kpi-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-400); margin-bottom: 6px; }
+  .kpi-value { font-size: 26px; font-weight: 700; color: var(--navy); line-height: 1; }
+  .kpi-sub   { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+  .kpi-icon  { position: absolute; top: 12px; right: 12px; font-size: 18px; opacity: .12; }
+
+  /* ══ FILTER BAR ══════════════════════════════════════════════ */
+  .filter-bar {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg); padding: 12px 16px;
+    margin-bottom: 20px; box-shadow: var(--shadow-sm);
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .search-box {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--gray-50); border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius); padding: 0 12px; flex: 1; min-width: 220px;
+  }
+  .search-box input {
+    border: none; outline: none; font-size: 13px; padding: 8px 0;
+    font-family: Arial, sans-serif; color: var(--text); width: 100%;
+    background: transparent;
+  }
+  .search-box input::placeholder { color: var(--gray-400); }
+  .filter-divider { width: 1px; height: 28px; background: var(--gray-200); flex-shrink: 0; }
+  .filter-pill {
+    padding: 5px 13px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    letter-spacing: .3px; border: 1.5px solid var(--gray-200); background: white;
+    cursor: pointer; transition: all .15s; font-family: Arial, sans-serif; color: var(--gray-600);
+    white-space: nowrap;
+  }
+  .filter-pill:hover  { border-color: var(--page-color); color: var(--page-color); }
+  .filter-pill.active { background: var(--page-pale); border-color: var(--page-color); color: var(--page-color); }
+  .filter-pill.red-pill.active    { background: var(--red-pale);    border-color: var(--red);    color: var(--red); }
+  .filter-pill.yellow-pill.active { background: var(--yellow-pale); border-color: var(--yellow); color: var(--yellow); }
+  .filter-pill.green-pill.active  { background: var(--green-pale);  border-color: var(--green);  color: var(--green); }
+  .filter-select {
+    padding: 6px 10px; border: 1.5px solid var(--gray-200); border-radius: var(--radius);
+    font-size: 12px; font-family: Arial, sans-serif; color: var(--gray-600);
+    background: white; cursor: pointer; outline: none;
+  }
+  .filter-select:focus { border-color: var(--page-color); }
+
+  /* ══ SORT BAR ════════════════════════════════════════════════ */
+  .sort-bar {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .sort-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-400); }
+  .sort-btn {
+    padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    border: 1.5px solid var(--gray-200); background: white; cursor: pointer;
+    color: var(--gray-600); font-family: Arial, sans-serif; transition: all .15s;
+  }
+  .sort-btn:hover  { border-color: var(--page-color); color: var(--page-color); }
+  .sort-btn.active { background: var(--navy); border-color: var(--navy); color: white; }
+
+  /* ══ VEHICLE CARDS ═══════════════════════════════════════════ */
+  .vehicles-grid {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .vehicle-card {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+    transition: box-shadow .2s, border-color .2s;
+    cursor: pointer; overflow: hidden;
+  }
+  .vehicle-card:hover { box-shadow: var(--shadow-md); border-color: var(--page-color); }
+  .vehicle-card.status-active  { border-left: 4px solid var(--green); }
+  .vehicle-card.status-inactive { border-left: 4px solid var(--gray-300); }
+  .vehicle-card.status-unknown  { border-left: 4px solid var(--yellow); }
+  .vehicle-card.status-shop    { border-left: 4px solid var(--blue); }
+
+  .vc-main {
+    display: grid;
+    grid-template-columns: 70px 1fr auto;
+    align-items: center; gap: 16px;
+    padding: 14px 18px;
+  }
+  .vc-evid {
+    width: 58px; height: 58px; border-radius: 10px;
+    background: var(--navy); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+    letter-spacing: .5px;
+  }
+  .vc-evid.evid-active   { background: var(--navy); }
+  .vc-evid.evid-inactive { background: var(--gray-400); }
+  .vc-evid.evid-unknown  { background: var(--yellow); color: var(--navy); }
+  .vc-evid.evid-shop     { background: var(--blue); }
+
+  .vc-info { flex: 1; min-width: 0; }
+  .vc-vehicle { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+  .vc-driver  { font-size: 12px; color: var(--gray-600); margin-bottom: 8px; font-style: italic; }
+  .vc-tags    { display: flex; flex-wrap: wrap; gap: 5px; }
+
+  .tag {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 10px; font-weight: 700; letter-spacing: .3px;
+    padding: 3px 8px; border-radius: 5px; white-space: nowrap;
+  }
+  .tag-plate   { background: var(--navy); color: white; font-size: 11px; letter-spacing: 1px; }
+  .tag-geotab-ok     { background: var(--green-pale); color: var(--green); }
+  .tag-geotab-warn   { background: var(--yellow-pale); color: var(--yellow); }
+  .tag-geotab-bad    { background: var(--red-pale); color: var(--red); }
+  .tag-brand   { background: var(--blue-pale); color: var(--blue); }
+  .tag-signed  { background: var(--green-pale); color: var(--green); }
+  .tag-unsigned { background: var(--yellow-pale); color: var(--yellow); }
+  .tag-location { background: var(--gray-100); color: var(--gray-600); }
+  .tag-expiry-ok   { background: var(--green-pale); color: var(--green); }
+  .tag-expiry-warn { background: var(--yellow-pale); color: var(--yellow); }
+  .tag-expiry-exp  { background: var(--red-pale); color: var(--red); }
+  .tag-wrap    { background: #F0FDF4; color: #15803D; }
+  .tag-gray    { background: var(--gray-100); color: var(--gray-600); }
+
+  .vc-status {
+    text-align: right; flex-shrink: 0;
+  }
+  .status-dot-label {
+    display: flex; align-items: center; gap: 5px; justify-content: flex-end;
+    font-size: 11px; font-weight: 700;
+  }
+  .sdot { width: 7px; height: 7px; border-radius: 50%; }
+  .sdot-green  { background: var(--green); }
+  .sdot-yellow { background: var(--yellow); }
+  .sdot-gray   { background: var(--gray-400); }
+  .sdot-blue   { background: var(--blue); }
+
+  /* Expanded detail section */
+  .vc-detail {
+    display: none;
+    border-top: 1px solid var(--gray-200);
+    padding: 16px 18px 16px 102px;
+    background: var(--gray-50);
+  }
+  .vc-detail.open { display: block; }
+  .detail-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .detail-item .di-label { font-size: 10px; color: var(--gray-400); letter-spacing: .5px; text-transform: uppercase; margin-bottom: 2px; }
+  .detail-item .di-val   { font-size: 13px; font-weight: 600; color: var(--navy); }
+  .detail-item .di-val.missing { color: var(--gray-400); font-style: italic; font-weight: 400; }
+
+  .vc-detail-actions { display: flex; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--gray-200); }
+
+  /* ══ EMPTY STATE ═════════════════════════════════════════════ */
+  .empty-state { padding: 60px 20px; text-align: center; background: white; border-radius: var(--radius-xl); border: 1px solid var(--gray-200); }
+  .empty-state .es-icon  { font-size: 48px; margin-bottom: 12px; opacity: .3; }
+  .empty-state .es-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+  .empty-state .es-sub   { font-size: 12px; color: var(--gray-400); line-height: 1.6; }
+
+  /* ══ MODAL ═══════════════════════════════════════════════════ */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(27,42,74,.72); backdrop-filter: blur(4px);
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white; border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl); width: 100%; max-width: 760px;
+    max-height: 92vh; overflow-y: auto;
+  }
+  .modal-header {
+    background: var(--navy); padding: 16px 22px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 10;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+  .modal-header .mh-title { color: white; font-size: 15px; font-weight: 700; }
+  .modal-header .mh-sub   { color: rgba(255,255,255,.45); font-size: 11px; margin-top: 2px; }
+  .modal-header .close-btn { background: none; border: none; color: rgba(255,255,255,.6); font-size: 20px; cursor: pointer; }
+  .modal-body { padding: 22px; }
+  .modal-footer { padding: 16px 22px; border-top: 1px solid var(--gray-200); display: flex; justify-content: flex-end; gap: 8px; }
+
+  /* ══ FORM ════════════════════════════════════════════════════ */
+  .form-section { margin-bottom: 18px; border-radius: var(--radius-lg); padding: 14px 16px; border-left: 4px solid transparent; }
+  .form-section-title { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid rgba(0,0,0,.07); }
+  .fs-vehicle  { background: var(--page-pale);   border-left-color: var(--page-color); }
+  .fs-vehicle  .form-section-title { color: var(--page-color); }
+  .fs-driver   { background: #F0F9FF;             border-left-color: #0284C7; }
+  .fs-driver   .form-section-title { color: #0284C7; }
+  .fs-reg      { background: var(--yellow-pale);  border-left-color: var(--yellow); }
+  .fs-reg      .form-section-title { color: var(--yellow); }
+  .fs-maint    { background: var(--green-pale);   border-left-color: var(--green); }
+  .fs-maint    .form-section-title { color: var(--green); }
+  .fs-other    { background: var(--gray-50);      border-left-color: var(--gray-300); }
+  .fs-other    .form-section-title { color: var(--gray-600); }
+
+  .form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
+  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 10px; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group label { font-size: 11px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--gray-600); }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    border: 1.5px solid var(--gray-200); border-radius: var(--radius);
+    padding: 8px 10px; font-size: 13px; font-family: Arial, sans-serif;
+    color: var(--text); outline: none; transition: border-color .15s; background: white;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: var(--page-color); }
+  .form-group textarea { resize: vertical; min-height: 60px; }
+
+  /* ══ BUTTONS ═════════════════════════════════════════════════ */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: var(--radius);
+    font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+    cursor: pointer; border: none; font-family: Arial, sans-serif; transition: opacity .2s, transform .1s;
+  }
+  .btn:hover { opacity: .85; transform: translateY(-1px); }
+  .btn-primary { background: var(--page-color); color: white; }
+  .btn-navy    { background: var(--navy); color: white; }
+  .btn-outline { background: transparent; color: var(--gray-600); border: 1.5px solid var(--gray-300); }
+  .btn-outline:hover { border-color: var(--page-color); color: var(--page-color); }
+  .btn-sm { padding: 5px 12px; font-size: 10px; }
+
+  /* ══ FOOTER ══════════════════════════════════════════════════ */
+  footer {
+    background: var(--navy); border-top: 3px solid var(--page-color);
+    padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between; margin-top: auto;
+  }
+  .footer-brand { color: rgba(255,255,255,.4); font-size: 11px; }
+  .footer-brand strong { color: rgba(255,255,255,.65); }
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a { color: rgba(255,255,255,.35); font-size: 11px; text-decoration: none; transition: color .2s; }
+  .footer-links a:hover { color: rgba(255,255,255,.75); }
+
+  /* ══ TOAST ═══════════════════════════════════════════════════ */
+  .toast {
+    position: fixed; bottom: 28px; right: 24px; z-index: 9999;
+    background: var(--navy); color: white; padding: 14px 20px;
+    border-radius: 10px; font-size: 12.5px; box-shadow: var(--shadow-xl);
+    max-width: 340px; line-height: 1.5; animation: slideUp .25s ease;
+    border-left: 4px solid var(--page-color);
+  }
+  @keyframes slideUp { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)} }
+
+  @media (max-width: 900px) {
+    main { padding: 16px; }
+    .elite-header { grid-template-columns: 4px 1fr auto; }
+    .header-logo { display: none; }
+    .vc-main { grid-template-columns: 56px 1fr; }
+    .vc-status { display: none; }
+    .vc-detail { padding-left: 18px; }
+    .form-row, .form-row-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="elite-header">
+  <div class="header-accent"></div>
+  <div class="header-logo">
+    <div class="logo-mark"><span>🚗</span></div>
+    <div class="logo-text">
+      <div class="brand">Elite Hub</div>
+      <div class="sub" id="hdrSub">Fleet</div>
+    </div>
+  </div>
+  <div class="header-title">
+    <div class="page-name" id="hdrPageName">Fleet Management</div>
+    <div class="breadcrumb">Elite Hub &rsaquo; <span id="hdrRegion">—</span> &rsaquo; Fleet Management</div>
+  </div>
+  <div class="header-meta">
+    <div class="meta-item">
+      <div class="meta-label">Region</div>
+      <div class="meta-val" id="hdrAbbr">—</div>
+    </div>
+    <div class="hdr-divider"></div>
+    <div class="meta-item">
+      <div class="meta-label">Vehicles</div>
+      <div class="meta-val" id="hdrTotal">—</div>
+    </div>
+    <div class="hdr-divider"></div>
+    <div class="meta-item">
+      <div class="meta-label">Last Sync</div>
+      <div class="meta-val" id="hdrSync">—</div>
+    </div>
+  </div>
+</header>
+<div class="sub-bar"></div>
+
+<!-- BACK NAV -->
+<nav class="back-nav">
+  <a id="backToHub" href="#">← <span id="navRegion">Region</span> Hub &rsaquo; Fleet Management</a>
+</nav>
+
+<main>
+  <div class="callout" id="pageCallout">
+    <strong>Fleet Management</strong> — Vehicle tracking, GeoTab health, registration, and maintenance for this region.
+  </div>
+
+  <!-- KPI STRIP -->
+  <div class="section-row">
+    <span class="sh">Fleet Overview</span>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Vehicle</button>
+      <button class="btn btn-outline btn-sm" onclick="syncData()">↻ Sync</button>
+      <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export</button>
+    </div>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi-card good-card"><div class="kpi-icon">🚗</div><div class="kpi-label">Total Vehicles</div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-sub">This region</div></div>
+    <div class="kpi-card good-card"><div class="kpi-icon">✅</div><div class="kpi-label">Active</div><div class="kpi-value" id="kpiActive">—</div><div class="kpi-sub">In service</div></div>
+    <div class="kpi-card"><div class="kpi-icon">🔧</div><div class="kpi-label">In Shop</div><div class="kpi-value" id="kpiShop">—</div><div class="kpi-sub">Under maintenance</div></div>
+    <div class="kpi-card warn-card"><div class="kpi-icon">⚠️</div><div class="kpi-label">Tag Expiring</div><div class="kpi-value" id="kpiTagWarn">—</div><div class="kpi-sub">Within 60 days</div></div>
+    <div class="kpi-card alert-card"><div class="kpi-icon">🔴</div><div class="kpi-label">Tag Expired</div><div class="kpi-value" id="kpiTagExp">—</div><div class="kpi-sub">Action required</div></div>
+    <div class="kpi-card warn-card"><div class="kpi-icon">🛢️</div><div class="kpi-label">Oil Due</div><div class="kpi-value" id="kpiOilDue">—</div><div class="kpi-sub">Needs oil change</div></div>
+    <div class="kpi-card alert-card"><div class="kpi-icon">📋</div><div class="kpi-label">Unsigned</div><div class="kpi-value" id="kpiUnsigned">—</div><div class="kpi-sub">Agreement pending</div></div>
+    <div class="kpi-card"><div class="kpi-icon">📡</div><div class="kpi-label">GeoTab Issues</div><div class="kpi-value" id="kpiGeotab">—</div><div class="kpi-sub">Connectivity issues</div></div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="search-box">
+      <span style="color:var(--gray-400);">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search EVID, driver, plate, VIN, make..." oninput="applyFilters()">
+    </div>
+    <div class="filter-divider"></div>
+    <button class="filter-pill active" onclick="setFilter('all',this)">All</button>
+    <button class="filter-pill green-pill" onclick="setFilter('active',this)">Active</button>
+    <button class="filter-pill" onclick="setFilter('shop',this)">In Shop</button>
+    <button class="filter-pill yellow-pill" onclick="setFilter('unknown',this)">Unknown</button>
+    <button class="filter-pill red-pill" onclick="setFilter('tag-expired',this)">Tag Expired</button>
+    <button class="filter-pill" onclick="setFilter('unsigned',this)">Unsigned</button>
+    <div class="filter-divider"></div>
+    <select class="filter-select" id="brandFilter" onchange="applyFilters()">
+      <option value="">All Brands</option>
+      <option>Aspen</option>
+      <option>Grove</option>
+      <option>Reimagine</option>
+      <option>Universal</option>
+      <option>Wildwood</option>
+      <option>123 Exteriors</option>
+    </select>
+    <select class="filter-select" id="makeFilter" onchange="applyFilters()">
+      <option value="">All Makes</option>
+    </select>
+  </div>
+
+  <!-- SORT BAR -->
+  <div class="sort-bar">
+    <span class="sort-label">Sort:</span>
+    <button class="sort-btn active" onclick="sortBy('evid',this)">EVID ↕</button>
+    <button class="sort-btn" onclick="sortBy('driver',this)">Driver ↕</button>
+    <button class="sort-btn" onclick="sortBy('make',this)">Make ↕</button>
+    <button class="sort-btn" onclick="sortBy('tag_expiration',this)">Tag Exp ↕</button>
+    <button class="sort-btn" onclick="sortBy('geotab_status',this)">GeoTab ↕</button>
+    <button class="sort-btn" onclick="sortBy('status',this)">Status ↕</button>
+    <span id="vehicleCount" style="margin-left:auto;font-size:11px;color:var(--gray-400);"></span>
+  </div>
+
+  <!-- VEHICLE LIST -->
+  <div class="vehicles-grid" id="vehiclesGrid">
+    <div class="empty-state">
+      <div class="es-icon">🚗</div>
+      <div class="es-title">Loading fleet data...</div>
+      <div class="es-sub">Syncing from Google Sheets</div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-brand">
+    <strong>Elite Family of Brands</strong> &nbsp;·&nbsp; <span id="footerRegion">Region</span> Fleet &nbsp;·&nbsp; Internal Use Only
+  </div>
+  <div class="footer-links">
+    <a id="footerHubLink" href="#">← Region Hub</a>
+    <a href="#" onclick="exportCSV()">⬇ Export</a>
+    <a href="#">Support</a>
+  </div>
+</footer>
+
+<!-- ══ ADD / EDIT MODAL ══════════════════════════════════════ -->
+<div class="modal-overlay" id="vehicleModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="mh-title" id="modalTitle">Add Vehicle</div>
+        <div class="mh-sub" id="modalSub">Add a new vehicle to this region's fleet</div>
+      </div>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-section fs-vehicle">
+        <div class="form-section-title">🚗 Vehicle Info</div>
+        <div class="form-row">
+          <div class="form-group"><label>EVID #</label><input type="text" id="fEVID" placeholder="e.g. 2074"></div>
+          <div class="form-group"><label>Status</label>
+            <select id="fStatus">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="In Shop">In Shop</option>
+              <option value="Unknown">Unknown</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group"><label>Year</label><input type="text" id="fYear" placeholder="2025"></div>
+          <div class="form-group"><label>Make</label><input type="text" id="fMake" placeholder="Chevrolet"></div>
+          <div class="form-group"><label>Model</label><input type="text" id="fModel" placeholder="Silverado 1500"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Color</label><input type="text" id="fColor" placeholder="White"></div>
+          <div class="form-group"><label>Brand</label>
+            <select id="fBrand">
+              <option value="">Select...</option>
+              <option>Aspen</option>
+              <option>Grove</option>
+              <option>Reimagine</option>
+              <option>Universal</option>
+              <option>Wildwood</option>
+              <option>123 Exteriors</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>VIN</label><input type="text" id="fVIN" placeholder="1GCPYCEF..."></div>
+          <div class="form-group"><label>Vehicle Wrap</label>
+            <select id="fWrap"><option value="">Unknown</option><option value="Yes">Yes</option><option value="No">No</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Cab Size</label><input type="text" id="fCabSize" placeholder="Crew Cab"></div>
+          <div class="form-group"><label>Bed Size</label><input type="text" id="fBedSize" placeholder="Standard"></div>
+        </div>
+        <div class="form-group"><label>Accessory</label><input type="text" id="fAccessory" placeholder="Ladder racks, toolbox, etc."></div>
+      </div>
+
+      <div class="form-section fs-driver">
+        <div class="form-section-title">👤 Driver & Assignment</div>
+        <div class="form-row">
+          <div class="form-group"><label>Assigned Driver</label><input type="text" id="fDriver" placeholder="Full name"></div>
+          <div class="form-group"><label>Last Known Driver</label><input type="text" id="fLastDriver" placeholder="Full name"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Agreement Status</label>
+            <select id="fAgreement">
+              <option value="">Unknown</option>
+              <option value="Signed">Signed</option>
+              <option value="Unsigned">Unsigned</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
+          <div class="form-group"><label>GeoTab Status</label>
+            <select id="fGeotab">
+              <option value="">Unknown</option>
+              <option value="OK">OK</option>
+              <option value="No Communication">No Communication</option>
+              <option value="Disconnected">Disconnected</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Vehicle Location</label><input type="text" id="fVehicleLocation" placeholder="e.g. OH- Cleveland"></div>
+          <div class="form-group"><label>Office Location</label><input type="text" id="fOfficeLocation" placeholder="e.g. Cleveland"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Device Name</label><input type="text" id="fDeviceName" placeholder="GeoTab device name"></div>
+          <div class="form-group"><label>Serial #</label><input type="text" id="fSerial" placeholder="Device serial"></div>
+        </div>
+      </div>
+
+      <div class="form-section fs-reg">
+        <div class="form-section-title">📋 Registration & Insurance</div>
+        <div class="form-row">
+          <div class="form-group"><label>License Plate</label><input type="text" id="fPlate" placeholder="ABC1234"></div>
+          <div class="form-group"><label>Tag State</label><input type="text" id="fTagState" placeholder="OH" maxlength="2"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Tag Expiration</label><input type="date" id="fTagExp"></div>
+          <div class="form-group"><label>Insurance Exp Date</label><input type="date" id="fInsExp"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Toll ID / Transponder</label><input type="text" id="fToll" placeholder="Toll transponder ID"></div>
+          <div class="form-group"></div>
+        </div>
+      </div>
+
+      <div class="form-section fs-maint">
+        <div class="form-section-title">🔧 Maintenance</div>
+        <div class="form-row">
+          <div class="form-group"><label>Odometer</label><input type="number" id="fOdometer" placeholder="Miles"></div>
+          <div class="form-group"><label>Odometer Date Checked</label><input type="date" id="fOdomDate"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Last Maintenance</label><input type="date" id="fLastMaint"></div>
+          <div class="form-group"><label>Maintenance Due Date</label><input type="date" id="fMaintDue"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Oil Change Due (miles)</label><input type="number" id="fOilDue" placeholder="Miles until due"></div>
+          <div class="form-group"></div>
+        </div>
+      </div>
+
+      <div class="form-section fs-other">
+        <div class="form-section-title">📝 Notes</div>
+        <div class="form-group"><label>Notes</label><textarea id="fNotes" placeholder="Any additional notes..."></textarea></div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveVehicle()">Save Vehicle</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   CONFIGURATION
+══════════════════════════════════════════════════════════════ */
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec';
+
+const REGION_MAP = {
+  cleveland:    { city: 'Cleveland',    abbr: 'CLE', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_cleveland.html' },
+  phoenix:      { city: 'Phoenix',      abbr: 'PHX', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_phoenix.html' },
+  albuquerque:  { city: 'Albuquerque',  abbr: 'ABQ', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_albuquerque.html' },
+  minneapolis:  { city: 'Minneapolis',  abbr: 'MSP', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_minneapolis.html' },
+  stlouis:      { city: 'St. Louis',    abbr: 'STL', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_stlouis.html' },
+  chicago:      { city: 'Chicago',      abbr: 'CHI', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_chicago.html' },
+  indianapolis: { city: 'Indianapolis', abbr: 'IND', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_indianapolis.html' },
+  pittsburgh:   { city: 'Pittsburgh',   abbr: 'PIT', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_pittsburgh.html' },
+  milwaukee:    { city: 'Milwaukee',    abbr: 'MKE', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_milwaukee.html' },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════════ */
+const params    = new URLSearchParams(window.location.search);
+const regionKey = params.get('region') || 'cleveland';
+const region    = REGION_MAP[regionKey] || { city: regionKey, abbr: '—', hubUrl: '#' };
+
+let allVehicles  = [];
+let filtered     = [];
+let statusFilter = 'all';
+let sortField    = 'evid';
+let sortDir      = 1;
+let editingId    = null;
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════ */
+document.getElementById('hdrSub').textContent       = region.abbr + ' Fleet';
+document.getElementById('hdrPageName').textContent  = region.city + ' — Fleet Management';
+document.getElementById('hdrRegion').textContent    = region.city;
+document.getElementById('hdrAbbr').textContent      = region.abbr;
+document.getElementById('navRegion').textContent    = region.city;
+document.getElementById('footerRegion').textContent = region.city;
+document.getElementById('backToHub').href           = region.hubUrl || '#';
+document.getElementById('footerHubLink').href       = region.hubUrl || '#';
+document.getElementById('pageCallout').innerHTML    =
+  `<strong>${region.city} — Fleet Management</strong> — Vehicle tracking, GeoTab health, registration, and maintenance for all vehicles in the ${region.city} region. Data synced from Google Sheets (<strong>Fleet_Data</strong> tab).`;
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+syncData();
+
+/* ══════════════════════════════════════════════════════════════
+   DATA SYNC
+══════════════════════════════════════════════════════════════ */
+async function syncData() {
+  document.getElementById('vehicleCount').textContent = 'Loading...';
+  document.getElementById('hdrSync').textContent = '…';
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=fleetData&region=${regionKey}`);
+    const data = await res.json();
+    allVehicles = (data.data || []).map(normalizeVehicle);
+    populateMakeFilter();
+    renderAll();
+    document.getElementById('hdrSync').textContent = new Date().toLocaleTimeString();
+  } catch(e) {
+    document.getElementById('vehicleCount').textContent = 'Error loading — check backend';
+    document.getElementById('hdrSync').textContent = 'Error';
+    showToast('Could not load fleet data', 'error');
+  }
+}
+
+function normalizeVehicle(r) {
+  return {
+    id:               String(r['evid'] || r['id'] || Math.random().toString(36).slice(2)),
+    evid:             String(r['evid']              || ''),
+    device_name:      String(r['device_name']       || ''),
+    status:           String(r['status']            || ''),
+    serial:           String(r['serial#']           || ''),
+    last_communicated:String(r['last_communicated'] || ''),
+    region:           String(r['region']            || ''),
+    driver:           String(r['assigned_driver']   || ''),
+    last_driver:      String(r['last_known_driver'] || ''),
+    agreement:        String(r['agreement_status']  || ''),
+    geotab:           String(r['geotab_status']     || ''),
+    brand:            String(r['brand']             || ''),
+    year:             String(r['year']              || ''),
+    make:             String(r['make']              || ''),
+    model:            String(r['model']             || ''),
+    color:            String(r['color']             || ''),
+    plate:            String(r['license_plate_number'] || ''),
+    tag_state:        String(r['tag_state']         || ''),
+    tag_expiration:   String(r['tag_expiration']    || ''),
+    vehicle_location: String(r['vehicle_location']  || ''),
+    office_location:  String(r['office_location']   || ''),
+    wrap:             String(r['vehicle_wrap']       || ''),
+    vin:              String(r['vin']               || ''),
+    cab_size:         String(r['cab_size']          || ''),
+    bed_size:         String(r['bed_size']          || ''),
+    accessory:        String(r['accessory']         || ''),
+    odometer:         String(r['odometer']          || ''),
+    odom_date:        String(r['odometer_date_checked'] || ''),
+    toll:             String(r['toll_id_/_transponder'] || ''),
+    last_maint:       String(r['last_maintenance']  || ''),
+    maint_due:        String(r['maintenance_due_date'] || ''),
+    oil_due:          String(r['oil_change_due_(miles)'] || ''),
+    ins_exp:          String(r['insurance_exp_date'] || ''),
+    notes:            String(r['notes']             || ''),
+  };
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STATUS HELPERS
+══════════════════════════════════════════════════════════════ */
+function getTagStatus(dateStr) {
+  if (!dateStr) return 'missing';
+  const exp  = new Date(dateStr);
+  if (isNaN(exp)) return 'missing';
+  const days = Math.ceil((exp - new Date()) / 86400000);
+  if (days < 0)   return 'expired';
+  if (days <= 60) return 'expiring';
+  return 'ok';
+}
+
+function tagExpiryTag(v) {
+  const s = getTagStatus(v.tag_expiration);
+  if (s === 'missing')  return '';
+  if (s === 'expired')  return `<span class="tag tag-expiry-exp">TAG EXPIRED ${formatDate(v.tag_expiration)}</span>`;
+  if (s === 'expiring') return `<span class="tag tag-expiry-warn">Tag ${formatDate(v.tag_expiration)}</span>`;
+  return `<span class="tag tag-expiry-ok">Tag ${formatDate(v.tag_expiration)}</span>`;
+}
+
+function geotabTag(v) {
+  const g = (v.geotab || '').toLowerCase();
+  if (!v.geotab) return '';
+  if (g === 'ok') return `<span class="tag tag-geotab-ok">OK</span>`;
+  if (g.includes('no comm') || g.includes('disconnect')) return `<span class="tag tag-geotab-bad">${v.geotab}</span>`;
+  return `<span class="tag tag-geotab-warn">${v.geotab}</span>`;
+}
+
+function vehicleStatusClass(v) {
+  const s = (v.status || '').toLowerCase();
+  if (s.includes('shop'))     return 'status-shop';
+  if (s === 'active')         return 'status-active';
+  if (s === 'inactive')       return 'status-inactive';
+  return 'status-unknown';
+}
+
+function evidClass(v) {
+  const s = (v.status || '').toLowerCase();
+  if (s.includes('shop'))     return 'evid-shop';
+  if (s === 'active')         return 'evid-active';
+  if (s === 'inactive')       return 'evid-inactive';
+  return 'evid-unknown';
+}
+
+function statusLabel(v) {
+  const s = (v.status || '').toLowerCase();
+  if (s.includes('shop'))   return { dot: 'sdot-blue',   label: 'In Shop' };
+  if (s === 'active')       return { dot: 'sdot-green',  label: 'Active' };
+  if (s === 'inactive')     return { dot: 'sdot-gray',   label: 'Inactive' };
+  return { dot: 'sdot-yellow', label: v.status || 'Unknown' };
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RENDER ALL
+══════════════════════════════════════════════════════════════ */
+function renderAll() {
+  updateKPIs();
+  applyFilters();
+}
+
+function updateKPIs() {
+  const total    = allVehicles.length;
+  const active   = allVehicles.filter(v => (v.status||'').toLowerCase() === 'active').length;
+  const shop     = allVehicles.filter(v => (v.status||'').toLowerCase().includes('shop')).length;
+  const tagExp   = allVehicles.filter(v => getTagStatus(v.tag_expiration) === 'expired').length;
+  const tagWarn  = allVehicles.filter(v => getTagStatus(v.tag_expiration) === 'expiring').length;
+  const unsigned = allVehicles.filter(v => v.agreement && v.agreement.toLowerCase() !== 'signed').length;
+  const geotab   = allVehicles.filter(v => v.geotab && v.geotab.toLowerCase() !== 'ok').length;
+  const oilDue   = allVehicles.filter(v => v.oil_due && parseInt(v.oil_due) <= 500).length;
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('kpiTotal',   total);
+  set('kpiActive',  active);
+  set('kpiShop',    shop);
+  set('kpiTagExp',  tagExp);
+  set('kpiTagWarn', tagWarn);
+  set('kpiUnsigned',unsigned);
+  set('kpiGeotab',  geotab);
+  set('kpiOilDue',  oilDue);
+  set('hdrTotal',   total);
+}
+
+function populateMakeFilter() {
+  const makes = [...new Set(allVehicles.map(v => v.make).filter(Boolean))].sort();
+  const sel   = document.getElementById('makeFilter');
+  sel.innerHTML = '<option value="">All Makes</option>' + makes.map(m => `<option>${m}</option>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FILTERS & SORT
+══════════════════════════════════════════════════════════════ */
+function setFilter(filter, btn) {
+  statusFilter = filter;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function applyFilters() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const brand  = document.getElementById('brandFilter').value.toLowerCase();
+  const make   = document.getElementById('makeFilter').value.toLowerCase();
+
+  filtered = allVehicles.filter(v => {
+    if (statusFilter === 'active'     && (v.status||'').toLowerCase() !== 'active') return false;
+    if (statusFilter === 'shop'       && !(v.status||'').toLowerCase().includes('shop')) return false;
+    if (statusFilter === 'unknown'    && (v.status||'').toLowerCase() !== 'unknown') return false;
+    if (statusFilter === 'tag-expired'&& getTagStatus(v.tag_expiration) !== 'expired') return false;
+    if (statusFilter === 'unsigned'   && (v.agreement||'').toLowerCase() === 'signed') return false;
+    if (brand && (v.brand||'').toLowerCase() !== brand) return false;
+    if (make  && (v.make||'').toLowerCase()  !== make)  return false;
+    if (search && ![v.evid, v.driver, v.plate, v.vin, v.make, v.model, v.vehicle_location, v.last_driver].join(' ').toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  filtered.sort((a, b) => {
+    const av = a[sortField] || '';
+    const bv = b[sortField] || '';
+    return sortDir * av.toString().localeCompare(bv.toString(), undefined, { numeric: true });
+  });
+
+  document.getElementById('vehicleCount').textContent = `${filtered.length} of ${allVehicles.length} vehicles`;
+  renderVehicles();
+}
+
+function sortBy(field, btn) {
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (sortField === field) sortDir *= -1;
+  else { sortField = field; sortDir = 1; }
+  applyFilters();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RENDER VEHICLES
+══════════════════════════════════════════════════════════════ */
+function renderVehicles() {
+  const grid = document.getElementById('vehiclesGrid');
+
+  if (!filtered.length) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="es-icon">🚗</div>
+        <div class="es-title">${allVehicles.length === 0 ? 'No fleet data loaded' : 'No results'}</div>
+        <div class="es-sub">${allVehicles.length === 0
+          ? 'Add vehicle data to your <strong>Fleet_Data</strong> tab in Google Sheets.'
+          : 'Try adjusting your filters or search.'}</div>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(v => {
+    const sc   = vehicleStatusClass(v);
+    const ec   = evidClass(v);
+    const sl   = statusLabel(v);
+    const driverDisplay = v.driver || (v.last_driver ? `<em style="color:var(--gray-400);">${v.last_driver}</em>` : '<em style="color:var(--gray-400);">Unassigned</em>');
+
+    return `
+    <div class="vehicle-card ${sc}" onclick="toggleDetail('${v.id}')">
+      <div class="vc-main">
+        <div class="vc-evid ${ec}">${v.evid || '—'}</div>
+        <div class="vc-info">
+          <div class="vc-vehicle">${[v.year, v.make, v.model].filter(Boolean).join(' ') || 'Unknown Vehicle'}</div>
+          <div class="vc-driver">${v.driver || (v.last_driver ? v.last_driver : 'Unassigned')}</div>
+          <div class="vc-tags">
+            ${v.plate ? `<span class="tag tag-plate">${v.plate}</span>` : ''}
+            ${geotabTag(v)}
+            ${v.brand ? `<span class="tag tag-brand">${v.brand}</span>` : ''}
+            ${v.agreement === 'Signed' ? `<span class="tag tag-signed">Signed</span>` : v.agreement ? `<span class="tag tag-unsigned">${v.agreement}</span>` : ''}
+            ${v.vehicle_location ? `<span class="tag tag-location">${v.vehicle_location}</span>` : ''}
+            ${tagExpiryTag(v)}
+            ${v.wrap === 'Yes' ? `<span class="tag tag-wrap">Wrapped</span>` : ''}
+          </div>
+        </div>
+        <div class="vc-status">
+          <div class="status-dot-label">
+            <div class="sdot ${sl.dot}"></div>
+            <span style="color:var(--gray-600);font-size:11px;font-weight:700;">${sl.label}</span>
+          </div>
+        </div>
+      </div>
+      <div class="vc-detail" id="detail-${v.id}">
+        <div class="detail-grid">
+          <div class="detail-item"><div class="di-label">VIN</div><div class="di-val ${!v.vin?'missing':''}">${v.vin||'—'}</div></div>
+          <div class="detail-item"><div class="di-label">Color</div><div class="di-val ${!v.color?'missing':''}">${v.color||'—'}</div></div>
+          <div class="detail-item"><div class="di-label">Tag State</div><div class="di-val ${!v.tag_state?'missing':''}">${v.tag_state||'—'}</div></div>
+          <div class="detail-item"><div class="di-label">Tag Expiration</div><div class="di-val ${!v.tag_expiration?'missing':''}">${v.tag_expiration ? formatDate(v.tag_expiration) : '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Insurance Exp</div><div class="di-val ${!v.ins_exp?'missing':''}">${v.ins_exp ? formatDate(v.ins_exp) : '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Office Location</div><div class="di-val ${!v.office_location?'missing':''}">${v.office_location||'—'}</div></div>
+          <div class="detail-item"><div class="di-label">Cab / Bed</div><div class="di-val ${!v.cab_size?'missing':''}">${[v.cab_size, v.bed_size].filter(Boolean).join(' / ')||'—'}</div></div>
+          <div class="detail-item"><div class="di-label">Accessory</div><div class="di-val ${!v.accessory?'missing':''}">${v.accessory||'—'}</div></div>
+          <div class="detail-item"><div class="di-label">Odometer</div><div class="di-val ${!v.odometer?'missing':''}">${v.odometer ? Number(v.odometer).toLocaleString() + ' mi' : '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Oil Change Due</div><div class="di-val ${!v.oil_due?'missing':''}">${v.oil_due ? v.oil_due + ' mi' : '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Last Maintenance</div><div class="di-val ${!v.last_maint?'missing':''}">${v.last_maint ? formatDate(v.last_maint) : '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Maintenance Due</div><div class="di-val ${!v.maint_due?'missing':''}">${v.maint_due ? formatDate(v.maint_due) : '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Toll / Transponder</div><div class="di-val ${!v.toll?'missing':''}">${v.toll||'—'}</div></div>
+          <div class="detail-item"><div class="di-label">GeoTab Device</div><div class="di-val ${!v.device_name?'missing':''}">${v.device_name||'—'}</div></div>
+          <div class="detail-item"><div class="di-label">Serial #</div><div class="di-val ${!v.serial?'missing':''}">${v.serial||'—'}</div></div>
+          <div class="detail-item"><div class="di-label">Last Communicated</div><div class="di-val ${!v.last_communicated?'missing':''}">${v.last_communicated||'—'}</div></div>
+          ${v.notes ? `<div class="detail-item" style="grid-column:1/-1"><div class="di-label">Notes</div><div class="di-val">${v.notes}</div></div>` : ''}
+        </div>
+        <div class="vc-detail-actions">
+          <button class="btn btn-navy btn-sm" onclick="event.stopPropagation();openEditModal('${v.id}')">✏ Edit</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleDetail(id) {
+  const el = document.getElementById('detail-' + id);
+  if (!el) return;
+  el.classList.toggle('open');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ADD / EDIT MODAL
+══════════════════════════════════════════════════════════════ */
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Add Vehicle';
+  document.getElementById('modalSub').textContent   = 'Add a new vehicle to the ' + region.city + ' fleet';
+  clearForm();
+  document.getElementById('vehicleModal').classList.add('open');
+}
+
+function openEditModal(id) {
+  const v = allVehicles.find(x => x.id === id);
+  if (!v) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Edit Vehicle';
+  document.getElementById('modalSub').textContent   = [v.year, v.make, v.model].filter(Boolean).join(' ') || 'Vehicle';
+  populateForm(v);
+  document.getElementById('vehicleModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('vehicleModal').classList.remove('open');
+  editingId = null;
+}
+
+function clearForm() {
+  ['fEVID','fDeviceName','fSerial','fDriver','fLastDriver','fVIN','fColor',
+   'fPlate','fTagState','fToll','fOdometer','fOdomDate','fLastMaint','fMaintDue',
+   'fOilDue','fInsExp','fNotes','fCabSize','fBedSize','fAccessory','fYear','fMake','fModel']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['fStatus','fAgreement','fGeotab','fBrand','fWrap']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.selectedIndex = 0; });
+  document.getElementById('fTagExp') && (document.getElementById('fTagExp').value = '');
+  document.getElementById('fInsExp') && (document.getElementById('fInsExp').value = '');
+}
+
+function populateForm(v) {
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  set('fEVID',          v.evid);
+  set('fStatus',        v.status);
+  set('fYear',          v.year);
+  set('fMake',          v.make);
+  set('fModel',         v.model);
+  set('fColor',         v.color);
+  set('fBrand',         v.brand);
+  set('fVIN',           v.vin);
+  set('fWrap',          v.wrap);
+  set('fCabSize',       v.cab_size);
+  set('fBedSize',       v.bed_size);
+  set('fAccessory',     v.accessory);
+  set('fDriver',        v.driver);
+  set('fLastDriver',    v.last_driver);
+  set('fAgreement',     v.agreement);
+  set('fGeotab',        v.geotab);
+  set('fVehicleLocation', v.vehicle_location);
+  set('fOfficeLocation',  v.office_location);
+  set('fDeviceName',    v.device_name);
+  set('fSerial',        v.serial);
+  set('fPlate',         v.plate);
+  set('fTagState',      v.tag_state);
+  set('fTagExp',        v.tag_expiration);
+  set('fInsExp',        v.ins_exp);
+  set('fToll',          v.toll);
+  set('fOdometer',      v.odometer);
+  set('fOdomDate',      v.odom_date);
+  set('fLastMaint',     v.last_maint);
+  set('fMaintDue',      v.maint_due);
+  set('fOilDue',        v.oil_due);
+  set('fNotes',         v.notes);
+}
+
+function getFormValues() {
+  const g = id => (document.getElementById(id)||{}).value || '';
+  return {
+    evid:             g('fEVID'),
+    status:           g('fStatus'),
+    year:             g('fYear'),
+    make:             g('fMake'),
+    model:            g('fModel'),
+    color:            g('fColor'),
+    brand:            g('fBrand'),
+    vin:              g('fVIN'),
+    wrap:             g('fWrap'),
+    cab_size:         g('fCabSize'),
+    bed_size:         g('fBedSize'),
+    accessory:        g('fAccessory'),
+    driver:           g('fDriver'),
+    last_driver:      g('fLastDriver'),
+    agreement:        g('fAgreement'),
+    geotab:           g('fGeotab'),
+    vehicle_location: g('fVehicleLocation'),
+    office_location:  g('fOfficeLocation'),
+    device_name:      g('fDeviceName'),
+    serial:           g('fSerial'),
+    plate:            g('fPlate'),
+    tag_state:        g('fTagState'),
+    tag_expiration:   g('fTagExp'),
+    ins_exp:          g('fInsExp'),
+    toll:             g('fToll'),
+    odometer:         g('fOdometer'),
+    odom_date:        g('fOdomDate'),
+    last_maint:       g('fLastMaint'),
+    maint_due:        g('fMaintDue'),
+    oil_due:          g('fOilDue'),
+    notes:            g('fNotes'),
+    region:           regionKey,
+  };
+}
+
+async function saveVehicle() {
+  const vals      = getFormValues();
+  const isEdit    = !!editingId;
+  const currentId = editingId;
+  const existing  = isEdit ? allVehicles.find(v => v.id === currentId) : null;
+
+  if (isEdit) {
+    const idx = allVehicles.findIndex(v => v.id === currentId);
+    if (idx >= 0) allVehicles[idx] = { ...allVehicles[idx], ...vals };
+    showToast(`Vehicle updated.`, 'info');
+  } else {
+    allVehicles.unshift(normalizeVehicle({ ...vals, id: 'new-' + Date.now() }));
+    showToast(`Vehicle added.`, 'info');
+  }
+
+  closeModal();
+  renderAll();
+
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action:    isEdit ? 'updateVehicle' : 'addVehicle',
+        id:        currentId,
+        evid:      existing ? existing.evid : vals.evid,
+        region:    regionKey,
+        vehicle:   vals,
+      })
+    });
+  } catch(e) {}
+}
+
+/* ══════════════════════════════════════════════════════════════
+   EXPORT
+══════════════════════════════════════════════════════════════ */
+function exportCSV() {
+  if (!filtered.length) { showToast('No data to export.', 'warn'); return; }
+  const headers = ['EVID','Status','Year','Make','Model','Color','Driver','Plate','Tag Exp','GeoTab','Brand','Agreement','Location','VIN','Odometer','Oil Due','Ins Exp'];
+  const rows = filtered.map(v => [
+    v.evid, v.status, v.year, v.make, v.model, v.color, v.driver, v.plate,
+    v.tag_expiration, v.geotab, v.brand, v.agreement, v.vehicle_location,
+    v.vin, v.odometer, v.oil_due, v.ins_exp
+  ].map(x => `"${(x||'').toString().replace(/"/g,'""')}"`).join(','));
+  const csv  = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `${regionKey}_fleet_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════════════ */
+function formatDate(raw) {
+  if (!raw) return '—';
+  try { return new Date(raw).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); }
+  catch { return raw; }
+}
+
+function showToast(msg, type = 'info') {
+  const colors = { info: 'var(--page-color)', warn: '#D97706', error: '#DC2626' };
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.style.borderLeftColor = colors[type] || colors.info;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+</script>
+</body>
+</html>

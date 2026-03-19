@@ -330,6 +330,7 @@
   <div class="kpi-grid">
     <div class="kpi-card"><div class="kpi-icon">📋</div><div class="kpi-label">Contractors</div><div class="kpi-value" id="kpiContractors">—</div></div>
     <div class="kpi-card"><div class="kpi-icon">✅</div><div class="kpi-label">Compliant</div><div class="kpi-value" id="kpiCompliant">—</div></div>
+    <div class="kpi-card"><div class="kpi-icon">📊</div><div class="kpi-label">Comp. Score</div><div class="kpi-value" id="kpiCompScore">—</div></div>
     <div class="kpi-card"><div class="kpi-icon">⚠️</div><div class="kpi-label">Alerts</div><div class="kpi-value" id="kpiAlerts">—</div></div>
     <div class="kpi-card"><div class="kpi-icon">🚗</div><div class="kpi-label">Fleet</div><div class="kpi-value" id="kpiFleet">—</div></div>
     <div class="kpi-card"><div class="kpi-icon">⭐</div><div class="kpi-label">Reviews</div><div class="kpi-value" id="kpiReviews">—<span class="unit">/5</span></div></div>
@@ -389,7 +390,7 @@ const PAGE_REGISTRY = [
     icon:   '🚗',
     domain: 'crest',
     stats:  [{ id: 'fleet-total', label: 'Total' }, { id: 'fleet-active', label: 'Active' }],
-    url:    '',
+    url:    'https://elitecrest.github.io/elite-hub/fleet.html?region=stlouis',
     badge:  'Live',
   },
   {
@@ -581,6 +582,9 @@ async function syncData() {
         if (el('comp-total'))     el('comp-total').textContent     = total;
         if (el('comp-alerts'))    el('comp-alerts').textContent    = alerts;
         if (el('smCompliance'))   el('smCompliance').textContent   = compPct;
+        // Show compliance score
+        const cscore = compData.complianceScore !== undefined ? compData.complianceScore : '—';
+        if (el('kpiCompScore'))   el('kpiCompScore').textContent   = cscore + (cscore !== '—' ? '/100' : '');
       }
     } catch(e) { console.error('Compliance fetch error:', e); }
     set('kpiCFB',         data.openCFB);
