@@ -399,9 +399,72 @@
     .header-logo { display: none; }
     .form-row, .form-row-3 { grid-template-columns: 1fr; }
   }
+
+  /* ══ DARK MODE ════════════════════════════════════════════ */
+  body.dark {
+    --gray-100:    #0F1624;
+    --gray-50:     #161E2E;
+    --gray-200:    #1E2A3D;
+    --gray-300:    #2A3A52;
+    --gray-400:    #64748B;
+    --gray-600:    #94A3B8;
+    --gray-800:    #CBD5E1;
+    --text:        #E2E8F2;
+    --white:       #1B2A4A;
+    --blue-pale:   #1B2A4A;
+    --page-pale:   #1B2A4A;
+    --green-pale:  #0F2E1A;
+    --yellow-pale: #2A2010;
+    --red-pale:    #2A1010;
+    background:    #0F1624;
+    color:         #E2E8F2;
+  }
+  body.dark .kpi-card,
+  body.dark .region-card,
+  body.dark .podium-card,
+  body.dark .filter-bar,
+  body.dark .table-card,
+  body.dark .vehicle-card,
+  body.dark .scoring-card,
+  body.dark .admin-card,
+  body.dark .modal { background: #161E2E; border-color: #1E2A3D; }
+  body.dark .comp-table th { background: #0F1624; color: var(--gray-400); }
+  body.dark .comp-table tr:hover td { background: #1B2A4A; }
+  body.dark input, body.dark select, body.dark textarea { background: #1B2A4A; color: #E2E8F2; border-color: #2A3A52; }
+  body.dark .form-section { filter: brightness(0.9); }
+
+  .dark-toggle {
+    background: none; border: 1.5px solid rgba(255,255,255,.2);
+    border-radius: 20px; color: rgba(255,255,255,.7);
+    font-size: 14px; cursor: pointer; padding: 4px 8px;
+    transition: all .2s; line-height: 1;
+  }
+  .dark-toggle:hover { border-color: rgba(255,255,255,.5); color: white; }
+
 </style>
 </head>
 <body>
+
+<script>
+/* ══ DARK MODE ════════════════════════════════════════════ */
+(function() {
+  const saved = localStorage.getItem('eliteDarkMode');
+  if (saved === 'dark') document.body.classList.add('dark');
+  // Update button icon after DOM loads
+  window.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('darkToggle');
+    if (btn) btn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+  });
+})();
+function toggleDarkMode() {
+  document.body.classList.toggle('dark');
+  const isDark = document.body.classList.contains('dark');
+  localStorage.setItem('eliteDarkMode', isDark ? 'dark' : 'light');
+  const btn = document.getElementById('darkToggle');
+  if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+}
+</script>
+
 
 <!-- HEADER -->
 <header class="elite-header">
@@ -432,6 +495,7 @@
       <div class="meta-label">Last Sync</div>
       <div class="meta-val" id="hdrSync">—</div>
     </div>
+    <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle light/dark mode">🌙</button>
   </div>
 </header>
 <div class="sub-bar"></div>
@@ -660,6 +724,17 @@
 
       <div class="form-section fs-wc">
         <div class="form-section-title">⚠️ WC Insurance</div>
+        <div class="form-row" style="margin-bottom:14px;">
+          <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;background:var(--green-pale);border:1px solid var(--green);border-radius:var(--radius);padding:10px 14px;">
+            <input type="checkbox" id="fSameAsGL" onchange="toggleSameAsGL(this)" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green);">
+            <label for="fSameAsGL" style="font-size:12px;font-weight:700;color:var(--green);cursor:pointer;text-transform:none;letter-spacing:0;">Same as GL — copy GL insurance info to WC</label>
+          </div>
+          <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;background:var(--blue-pale);border:1px solid var(--blue);border-radius:var(--radius);padding:10px 14px;">
+            <input type="checkbox" id="fExempt" onchange="toggleExempt(this)" style="width:16px;height:16px;cursor:pointer;accent-color:var(--blue);">
+            <label for="fExempt" style="font-size:12px;font-weight:700;color:var(--blue);cursor:pointer;text-transform:none;letter-spacing:0;">Exempt — WC not required, counts as compliant</label>
+          </div>
+        </div>
+        <div id="wcFields">
         <div class="form-row">
           <div class="form-group"><label>WC Policy #</label><input type="text" id="fWCPolicy" placeholder="Policy number"></div>
           <div class="form-group"><label>WC Expiry Date</label><input type="date" id="fWCExpiry"></div>
@@ -803,6 +878,8 @@ function normalizeContractor(r) {
     gl_ins_phone:    String(r['gl_ins_phone']    || ''),
     gl_ins_email:    String(r['gl_ins_email']    || ''),
     gl_coverage:     String(r['gl_coverage']     || ''),
+    same_as_gl:      String(r['same_as_gl']      || ''),
+    exempt:          String(r['exempt']           || ''),
     wc_policy:       String(r['wc_policy']       || ''),
     wc_expiry:       String(r['wc_expiry']       || ''),
     wc_ins_co:       String(r['wc_ins_co']       || ''),
@@ -838,9 +915,12 @@ function getExpiryStatus(dateStr) {
 
 function getOverallStatus(c) {
   if ((c.contract_status || '').toLowerCase() === 'inactive') return 'inactive';
-  const gl = getExpiryStatus(c.gl_expiry);
-  const wc = getExpiryStatus(c.wc_expiry);
-  const s  = [gl, wc];
+  const gl       = getExpiryStatus(c.gl_expiry);
+  const wc       = getExpiryStatus(c.wc_expiry);
+  const isExempt = (c.exempt || '').toUpperCase() === 'YES' || (c.exempt || '').toUpperCase() === 'TRUE';
+  // Exempt: missing WC is ok, but expired WC still counts
+  const wcEffective = isExempt && wc === 'missing' ? 'compliant' : wc;
+  const s = [gl, wcEffective];
   if (s.includes('expired'))    return 'expired';
   if (s.includes('expiring30')) return 'expiring30';
   if (s.includes('expiring60')) return 'expiring60';
@@ -1076,7 +1156,11 @@ function clearForm() {
    'fWCPolicy','fWCExpiry','fWCInsCo','fWCInsContact','fWCInsPhone','fWCInsEmail','fWCCoverage',
    'fTravelDist']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  ['fStatus','fTrade1','fTrade2','fTrade3','fTrade4','fTravel']
+  ['fStatus','fTrade1','fTrade2','fTrade3','fTrade4','fTravel'];
+  document.getElementById('fSameAsGL').checked = false;
+  document.getElementById('fExempt').checked = false;
+  document.getElementById('wcFields').style.opacity = '1';
+  document.getElementById('wcFields').style.pointerEvents = 'auto';
     .forEach(id => { const el = document.getElementById(id); if (el) el.selectedIndex = 0; });
 }
 
@@ -1114,6 +1198,16 @@ function populateForm(c) {
   set('fGLInsPhone',   c.gl_ins_phone);
   set('fGLInsEmail',   c.gl_ins_email);
   set('fGLCoverage',   c.gl_coverage);
+  // Set checkboxes
+  document.getElementById('fSameAsGL').checked = c.same_as_gl === 'Yes' || c.same_as_gl === 'TRUE';
+  document.getElementById('fExempt').checked   = c.exempt === 'Yes' || c.exempt === 'TRUE';
+  if (c.exempt === 'Yes' || c.exempt === 'TRUE') {
+    document.getElementById('wcFields').style.opacity = '0.4';
+    document.getElementById('wcFields').style.pointerEvents = 'none';
+  } else {
+    document.getElementById('wcFields').style.opacity = '1';
+    document.getElementById('wcFields').style.pointerEvents = 'auto';
+  }
   set('fWCPolicy',     c.wc_policy);
   set('fWCExpiry',     c.wc_expiry);
   set('fWCInsCo',      c.wc_ins_co);
@@ -1155,6 +1249,8 @@ function getFormValues() {
     gl_ins_phone:    g('fGLInsPhone'),
     gl_ins_email:    g('fGLInsEmail'),
     gl_coverage:     g('fGLCoverage'),
+    same_as_gl:      document.getElementById('fSameAsGL').checked ? 'Yes' : '',
+    exempt:          document.getElementById('fExempt').checked   ? 'Yes' : '',
     wc_policy:       g('fWCPolicy'),
     wc_expiry:       g('fWCExpiry'),
     wc_ins_co:       g('fWCInsCo'),
