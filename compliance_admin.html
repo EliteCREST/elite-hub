@@ -775,6 +775,7 @@ async function syncData() {
 function normalizeContractor(r) {
   return {
     id:              String(r['id']              || ''),
+    _row:            r['_row'] || null,
     pay_id:          String(r['pay_id']          || ''),
     name:            String(r['name']            || ''),
     contact:         String(r['contact']         || r['contact_name'] || ''),
@@ -1171,11 +1172,13 @@ async function saveContractor() {
 
   // Push to backend
   try {
+    const existing = editingId ? allContractors.find(c => c.id === editingId) : null;
     await fetch(BACKEND_URL, {
       method: 'POST',
       body: JSON.stringify({
         action:     editingId ? 'updateContractor' : 'addContractor',
         id:         editingId,
+        sheetRow:   existing ? existing._row : null,
         region:     vals.region,
         contractor: vals,
       })
