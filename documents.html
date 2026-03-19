@@ -557,15 +557,15 @@ const params     = new URLSearchParams(window.location.search);
 const regionKey  = params.get('region') || 'unknown';
 
 const REGION_MAP = {
-  cleveland:    { city: 'Cleveland',    abbr: 'CLE', hubUrl: '' },
-  phoenix:      { city: 'Phoenix',      abbr: 'PHX', hubUrl: '' },
-  albuquerque:  { city: 'Albuquerque',  abbr: 'ABQ', hubUrl: '' },
-  minneapolis:  { city: 'Minneapolis',  abbr: 'MSP', hubUrl: '' },
-  stlouis:      { city: 'St. Louis',    abbr: 'STL', hubUrl: '' },
-  chicago:      { city: 'Chicago',      abbr: 'CHI', hubUrl: '' },
-  indianapolis: { city: 'Indianapolis', abbr: 'IND', hubUrl: '' },
-  pittsburgh:   { city: 'Pittsburgh',   abbr: 'PIT', hubUrl: '' },
-  milwaukee:    { city: 'Milwaukee',    abbr: 'MKE', hubUrl: '' },
+  cleveland:    { city: 'Cleveland',    abbr: 'CLE', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_cleveland.html' },
+  phoenix:      { city: 'Phoenix',      abbr: 'PHX', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_phoenix.html' },
+  albuquerque:  { city: 'Albuquerque',  abbr: 'ABQ', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_albuquerque.html' },
+  minneapolis:  { city: 'Minneapolis',  abbr: 'MSP', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_minneapolis.html' },
+  stlouis:      { city: 'St. Louis',    abbr: 'STL', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_stlouis.html' },
+  chicago:      { city: 'Chicago',      abbr: 'CHI', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_chicago.html' },
+  indianapolis: { city: 'Indianapolis', abbr: 'IND', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_indianapolis.html' },
+  pittsburgh:   { city: 'Pittsburgh',   abbr: 'PIT', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_pittsburgh.html' },
+  milwaukee:    { city: 'Milwaukee',    abbr: 'MKE', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_milwaukee.html' },
 };
 
 const region = REGION_MAP[regionKey] || { city: regionKey, abbr: '—', hubUrl: '' };
