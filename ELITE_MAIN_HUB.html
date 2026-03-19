@@ -551,7 +551,7 @@ function buildLeaderboard() {
 
 function getSortedRegions() {
   const scored   = [...regionData].filter(r => r.score !== null)
-                    .sort((a, b) => sortDir * (b[sortField] - a[sortField]));
+                    .sort((a, b) => b[sortField] - a[sortField]); // highest score first
   const unscored = regionData.filter(r => r.score === null);
   return [...scored, ...unscored];
 }
@@ -718,25 +718,30 @@ async function refreshData() {
         if (compData && !compData.error) {
           const idx = regionData.findIndex(x => x.key === region.key);
           if (idx >= 0) {
-            const compScore = compData.complianceScore ?? 0;
-            // Store section scores
-            regionData[idx].complianceScore = compScore;
-            regionData[idx].compliance      = compData.compliancePct;
-            regionData[idx].fleetScore      = regionData[idx].fleetScore      ?? null;
-            regionData[idx].reviewsScore    = regionData[idx].reviewsScore    ?? null;
-            regionData[idx].licensingScore  = regionData[idx].licensingScore  ?? null;
+            // Only score if region has contractors assigned
+            if (!compData.total || compData.total === 0) {
+              regionData[idx].score      = null;
+              regionData[idx].compliance = null;
+            } else {
+              const compScore = compData.complianceScore ?? 0;
+              regionData[idx].complianceScore = compScore;
+              regionData[idx].compliance      = compData.compliancePct;
+              regionData[idx].fleetScore      = regionData[idx].fleetScore      ?? null;
+              regionData[idx].reviewsScore    = regionData[idx].reviewsScore    ?? null;
+              regionData[idx].licensingScore  = regionData[idx].licensingScore  ?? null;
 
-            // Weighted health score — use available sections, normalize weights
-            const available = [
-              { score: compScore,                              weight: weights.compliance,   has: true },
-              { score: regionData[idx].fleetScore    ?? null,  weight: weights.fleet,        has: regionData[idx].fleetScore    !== null },
-              { score: regionData[idx].reviewsScore  ?? null,  weight: weights.reviews,      has: regionData[idx].reviewsScore  !== null },
-              { score: regionData[idx].licensingScore ?? null, weight: weights.licensing,    has: regionData[idx].licensingScore !== null },
-            ];
-            const totalWeight = available.filter(s => s.has).reduce((a, s) => a + s.weight, 0);
-            const weighted    = available.filter(s => s.has).reduce((a, s) => a + (s.score * s.weight), 0);
-            const normalized  = totalWeight > 0 ? weighted / totalWeight : compScore;
-            regionData[idx].score = Math.round(300 + (normalized / 100) * 550);
+              // Weighted health score — only use sections with data
+              const available = [
+                { score: compScore,                               weight: weights.compliance, has: true },
+                { score: regionData[idx].fleetScore    ?? null,   weight: weights.fleet,      has: regionData[idx].fleetScore    !== null },
+                { score: regionData[idx].reviewsScore  ?? null,   weight: weights.reviews,    has: regionData[idx].reviewsScore  !== null },
+                { score: regionData[idx].licensingScore ?? null,  weight: weights.licensing,  has: regionData[idx].licensingScore !== null },
+              ];
+              const totalWeight = available.filter(s => s.has).reduce((a, s) => a + s.weight, 0);
+              const weighted    = available.filter(s => s.has).reduce((a, s) => a + (s.score * s.weight), 0);
+              const normalized  = totalWeight > 0 ? weighted / totalWeight : compScore;
+              regionData[idx].score = Math.round(300 + (normalized / 100) * 550);
+            }
           }
         }
       } catch(e) { /* silent per-region failure */ }
