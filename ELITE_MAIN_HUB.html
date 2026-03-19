@@ -300,6 +300,15 @@
     text-transform: uppercase; padding: 4px 10px; border-radius: 20px;
   }
   .sync-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--blue); animation: blink 2s infinite; }
+  .admin-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent); color: var(--navy);
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 6px; text-decoration: none;
+    transition: background .15s, transform .1s;
+    border: none; cursor: pointer; white-space: nowrap;
+  }
+  .admin-btn:hover { background: var(--accent-dark); transform: translateY(-1px); }
 
   @media (max-width: 900px) {
     main { padding: 20px 16px; }
@@ -349,6 +358,8 @@
       <div class="meta-label">User</div>
       <div class="meta-val" id="userDisplay">Admin</div>
     </div>
+    <div class="hdr-divider"></div>
+    <a class="admin-btn" href="https://elitecrest.github.io/elite-hub/compliance_admin.html">⚙ Admin</a>
   </div>
 </header>
 <div class="sub-bar"></div>
