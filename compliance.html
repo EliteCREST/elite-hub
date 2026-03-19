@@ -420,68 +420,92 @@
 
   /* ══ DARK MODE ════════════════════════════════════════════ */
   body.dark {
-    --gray-100:    #0F1624;
-    --gray-50:     #161E2E;
-    --gray-200:    #1E2A3D;
-    --gray-300:    #2A3A52;
-    --gray-400:    #94A3B8;
-    --gray-600:    #CBD5E1;
-    --gray-800:    #E2E8F2;
-    --text:        #F1F5F9;
-    --navy:        #E2E8F2;
-    --white:       #161E2E;
-    --blue-pale:   #1B2A4A;
-    --page-pale:   #1B2A4A;
-    --green-pale:  #0F2E1A;
-    --yellow-pale: #2A2010;
-    --red-pale:    #2A1010;
-    background:    #0F1624;
-    color:         #F1F5F9;
+    background: #111827;
+    color: #F1F5F9;
   }
-  body.dark .kpi-card,
-  body.dark .region-card,
-  body.dark .podium-card,
-  body.dark .filter-bar,
-  body.dark .table-card,
-  body.dark .vehicle-card,
-  body.dark .scoring-card,
-  body.dark .admin-card,
-  body.dark .modal { background: #161E2E !important; border-color: #1E2A3D !important; }
-  body.dark .pc-city,
-  body.dark .pc-state,
-  body.dark .kpi-value,
-  body.dark .kpi-label,
+  /* All cards and containers */
+  body.dark .kpi-card, body.dark .region-card, body.dark .podium-card,
+  body.dark .filter-bar, body.dark .table-card, body.dark .vehicle-card,
+  body.dark .scoring-card, body.dark .admin-card, body.dark .modal,
+  body.dark .file-browser, body.dark .folder-card, body.dark .sort-bar,
+  body.dark .score-card, body.dark .callout, body.dark .rule-row,
+  body.dark .search-box, body.dark .ac-bottom, body.dark .sc-body,
+  body.dark .save-bar, body.dark .formula-box + div,
+  body.dark main > div:not(.callout) {
+    background: #1F2937 !important;
+    border-color: #374151 !important;
+  }
+  /* All text should be light */
+  body.dark, body.dark * {
+    color: #F1F5F9;
+  }
+  /* Dim colors that are explicitly set */
+  body.dark .gray-text,
   body.dark .kpi-sub,
-  body.dark .rc-name,
-  body.dark .rc-meta,
-  body.dark .sh,
-  body.dark .section-heading,
-  body.dark .callout,
-  body.dark .vc-vehicle,
-  body.dark .vc-driver,
-  body.dark .ac-name,
+  body.dark .kpi-label,
+  body.dark .ps-lbl,
+  body.dark .meta-label,
+  body.dark .di-label,
+  body.dark .rule-desc,
   body.dark .ac-desc,
-  body.dark .di-val,
-  body.dark .di-label { color: #F1F5F9 !important; }
-  body.dark .pc-score-num { color: inherit !important; }
-  body.dark .ps-val,
-  body.dark .ps-lbl { color: #CBD5E1 !important; }
-  body.dark .sh { border-bottom-color: var(--blue) !important; color: #F1F5F9 !important; }
-  body.dark .callout { background: #1B2A4A !important; border-color: var(--blue) !important; color: #F1F5F9 !important; }
-  body.dark .comp-table th { background: #0F1624; color: #94A3B8; }
-  body.dark .comp-table td { color: #F1F5F9; }
-  body.dark .comp-table tr:hover td { background: #1B2A4A; }
-  body.dark input, body.dark select, body.dark textarea { background: #1B2A4A; color: #F1F5F9; border-color: #2A3A52; }
-  body.dark .form-section { background: #1B2A4A !important; }
-  body.dark .form-group label { color: #CBD5E1 !important; }
-  body.dark .rule-label { color: #F1F5F9 !important; }
-  body.dark .rule-desc  { color: #94A3B8 !important; }
-  body.dark .back-nav a { color: rgba(255,255,255,.6) !important; }
-  body.dark .sort-btn,
-  body.dark .filter-select,
-  body.dark .filter-pill { background: #161E2E !important; color: #CBD5E1 !important; border-color: #2A3A52 !important; }
-  body.dark .sort-btn.active { background: var(--blue) !important; color: white !important; }
-  body.dark .badge-blue { background: #1B2A4A !important; color: #60A5FA !important; }
+  body.dark .vc-driver,
+  body.dark .pc-state,
+  body.dark .breadcrumb,
+  body.dark .sort-label { color: #9CA3AF !important; }
+  /* Keep colored badges readable */
+  body.dark .badge-green  { background: #064E3B !important; color: #6EE7B7 !important; }
+  body.dark .badge-red    { background: #7F1D1D !important; color: #FCA5A5 !important; }
+  body.dark .badge-yellow { background: #78350F !important; color: #FCD34D !important; }
+  body.dark .badge-blue   { background: #1E3A5F !important; color: #93C5FD !important; }
+  body.dark .tag-geotab-ok     { background: #064E3B !important; color: #6EE7B7 !important; }
+  body.dark .tag-geotab-bad    { background: #7F1D1D !important; color: #FCA5A5 !important; }
+  body.dark .tag-expiry-exp    { background: #7F1D1D !important; color: #FCA5A5 !important; }
+  body.dark .tag-expiry-warn   { background: #78350F !important; color: #FCD34D !important; }
+  body.dark .tag-expiry-ok     { background: #064E3B !important; color: #6EE7B7 !important; }
+  body.dark .tag-brand, body.dark .tag-plate { background: #1E3A5F !important; color: #93C5FD !important; }
+  body.dark .tag-location, body.dark .tag-gray { background: #374151 !important; color: #D1D5DB !important; }
+  /* Score colors — keep them */
+  body.dark .score-green  { color: #34D399 !important; }
+  body.dark .score-yellow { color: #FBBF24 !important; }
+  body.dark .score-red    { color: #F87171 !important; }
+  /* Tables */
+  body.dark table th { background: #111827 !important; color: #9CA3AF !important; border-color: #374151 !important; }
+  body.dark table td { border-color: #374151 !important; }
+  body.dark table tr:hover td { background: #1E3A5F !important; }
+  /* Inputs */
+  body.dark input, body.dark select, body.dark textarea {
+    background: #111827 !important; color: #F1F5F9 !important;
+    border-color: #374151 !important;
+  }
+  /* Filter pills and buttons */
+  body.dark .filter-pill, body.dark .sort-btn, body.dark .filter-select {
+    background: #1F2937 !important; color: #D1D5DB !important;
+    border-color: #374151 !important;
+  }
+  body.dark .filter-pill.active, body.dark .sort-btn.active {
+    background: #1D4ED8 !important; color: white !important;
+    border-color: #1D4ED8 !important;
+  }
+  /* Callout boxes */
+  body.dark .callout { background: #1E3A5F !important; border-color: #3B82F6 !important; color: #F1F5F9 !important; }
+  /* Form sections */
+  body.dark .form-section { background: #1F2937 !important; }
+  body.dark .form-group label { color: #9CA3AF !important; }
+  /* KPI cards specifically */
+  body.dark .kpi-card { background: #1F2937 !important; }
+  body.dark .kpi-value { color: #F1F5F9 !important; }
+  /* Compliance table */
+  body.dark .comp-table, body.dark .comp-table * { color: #F1F5F9 !important; }
+  body.dark .comp-table th { color: #9CA3AF !important; }
+  /* Section headings */
+  body.dark .sh { color: #F1F5F9 !important; border-color: #3B82F6 !important; }
+  /* Nav back */
+  body.dark .back-nav { background: #0F172A !important; }
+  body.dark .back-nav a { color: #9CA3AF !important; }
+  body.dark .back-nav a:hover { color: #F1F5F9 !important; }
+  /* Dark mode still keeps header dark (already dark) */
+  body.dark .elite-header { background: #0F172A !important; }
+  body.dark .back-nav { background: #0F172A !important; border-color: #1F2937 !important; }
 
   .dark-toggle {
     background: none; border: 1.5px solid rgba(255,255,255,.2);
@@ -1379,6 +1403,21 @@ setInterval(syncData, 120000); // auto-refresh every 2 min
 }
 
 initPage();
+
+/* ══ CACHE HELPER ════════════════════════════════════════════ */
+function getCached(key) {
+  try {
+    const item = localStorage.getItem(key);
+    if (!item) return null;
+    const { data, ts } = JSON.parse(item);
+    if (Date.now() - ts < 300000) return data;
+  } catch(e) {}
+  return null;
+}
+function setCache(key, data) {
+  try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch(e) {}
+}
+
 </script>
 </body>
 </html>
