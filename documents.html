@@ -935,7 +935,16 @@ function openViewer(index) {
   } else if (['png','jpg','jpeg','gif','webp'].includes(ext)) {
     body.innerHTML = `<img src="${file.viewUrl}" alt="${file.name}">`;
   } else if (ext === 'pdf') {
-    body.innerHTML = `<iframe src="${file.viewUrl}" title="${file.name}"></iframe>`;
+    // Use embedUrl if backend provides it, otherwise extract file ID from viewUrl
+    const embedSrc = file.embedUrl || (() => {
+      const idMatch = (file.viewUrl || '').match(/[?&]id=([^&]+)/);
+      return idMatch ? `https://drive.google.com/file/d/${idMatch[1]}/preview` : null;
+    })();
+    if (embedSrc) {
+      body.innerHTML = `<iframe src="${embedSrc}" title="${file.name}" allow="autoplay"></iframe>`;
+    } else {
+      body.innerHTML = `<div class="viewer-no-preview"><div class="np-icon">📕</div><div>Preview unavailable — <a href="${file.viewUrl}" target="_blank" style="color:var(--blue);">open in Drive</a></div></div>`;
+    }
   } else {
     // For Word/Excel — use Google Docs viewer
     const encoded = encodeURIComponent(file.viewUrl);
