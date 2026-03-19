@@ -583,6 +583,12 @@
           </div>
         </div>
         <div class="form-row">
+          <div class="form-group"><label>Blaze Link</label><input type="text" id="fLink" placeholder="https://blaze-crm.com/..." oninput="document.getElementById('fLinkOpen').href=this.value||'#';document.getElementById('fLinkOpen').style.opacity=this.value?'1':'0.4'"></div>
+          <div class="form-group" style="display:flex;align-items:flex-end;">
+            <a id="fLinkOpen" href="#" target="_blank" class="btn btn-outline btn-sm" style="text-decoration:none;margin-top:20px;">↗ Open in Blaze</a>
+          </div>
+        </div>
+        <div class="form-row">
           <div class="form-group"><label>Full Name (Primary)</label><input type="text" id="fContact" placeholder="John Smith"></div>
           <div class="form-group"><label>Full Name 2</label><input type="text" id="fContact2" placeholder="Jane Smith"></div>
         </div>
@@ -776,6 +782,7 @@ function normalizeContractor(r) {
   return {
     id:              String(r['id']              || ''),
     _row:            r['_row'] || null,
+    link:            String(r['link'] || ''),
     pay_id:          String(r['pay_id']          || ''),
     name:            String(r['name']            || ''),
     contact:         String(r['contact']         || r['contact_name'] || ''),
@@ -1015,6 +1022,7 @@ function renderTable() {
         <td>
           <div class="row-actions">
             <button class="row-btn edit-btn" onclick="openEditModal('${c.id}')">✏ Edit</button>
+            ${c.link ? `<a class="row-btn" href="${c.link}" target="_blank" style="text-decoration:none;">↗ Blaze</a>` : ''}
             ${isInactive
               ? `<button class="row-btn restore-btn" onclick="confirmRestore('${c.id}')">↩ Restore</button>`
               : `<button class="row-btn delete-btn" onclick="confirmDeactivate('${c.id}')">✕ Deactivate</button>`
@@ -1061,7 +1069,7 @@ function closeEditModal() {
 }
 
 function clearForm() {
-  ['fPayId','fFrom','fCompany','fContact','fContact2','fPhone','fEmail','fEmail2','fSupervisor',
+  ['fPayId','fFrom','fCompany','fLink','fContact','fContact2','fPhone','fEmail','fEmail2','fSupervisor',
    'fAddress','fCity','fState','fZip','fRegion',
    'fGLPolicy','fGLExpiry','fGLInsCo','fGLInsContact','fGLInsPhone','fGLInsEmail','fGLCoverage',
    'fWCPolicy','fWCExpiry','fWCInsCo','fWCInsContact','fWCInsPhone','fWCInsEmail','fWCCoverage',
@@ -1083,6 +1091,10 @@ function populateForm(c) {
   set('fSupervisor', c.supervisor);
   set('fPayId',      c.pay_id);
   set('fFrom',       c.from);
+  set('fLink',       c.link);
+  // Update the open link button
+  const linkBtn = document.getElementById('fLinkOpen');
+  if (linkBtn) { linkBtn.href = c.link || '#'; linkBtn.style.opacity = c.link ? '1' : '0.4'; }
   set('fAddress',    c.address);
   set('fCity',       c.city);
   set('fState',      c.state);
@@ -1123,6 +1135,7 @@ function getFormValues() {
     supervisor:      g('fSupervisor'),
     pay_id:          g('fPayId'),
     from:            g('fFrom'),
+    link:            g('fLink'),
     address:         g('fAddress'),
     city:            g('fCity'),
     state:           g('fState'),
