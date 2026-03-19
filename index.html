@@ -674,6 +674,23 @@ function openRegion(key) {
    BACKEND SYNC
 ══════════════════════════════════════════════════════ */
 async function refreshData() {
+  // Show cached data instantly while fetching fresh
+  try {
+    const cached = localStorage.getItem('eliteHubScores');
+    if (cached) {
+      const { data: cachedRegions, ts } = JSON.parse(cached);
+      if (Date.now() - ts < 300000) { // 5 min cache
+        cachedRegions.forEach(r => {
+          const idx = regionData.findIndex(x => x.key === r.key);
+          if (idx >= 0) regionData[idx] = { ...regionData[idx], ...r };
+        });
+        buildLeaderboard();
+        buildRegionCards();
+        document.getElementById('syncLabel').textContent = 'Cached';
+      }
+    }
+  } catch(e) {}
+
   document.getElementById('syncLabel').textContent = 'Syncing…';
   document.getElementById('lastSync').textContent  = '…';
 
@@ -696,57 +713,53 @@ async function refreshData() {
       });
     }
 
-    // Load score weights from backend
+    // Load weights + all compliance scores in parallel — single round trip each
     let weights = { compliance: 0.40, fleet: 0.25, reviews: 0.25, licensing: 0.10 };
     try {
-      const wRes  = await fetch(`${BACKEND_URL}?action=getScoringRules`);
-      const wData = await wRes.json();
+      const [wRes, scoresRes] = await Promise.all([
+        fetch(`${BACKEND_URL}?action=getScoringRules`),
+        fetch(`${BACKEND_URL}?action=allComplianceScores`)
+      ]);
+      const [wData, scoresData] = await Promise.all([wRes.json(), scoresRes.json()]);
+
+      // Apply weights
       if (wData.rules) {
         weights.compliance = (wData.rules['wCompliance'] ?? 40) / 100;
         weights.fleet      = (wData.rules['wFleet']      ?? 25) / 100;
         weights.reviews    = (wData.rules['wReviews']    ?? 25) / 100;
         weights.licensing  = (wData.rules['wLicensing']  ?? 10) / 100;
       }
-    } catch(e) {}
 
-    // Pull live scores for each region
-    for (const region of REGIONS) {
-      try {
-        await new Promise(r => setTimeout(r, 300));
-        const compRes  = await fetch(`${BACKEND_URL}?action=complianceData&region=${region.key}`);
-        const compData = await compRes.json();
-        if (compData && !compData.error) {
+      // Apply scores to regionData
+      if (scoresData.scores) {
+        REGIONS.forEach(region => {
+          const compData = scoresData.scores[region.key];
           const idx = regionData.findIndex(x => x.key === region.key);
-          if (idx >= 0) {
-            // Only score if region has contractors assigned
-            if (!compData.total || compData.total === 0) {
-              regionData[idx].score      = null;
-              regionData[idx].compliance = null;
-            } else {
-              const compScore = compData.complianceScore ?? 0;
-              regionData[idx].complianceScore = compScore;
-              regionData[idx].compliance      = compData.compliancePct;
-              regionData[idx].fleetScore      = regionData[idx].fleetScore      ?? null;
-              regionData[idx].reviewsScore    = regionData[idx].reviewsScore    ?? null;
-              regionData[idx].licensingScore  = regionData[idx].licensingScore  ?? null;
-
-              // Weighted health score — only use sections with data
-              const available = [
-                { score: compScore,                               weight: weights.compliance, has: true },
-                { score: regionData[idx].fleetScore    ?? null,   weight: weights.fleet,      has: regionData[idx].fleetScore    !== null },
-                { score: regionData[idx].reviewsScore  ?? null,   weight: weights.reviews,    has: regionData[idx].reviewsScore  !== null },
-                { score: regionData[idx].licensingScore ?? null,  weight: weights.licensing,  has: regionData[idx].licensingScore !== null },
-              ];
-              const totalWeight = available.filter(s => s.has).reduce((a, s) => a + s.weight, 0);
-              const weighted    = available.filter(s => s.has).reduce((a, s) => a + (s.score * s.weight), 0);
-              const normalized  = totalWeight > 0 ? weighted / totalWeight : compScore;
-              regionData[idx].score = Math.round(300 + (normalized / 100) * 550);
-            }
+          if (idx < 0) return;
+          if (!compData || compData.total === 0) {
+            regionData[idx].score      = null;
+            regionData[idx].compliance = null;
+          } else {
+            const compScore = compData.complianceScore ?? 0;
+            regionData[idx].complianceScore = compScore;
+            regionData[idx].compliance      = compData.compliancePct;
+            const available = [
+              { score: compScore,                               weight: weights.compliance, has: true },
+              { score: regionData[idx].fleetScore    ?? null,  weight: weights.fleet,      has: regionData[idx].fleetScore    !== null },
+              { score: regionData[idx].reviewsScore  ?? null,  weight: weights.reviews,    has: regionData[idx].reviewsScore  !== null },
+              { score: regionData[idx].licensingScore ?? null, weight: weights.licensing,  has: regionData[idx].licensingScore !== null },
+            ];
+            const totalWeight = available.filter(s => s.has).reduce((sum, s) => sum + s.weight, 0);
+            const weighted    = available.filter(s => s.has).reduce((sum, s) => sum + (s.score * s.weight), 0);
+            const normalized  = totalWeight > 0 ? weighted / totalWeight : compScore;
+            regionData[idx].score = Math.round(300 + (normalized / 100) * 550);
           }
-        }
-      } catch(e) { /* silent per-region failure */ }
-    }
+        });
+      }
+    } catch(e) { console.error('Score load error:', e); }
 
+    // Cache the scores for instant load next time
+    try { localStorage.setItem('eliteHubScores', JSON.stringify({ data: regionData, ts: Date.now() })); } catch(e) {}
     document.getElementById('syncLabel').textContent  = 'Live';
     document.getElementById('lastSync').textContent   = new Date().toLocaleTimeString();
     document.getElementById('lbTimestamp').textContent = 'Updated ' + new Date().toLocaleTimeString();
