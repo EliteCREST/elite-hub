@@ -547,22 +547,42 @@
       <div class="detail-section">
         <div class="detail-section-title">Contact Information</div>
         <div class="detail-grid">
+          <div class="detail-item"><div class="di-label">Full Name</div><div class="di-val" id="dContact">—</div></div>
+          <div class="detail-item"><div class="di-label">Full Name 2</div><div class="di-val" id="dContact2">—</div></div>
           <div class="detail-item"><div class="di-label">Phone</div><div class="di-val" id="dPhone">—</div></div>
           <div class="detail-item"><div class="di-label">Email</div><div class="di-val" id="dEmail">—</div></div>
-          <div class="detail-item"><div class="di-label">Contact Name</div><div class="di-val" id="dContact">—</div></div>
-          <div class="detail-item"><div class="di-label">Market / Brand</div><div class="di-val" id="dMarket">—</div></div>
+          <div class="detail-item"><div class="di-label">Email 2</div><div class="di-val" id="dEmail2">—</div></div>
+          <div class="detail-item"><div class="di-label">Supervisor</div><div class="di-val" id="dSupervisor">—</div></div>
+          <div class="detail-item"><div class="di-label">Region</div><div class="di-val" id="dRegion">—</div></div>
+          <div class="detail-item"><div class="di-label">Address</div><div class="di-val" id="dAddress">—</div></div>
         </div>
       </div>
-      <!-- Insurance -->
+      <!-- GL Insurance -->
       <div class="detail-section">
-        <div class="detail-section-title">Insurance</div>
+        <div class="detail-section-title">GL Insurance</div>
         <div class="detail-grid">
+          <div class="detail-item"><div class="di-label">GL Status</div><div class="di-val" id="dGLStatus">—</div></div>
           <div class="detail-item"><div class="di-label">GL Policy #</div><div class="di-val" id="dGLPolicy">—</div></div>
           <div class="detail-item"><div class="di-label">GL Expiry</div><div class="di-val" id="dGLExpiry">—</div></div>
+          <div class="detail-item"><div class="di-label">GL Insurance Co</div><div class="di-val" id="dGLInsCo">—</div></div>
+          <div class="detail-item"><div class="di-label">GL Ins Contact</div><div class="di-val" id="dGLInsContact">—</div></div>
+          <div class="detail-item"><div class="di-label">GL Ins Phone</div><div class="di-val" id="dGLInsPhone">—</div></div>
+          <div class="detail-item"><div class="di-label">GL Ins Email</div><div class="di-val" id="dGLInsEmail">—</div></div>
+          <div class="detail-item"><div class="di-label">Coverage For GL</div><div class="di-val" id="dGLCoverage">—</div></div>
+        </div>
+      </div>
+      <!-- WC Insurance -->
+      <div class="detail-section">
+        <div class="detail-section-title">WC Insurance</div>
+        <div class="detail-grid">
+          <div class="detail-item"><div class="di-label">WC Status</div><div class="di-val" id="dWCStatus">—</div></div>
           <div class="detail-item"><div class="di-label">WC Policy #</div><div class="di-val" id="dWCPolicy">—</div></div>
           <div class="detail-item"><div class="di-label">WC Expiry</div><div class="di-val" id="dWCExpiry">—</div></div>
-          <div class="detail-item"><div class="di-label">GL Status</div><div class="di-val" id="dGLStatus">—</div></div>
-          <div class="detail-item"><div class="di-label">WC Status</div><div class="di-val" id="dWCStatus">—</div></div>
+          <div class="detail-item"><div class="di-label">WC Insurance Co</div><div class="di-val" id="dWCInsCo">—</div></div>
+          <div class="detail-item"><div class="di-label">WC Ins Contact</div><div class="di-val" id="dWCInsContact">—</div></div>
+          <div class="detail-item"><div class="di-label">WC Ins Phone</div><div class="di-val" id="dWCInsPhone">—</div></div>
+          <div class="detail-item"><div class="di-label">WC Ins Email</div><div class="di-val" id="dWCInsEmail">—</div></div>
+          <div class="detail-item"><div class="di-label">Coverage For WC</div><div class="di-val" id="dWCCoverage">—</div></div>
         </div>
       </div>
       <!-- Trades & Contract -->
@@ -572,10 +592,10 @@
           <div class="detail-item"><div class="di-label">Trade 1</div><div class="di-val" id="dTrade1">—</div></div>
           <div class="detail-item"><div class="di-label">Trade 2</div><div class="di-val" id="dTrade2">—</div></div>
           <div class="detail-item"><div class="di-label">Trade 3</div><div class="di-val" id="dTrade3">—</div></div>
+          <div class="detail-item"><div class="di-label">Trade 4</div><div class="di-val" id="dTrade4">—</div></div>
           <div class="detail-item"><div class="di-label">Contract Status</div><div class="di-val" id="dContractStatus">—</div></div>
           <div class="detail-item"><div class="di-label">Will Travel</div><div class="di-val" id="dTravel">—</div></div>
           <div class="detail-item"><div class="di-label">Travel Distance</div><div class="di-val" id="dTravelDist">—</div></div>
-          <div class="detail-item"><div class="di-label">Notes</div><div class="di-val" id="dNotes">—</div></div>
         </div>
       </div>
       <!-- Document Upload -->
@@ -746,29 +766,44 @@ async function syncData() {
 }
 
 function normalizeContractor(r) {
-  // Maps Google Sheet column names to our internal keys
-  // Sheet columns: id, region, name, contact_name, phone, email, market,
-  //   trade1, trade2, trade3, gl_policy, gl_expiry, wc_policy, wc_expiry,
-  //   license, contract_status, will_travel, travel_distance, notes
   return {
-    id:              r['id']               || Math.random().toString(36).slice(2),
-    name:            r['name']             || r['company_name'] || '—',
-    contact:         r['contact_name']     || '',
-    phone:           r['phone']            || '',
-    email:           r['email']            || '',
-    market:          r['market']           || r['brand']        || '',
-    trade:           r['trade1']           || r['trade']        || '',
-    trade2:          r['trade2']           || '',
-    trade3:          r['trade3']           || '',
-    gl_policy:       r['gl_policy']        || '',
-    gl_expiry:       r['gl_expiry']        || '',
-    wc_policy:       r['wc_policy']        || '',
-    wc_expiry:       r['wc_expiry']        || '',
-    contract_status: r['contract_status']  || '',
-    will_travel:     r['will_travel']      || '',
-    travel_distance: r['travel_distance']  || '',
-    notes:           r['notes']            || '',
-    region:          r['region']           || regionKey,
+    id:              r['name']            || Math.random().toString(36).slice(2),
+    name:            r['name']            || '—',
+    pay_id:          r['pay_id']          || '',
+    from:            r['from']            || '',
+    contract_status: r['contract_status'] || '',
+    link:            r['link']            || '',
+    region:          r['region']          || regionKey,
+    supervisor:      r['supervisor']      || '',
+    address:         r['address']         || '',
+    city:            r['city']            || '',
+    state:           r['state']           || '',
+    zip:             r['zip']             || '',
+    phone:           r['phone']           || '',
+    contact:         r['contact']         || '',
+    contact2:        r['contact2']        || '',
+    email:           r['email']           || '',
+    email2:          r['email2']          || '',
+    gl_policy:       r['gl_policy']       || '',
+    gl_expiry:       r['gl_expiry']       || '',
+    gl_ins_co:       r['gl_ins_co']       || '',
+    gl_ins_contact:  r['gl_ins_contact']  || '',
+    gl_ins_phone:    r['gl_ins_phone']    || '',
+    gl_ins_email:    r['gl_ins_email']    || '',
+    gl_coverage:     r['gl_coverage']     || '',
+    wc_policy:       r['wc_policy']       || '',
+    wc_expiry:       r['wc_expiry']       || '',
+    wc_ins_co:       r['wc_ins_co']       || '',
+    wc_ins_contact:  r['wc_ins_contact']  || '',
+    wc_ins_phone:    r['wc_ins_phone']    || '',
+    wc_ins_email:    r['wc_ins_email']    || '',
+    wc_coverage:     r['wc_coverage']     || '',
+    will_travel:     r['will_travel']     || '',
+    travel_distance: r['travel_distance'] || '',
+    trade:           r['trade1']          || '',
+    trade2:          r['trade2']          || '',
+    trade3:          r['trade3']          || '',
+    trade4:          r['trade4']          || '',
   };
 }
 
@@ -921,7 +956,7 @@ function openDetail(c) {
   currentContractor = c;
 
   document.getElementById('detailName').textContent = c.name;
-  document.getElementById('detailSub').textContent  = `${c.trade || '—'} · ${c.market || '—'} · ${region.city}`;
+  document.getElementById('detailSub').textContent  = `${c.trade || '—'} · ${c.region || '—'} · ${region.city}`;
 
   const set = (id, val) => {
     const el = document.getElementById(id);
@@ -932,19 +967,33 @@ function openDetail(c) {
 
   set('dPhone',          c.phone);
   set('dEmail',          c.email);
+  set('dEmail2',         c.email2);
   set('dContact',        c.contact);
-  set('dMarket',         c.market);
+  set('dContact2',       c.contact2);
+  set('dSupervisor',     c.supervisor);
+  set('dRegion',         c.region);
+  set('dAddress',        [c.address, c.city, c.state, c.zip].filter(Boolean).join(', '));
   set('dGLPolicy',       c.gl_policy);
   set('dGLExpiry',       c.gl_expiry ? formatDate(c.gl_expiry) : '');
+  set('dGLInsCo',        c.gl_ins_co);
+  set('dGLInsContact',   c.gl_ins_contact);
+  set('dGLInsPhone',     c.gl_ins_phone);
+  set('dGLInsEmail',     c.gl_ins_email);
+  set('dGLCoverage',     c.gl_coverage);
   set('dWCPolicy',       c.wc_policy);
   set('dWCExpiry',       c.wc_expiry ? formatDate(c.wc_expiry) : '');
+  set('dWCInsCo',        c.wc_ins_co);
+  set('dWCInsContact',   c.wc_ins_contact);
+  set('dWCInsPhone',     c.wc_ins_phone);
+  set('dWCInsEmail',     c.wc_ins_email);
+  set('dWCCoverage',     c.wc_coverage);
   set('dTrade1',         c.trade);
   set('dTrade2',         c.trade2);
   set('dTrade3',         c.trade3);
+  set('dTrade4',         c.trade4);
   set('dContractStatus', c.contract_status);
   set('dTravel',         c.will_travel);
   set('dTravelDist',     c.travel_distance ? c.travel_distance + ' miles' : '');
-  set('dNotes',          c.notes);
 
   // GL/WC status display
   document.getElementById('dGLStatus').innerHTML = statusBadge(getExpiryStatus(c.gl_expiry));
