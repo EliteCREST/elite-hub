@@ -569,6 +569,7 @@
       <div class="form-section fs-contact">
         <div class="form-section-title">🏢 Company & Contact</div>
         <div class="form-row">
+          <div class="form-group"><label>HUB #</label><input type="text" id="fHubId" placeholder="e.g. 1001" readonly style="background:var(--gray-100);color:var(--gray-600);"></div>
           <div class="form-group"><label>PAY ID</label><input type="text" id="fPayId" placeholder="e.g. 7107"></div>
           <div class="form-group"><label>From</label><input type="text" id="fFrom" placeholder="Blaze / Paylocity"></div>
         </div>
@@ -782,6 +783,7 @@ function normalizeContractor(r) {
   return {
     id:              String(r['id']              || ''),
     _row:            r['_row'] || null,
+    hub_id:          String(r['hub_id'] || ''),
     link:            String(r['link'] || ''),
     pay_id:          String(r['pay_id']          || ''),
     name:            String(r['name']            || ''),
@@ -1069,7 +1071,7 @@ function closeEditModal() {
 }
 
 function clearForm() {
-  ['fPayId','fFrom','fCompany','fLink','fContact','fContact2','fPhone','fEmail','fEmail2','fSupervisor',
+  ['fHubId','fPayId','fFrom','fCompany','fLink','fContact','fContact2','fPhone','fEmail','fEmail2','fSupervisor',
    'fAddress','fCity','fState','fZip','fRegion',
    'fGLPolicy','fGLExpiry','fGLInsCo','fGLInsContact','fGLInsPhone','fGLInsEmail','fGLCoverage',
    'fWCPolicy','fWCExpiry','fWCInsCo','fWCInsContact','fWCInsPhone','fWCInsEmail','fWCCoverage',
@@ -1089,6 +1091,7 @@ function populateForm(c) {
   set('fEmail',      c.email);
   set('fEmail2',     c.email2);
   set('fSupervisor', c.supervisor);
+  set('fHubId',      c.hub_id);
   set('fPayId',      c.pay_id);
   set('fFrom',       c.from);
   set('fLink',       c.link);
@@ -1133,6 +1136,7 @@ function getFormValues() {
     email:           g('fEmail'),
     email2:          g('fEmail2'),
     supervisor:      g('fSupervisor'),
+    hub_id:          g('fHubId'),
     pay_id:          g('fPayId'),
     from:            g('fFrom'),
     link:            g('fLink'),
