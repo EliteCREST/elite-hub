@@ -459,6 +459,7 @@
       <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Contractor</button>
       <button class="btn btn-outline btn-sm" onclick="syncData()">↻ Sync</button>
       <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export</button>
+      <button class="btn btn-outline btn-sm" onclick="openScoringModal()">⚙ Scoring Rules</button>
     </div>
   </div>
   <div class="kpi-grid">
@@ -1302,6 +1303,142 @@ function showToast(msg, type = 'info') {
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 4000);
 }
+<!-- ══ SCORING RULES MODAL ══════════════════════════════════ -->
+<div class="modal-overlay" id="scoringModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <div>
+        <div class="mh-title">⚙ Scoring Rules</div>
+        <div class="mh-sub">Global compliance score deductions — applies to all regions</div>
+      </div>
+      <button class="close-btn" onclick="closeScoringModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12.5px;color:var(--gray-600);margin-bottom:20px;line-height:1.6;">
+        Each region starts at <strong>100</strong>. Points are deducted per contractor based on their insurance status. Inactive contractors are excluded from scoring.
+      </p>
+      <div class="form-section fs-gl">
+        <div class="form-section-title">🛡 GL Insurance Deductions</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Expired GL (points per contractor)</label>
+            <input type="number" id="sExpiredGL" step="0.5" min="0" max="100" placeholder="2.5">
+          </div>
+          <div class="form-group">
+            <label>Missing GL (points per contractor)</label>
+            <input type="number" id="sMissingGL" step="0.5" min="0" max="100" placeholder="5">
+          </div>
+        </div>
+      </div>
+      <div class="form-section fs-wc">
+        <div class="form-section-title">⚠️ WC Insurance Deductions</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Expired WC (points per contractor)</label>
+            <input type="number" id="sExpiredWC" step="0.5" min="0" max="100" placeholder="2.5">
+          </div>
+          <div class="form-group">
+            <label>Missing WC (points per contractor)</label>
+            <input type="number" id="sMissingWC" step="0.5" min="0" max="100" placeholder="5">
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--blue-pale);border-radius:var(--radius);padding:12px 16px;font-size:12px;color:var(--navy);">
+        <strong>Preview:</strong> A region with <span id="previewExpGL">0</span> expired GL, <span id="previewExpWC">0</span> expired WC, <span id="previewMissGL">0</span> missing GL, <span id="previewMissWC">0</span> missing WC would score <strong id="previewScore">100</strong>/100
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div style="font-size:11px;color:var(--gray-400);">Changes apply on next sync</div>
+      <div class="modal-footer-right">
+        <button class="btn btn-outline" onclick="closeScoringModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveScoringRules()">Save Rules</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══ SCORING RULES ═══════════════════════════════════════════ */
+// Default rules — overridden by saved values from backend
+let scoringRules = {
+  expiredGL: 2.5,
+  expiredWC: 2.5,
+  missingGL: 5.0,
+  missingWC: 5.0,
+};
+
+async function loadScoringRules() {
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=getScoringRules`);
+    const data = await res.json();
+    if (data.rules) {
+      scoringRules = { ...scoringRules, ...data.rules };
+    }
+  } catch(e) { /* use defaults */ }
+}
+
+function openScoringModal() {
+  document.getElementById('sExpiredGL').value = scoringRules.expiredGL;
+  document.getElementById('sExpiredWC').value = scoringRules.expiredWC;
+  document.getElementById('sMissingGL').value = scoringRules.missingGL;
+  document.getElementById('sMissingWC').value = scoringRules.missingWC;
+  updateScoringPreview();
+  document.getElementById('scoringModal').classList.add('open');
+}
+
+function closeScoringModal() {
+  document.getElementById('scoringModal').classList.remove('open');
+}
+
+function updateScoringPreview() {
+  const expGL  = parseFloat(document.getElementById('sExpiredGL').value) || 0;
+  const expWC  = parseFloat(document.getElementById('sExpiredWC').value) || 0;
+  const missGL = parseFloat(document.getElementById('sMissingGL').value) || 0;
+  const missWC = parseFloat(document.getElementById('sMissingWC').value) || 0;
+  // Use current region's stats for preview
+  const active = allContractors.filter(c => (c.contract_status||'').toLowerCase() === 'active');
+  let eGL=0, eWC=0, mGL=0, mWC=0;
+  active.forEach(c => {
+    const glS = getExpiryStatus(c.gl_expiry);
+    const wcS = getExpiryStatus(c.wc_expiry);
+    if (glS === 'expired')   eGL++;
+    if (wcS === 'expired')   eWC++;
+    if (glS === 'missing')   mGL++;
+    if (wcS === 'missing')   mWC++;
+  });
+  document.getElementById('previewExpGL').textContent  = eGL;
+  document.getElementById('previewExpWC').textContent  = eWC;
+  document.getElementById('previewMissGL').textContent = mGL;
+  document.getElementById('previewMissWC').textContent = mWC;
+  const score = Math.max(0, Math.round((100 - eGL*expGL - eWC*expWC - mGL*missGL - mWC*missWC) * 10) / 10);
+  document.getElementById('previewScore').textContent  = score;
+}
+
+// Update preview live as values change
+['sExpiredGL','sExpiredWC','sMissingGL','sMissingWC'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', updateScoringPreview);
+});
+
+async function saveScoringRules() {
+  const rules = {
+    expiredGL: parseFloat(document.getElementById('sExpiredGL').value) || 0,
+    expiredWC: parseFloat(document.getElementById('sExpiredWC').value) || 0,
+    missingGL: parseFloat(document.getElementById('sMissingGL').value) || 0,
+    missingWC: parseFloat(document.getElementById('sMissingWC').value) || 0,
+  };
+  scoringRules = rules;
+  closeScoringModal();
+  showToast('Scoring rules saved. Scores will update on next sync.', 'info');
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'saveScoringRules', rules })
+    });
+  } catch(e) { /* silent */ }
+}
+
+// Load rules on startup
+loadScoringRules();
 </script>
 </body>
 </html>
