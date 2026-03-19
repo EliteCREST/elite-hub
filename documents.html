@@ -369,6 +369,15 @@
     .file-row { grid-template-columns: 28px 1fr 80px 90px; }
     .file-row > *:last-child { display: none; }
   }
+
+  .tool-nav { background:var(--navy); border-bottom:1px solid rgba(255,255,255,.08); padding:0 22px; display:flex; align-items:center; gap:4px; overflow-x:auto; white-space:nowrap; scrollbar-width:none; }
+  .tool-nav::-webkit-scrollbar { display:none; }
+  .tool-nav-label { font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,.3); padding-right:10px; border-right:1px solid rgba(255,255,255,.1); margin-right:6px; flex-shrink:0; }
+  .tn-btn { display:inline-flex; align-items:center; gap:5px; padding:6px 11px; border-radius:5px; font-size:10px; font-weight:700; text-decoration:none; color:rgba(255,255,255,.5); transition:background .15s,color .15s; border:none; background:none; cursor:pointer; font-family:Arial,sans-serif; flex-shrink:0; white-space:nowrap; }
+  .tn-btn:hover { background:rgba(255,255,255,.08); color:white; }
+  .tn-btn.active { background:rgba(255,255,255,.12); color:white; }
+  .tn-btn .tn-icon { font-size:12px; }
+
 </style>
 </head>
 <body>
@@ -402,6 +411,14 @@
   </div>
 </header>
 <div class="sub-bar"></div>
+<nav class="tool-nav"><span class="tool-nav-label">Tools</span><a class="tn-btn tn-dynamic" data-file="fleet.html"><span class="tn-icon">🚗</span>Fleet</a><a class="tn-btn tn-dynamic" data-file="compliance.html"><span class="tn-icon">📋</span>Compliance</a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">⚖️</span>Licensing</span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🏷️</span>Pricing</span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">📊</span>CFB</span><a class="tn-btn tn-dynamic" data-file="reviews.html"><span class="tn-icon">⭐</span>Reviews</a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🔍</span>Invoices</span></nav><script>
+(function(){
+  var rk = new URLSearchParams(window.location.search).get('region') || 'cleveland';
+  document.querySelectorAll('.tn-dynamic').forEach(function(a){
+    a.href = 'https://elitecrest.github.io/elite-hub/' + a.dataset.file + '?region=' + rk;
+  });
+})();
+</script>
 
 <!-- BACK NAV -->
 <nav class="back-nav">
@@ -557,15 +574,15 @@ const params     = new URLSearchParams(window.location.search);
 const regionKey  = params.get('region') || 'unknown';
 
 const REGION_MAP = {
-  cleveland:    { city: 'Cleveland',    abbr: 'CLE', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_cleveland.html' },
-  phoenix:      { city: 'Phoenix',      abbr: 'PHX', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_phoenix.html' },
-  albuquerque:  { city: 'Albuquerque',  abbr: 'ABQ', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_albuquerque.html' },
-  minneapolis:  { city: 'Minneapolis',  abbr: 'MSP', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_minneapolis.html' },
-  stlouis:      { city: 'St. Louis',    abbr: 'STL', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_stlouis.html' },
-  chicago:      { city: 'Chicago',      abbr: 'CHI', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_chicago.html' },
-  indianapolis: { city: 'Indianapolis', abbr: 'IND', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_indianapolis.html' },
-  pittsburgh:   { city: 'Pittsburgh',   abbr: 'PIT', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_pittsburgh.html' },
-  milwaukee:    { city: 'Milwaukee',    abbr: 'MKE', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_milwaukee.html' },
+  cleveland:    { city: 'Cleveland',    abbr: 'CLE', hubUrl: '' },
+  phoenix:      { city: 'Phoenix',      abbr: 'PHX', hubUrl: '' },
+  albuquerque:  { city: 'Albuquerque',  abbr: 'ABQ', hubUrl: '' },
+  minneapolis:  { city: 'Minneapolis',  abbr: 'MSP', hubUrl: '' },
+  stlouis:      { city: 'St. Louis',    abbr: 'STL', hubUrl: '' },
+  chicago:      { city: 'Chicago',      abbr: 'CHI', hubUrl: '' },
+  indianapolis: { city: 'Indianapolis', abbr: 'IND', hubUrl: '' },
+  pittsburgh:   { city: 'Pittsburgh',   abbr: 'PIT', hubUrl: '' },
+  milwaukee:    { city: 'Milwaukee',    abbr: 'MKE', hubUrl: '' },
 };
 
 const region = REGION_MAP[regionKey] || { city: regionKey, abbr: '—', hubUrl: '' };
