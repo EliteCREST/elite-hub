@@ -569,6 +569,10 @@
       <div class="form-section fs-contact">
         <div class="form-section-title">🏢 Company & Contact</div>
         <div class="form-row">
+          <div class="form-group"><label>PAY ID</label><input type="text" id="fPayId" placeholder="e.g. 7107"></div>
+          <div class="form-group"><label>From</label><input type="text" id="fFrom" placeholder="Blaze / Paylocity"></div>
+        </div>
+        <div class="form-row">
           <div class="form-group"><label>Company Name *</label><input type="text" id="fCompany" placeholder="ABC Roofing LLC"></div>
           <div class="form-group"><label>Status</label>
             <select id="fStatus">
@@ -593,7 +597,8 @@
         <div class="form-row-3">
           <div class="form-group"><label>Address</label><input type="text" id="fAddress" placeholder="123 Main St"></div>
           <div class="form-group"><label>City</label><input type="text" id="fCity" placeholder="Cleveland"></div>
-          <div class="form-group"><label>State / ZIP</label><input type="text" id="fStateZip" placeholder="OH 44101"></div>
+          <div class="form-group"><label>State</label><input type="text" id="fState" placeholder="OH" maxlength="2"></div>
+          <div class="form-group"><label>ZIP</label><input type="text" id="fZip" placeholder="44101"></div>
         </div>
       </div>
 
@@ -601,7 +606,6 @@
         <div class="form-section-title">📍 Region & Trades</div>
         <div class="form-row">
           <div class="form-group"><label>Region(s)</label><input type="text" id="fRegion" placeholder="CLE, PIT"></div>
-          <div class="form-group"><label>From</label><input type="text" id="fFrom" placeholder="Source / referral"></div>
         </div>
         <div class="form-row">
           <div class="form-group"><label>Trade 1</label>
@@ -749,6 +753,7 @@ async function syncData() {
 function normalizeContractor(r) {
   return {
     id:              String(r['id']              || Math.random().toString(36).slice(2)),
+    pay_id:          String(r['pay_id']          || ''),
     name:            String(r['name']            || ''),
     contact:         String(r['contact']         || r['contact_name'] || ''),
     contact2:        String(r['contact2']        || ''),
@@ -1029,8 +1034,8 @@ function closeEditModal() {
 }
 
 function clearForm() {
-  ['fCompany','fContact','fContact2','fPhone','fEmail','fEmail2','fSupervisor',
-   'fAddress','fCity','fStateZip','fRegion','fFrom',
+  ['fPayId','fFrom','fCompany','fContact','fContact2','fPhone','fEmail','fEmail2','fSupervisor',
+   'fAddress','fCity','fState','fZip','fRegion',
    'fGLPolicy','fGLExpiry','fGLCoverage','fWCPolicy','fWCExpiry','fWCCoverage',
    'fInsCompany','fInsContact','fInsPhone','fInsEmail','fTravelDist']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
@@ -1048,11 +1053,13 @@ function populateForm(c) {
   set('fEmail',      c.email);
   set('fEmail2',     c.email2);
   set('fSupervisor', c.supervisor);
+  set('fPayId',      c.pay_id);
+  set('fFrom',       c.from);
   set('fAddress',    c.address);
   set('fCity',       c.city);
-  set('fStateZip',   [c.state, c.zip].filter(Boolean).join(' '));
+  set('fState',      c.state);
+  set('fZip',        c.zip);
   set('fRegion',     c.region);
-  set('fFrom',       c.from);
   set('fTrade1',     c.trade1);
   set('fTrade2',     c.trade2);
   set('fTrade3',     c.trade3);
@@ -1082,12 +1089,13 @@ function getFormValues() {
     email:           g('fEmail'),
     email2:          g('fEmail2'),
     supervisor:      g('fSupervisor'),
+    pay_id:          g('fPayId'),
+    from:            g('fFrom'),
     address:         g('fAddress'),
     city:            g('fCity'),
-    state:           g('fStateZip').split(' ')[0] || '',
-    zip:             g('fStateZip').split(' ')[1] || '',
+    state:           g('fState'),
+    zip:             g('fZip'),
     region:          g('fRegion').toUpperCase(),
-    from:            g('fFrom'),
     trade1:          g('fTrade1'),
     trade2:          g('fTrade2'),
     trade3:          g('fTrade3'),
