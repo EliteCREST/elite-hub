@@ -793,11 +793,20 @@ function expiryCell(dateStr) {
    SYNC DATA FROM BACKEND
 ══════════════════════════════════════════════════════════════ */
 async function syncData() {
-  document.getElementById('tableCount').textContent = 'Loading...';
+  // Show cached data instantly if available
+  const cacheKey = `compliance_${regionKey}`;
+  const cached = getCached(cacheKey);
+  if (cached && cached.data) {
+    allContractors = cached.data.map(normalizeContractor);
+    renderAll();
+  } else {
+    document.getElementById('tableCount').textContent = 'Loading...';
+  }
   try {
     const res  = await fetch(`${BACKEND_URL}?action=complianceData&region=${regionKey}`);
     const data = await res.json();
     allContractors = (data.data || []).map(normalizeContractor);
+    setCache(cacheKey, data);
     renderAll();
 
     // Push compliance summary back to HUB_SUMMARY so region hub KPIs update
@@ -1258,6 +1267,7 @@ function initPage() {
   document.getElementById('pageCallout').innerHTML    =
     `<strong>${region.city} — Contractor Compliance</strong> — GL and WC insurance tracking, license status, contract management, and document uploads for all contractors in the ${region.city} region. Data synced from Google Sheets (<strong>COMPLIANCE_Data</strong> tab).`;
   syncData();
+setInterval(syncData, 120000); // auto-refresh every 2 min
 }
 
 initPage();

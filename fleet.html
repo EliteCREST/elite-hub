@@ -726,17 +726,28 @@ document.getElementById('pageCallout').innerHTML    =
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 syncData();
+setInterval(syncData, 120000); // auto-refresh every 2 min
 
 /* ══════════════════════════════════════════════════════════════
    DATA SYNC
 ══════════════════════════════════════════════════════════════ */
 async function syncData() {
-  document.getElementById('vehicleCount').textContent = 'Loading...';
+  // Show cached data instantly if available
+  const cacheKey = `fleet_${regionKey}`;
+  const cached = getCached(cacheKey);
+  if (cached && cached.data) {
+    allVehicles = cached.data.map(normalizeVehicle);
+    populateMakeFilter();
+    renderAll();
+  } else {
+    document.getElementById('vehicleCount').textContent = 'Loading...';
+  }
   document.getElementById('hdrSync').textContent = '…';
   try {
     const res  = await fetch(`${BACKEND_URL}?action=fleetData&region=${regionKey}`);
     const data = await res.json();
     allVehicles = (data.data || []).map(normalizeVehicle);
+    setCache(cacheKey, data);
     populateMakeFilter();
     renderAll();
     document.getElementById('hdrSync').textContent = new Date().toLocaleTimeString();
