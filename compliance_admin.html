@@ -587,7 +587,7 @@
           <div class="form-group"><label>Full Name 2</label><input type="text" id="fContact2" placeholder="Jane Smith"></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>Crew Phone</label><input type="text" id="fPhone" placeholder="555-000-0000"></div>
+          <div class="form-group"><label>Crew Phone</label><input type="text" id="fPhone" placeholder="(555) 000-0000" oninput="formatPhone(this)"></div>
           <div class="form-group"><label>Email</label><input type="email" id="fEmail" placeholder="john@example.com"></div>
         </div>
         <div class="form-row">
@@ -638,7 +638,15 @@
           <div class="form-group"><label>GL Expiry Date</label><input type="date" id="fGLExpiry"></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>GL Coverage For</label><input type="text" id="fGLCoverage" placeholder="Coverage description"></div>
+          <div class="form-group"><label>GL Insurance Co</label><input type="text" id="fGLInsCo" placeholder="Insurance company"></div>
+          <div class="form-group"><label>GL Ins Contact</label><input type="text" id="fGLInsContact" placeholder="Agent name"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>GL Ins Phone</label><input type="text" id="fGLInsPhone" placeholder="(555) 000-0000" oninput="formatPhone(this)"></div>
+          <div class="form-group"><label>GL Ins Email</label><input type="email" id="fGLInsEmail" placeholder="agent@insurer.com"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Coverage For GL</label><input type="text" id="fGLCoverage" placeholder="Coverage description"></div>
           <div class="form-group"></div>
         </div>
       </div>
@@ -650,22 +658,20 @@
           <div class="form-group"><label>WC Expiry Date</label><input type="date" id="fWCExpiry"></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>WC Coverage For</label><input type="text" id="fWCCoverage" placeholder="Coverage description"></div>
+          <div class="form-group"><label>WC Insurance Co</label><input type="text" id="fWCInsCo" placeholder="Insurance company"></div>
+          <div class="form-group"><label>WC Ins Contact</label><input type="text" id="fWCInsContact" placeholder="Agent name"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>WC Ins Phone</label><input type="text" id="fWCInsPhone" placeholder="(555) 000-0000" oninput="formatPhone(this)"></div>
+          <div class="form-group"><label>WC Ins Email</label><input type="email" id="fWCInsEmail" placeholder="agent@insurer.com"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Coverage For WC</label><input type="text" id="fWCCoverage" placeholder="Coverage description"></div>
           <div class="form-group"></div>
         </div>
       </div>
 
-      <div class="form-section fs-ins">
-        <div class="form-section-title">📞 Insurance Contact</div>
-        <div class="form-row">
-          <div class="form-group"><label>Insurance Company</label><input type="text" id="fInsCompany" placeholder="Insurance company name"></div>
-          <div class="form-group"><label>Ins. Contact Name</label><input type="text" id="fInsContact" placeholder="Agent name"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Ins. Phone</label><input type="text" id="fInsPhone" placeholder="555-000-0000"></div>
-          <div class="form-group"><label>Ins. Email</label><input type="email" id="fInsEmail" placeholder="agent@insurer.com"></div>
-        </div>
-      </div>
+
 
     </div>
     <div class="modal-footer">
@@ -724,6 +730,22 @@ let pendingInactiveId = null;
 document.getElementById('backToMain').href   = MAIN_HUB_URL;
 document.getElementById('footerMainLink').href = MAIN_HUB_URL;
 
+
+/* ══ PHONE FORMATTER ════════════════════════════════════════ */
+function formatPhone(input) {
+  // Strip everything except digits
+  const digits = input.value.replace(/\D/g, '').slice(0, 10);
+  let formatted = '';
+  if (digits.length <= 3) {
+    formatted = digits.length ? '(' + digits : '';
+  } else if (digits.length <= 6) {
+    formatted = '(' + digits.slice(0,3) + ') ' + digits.slice(3);
+  } else {
+    formatted = '(' + digits.slice(0,3) + ') ' + digits.slice(3,6) + '-' + digits.slice(6);
+  }
+  input.value = formatted;
+}
+
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeEditModal(); closeConfirm(); }
 });
@@ -752,7 +774,7 @@ async function syncData() {
 
 function normalizeContractor(r) {
   return {
-    id:              String(r['id']              || Math.random().toString(36).slice(2)),
+    id:              String(r['id']              || ''),
     pay_id:          String(r['pay_id']          || ''),
     name:            String(r['name']            || ''),
     contact:         String(r['contact']         || r['contact_name'] || ''),
@@ -765,15 +787,19 @@ function normalizeContractor(r) {
     city:            String(r['city']            || ''),
     state:           String(r['state']           || ''),
     zip:             String(r['zip']             || ''),
-    ins_company:     String(r['ins_company']     || ''),
-    ins_contact:     String(r['ins_contact']     || ''),
-    ins_phone:       String(r['ins_phone']       || ''),
-    ins_email:       String(r['ins_email']       || ''),
     gl_policy:       String(r['gl_policy']       || ''),
     gl_expiry:       String(r['gl_expiry']       || ''),
+    gl_ins_co:       String(r['gl_ins_co']       || ''),
+    gl_ins_contact:  String(r['gl_ins_contact']  || ''),
+    gl_ins_phone:    String(r['gl_ins_phone']    || ''),
+    gl_ins_email:    String(r['gl_ins_email']    || ''),
     gl_coverage:     String(r['gl_coverage']     || ''),
     wc_policy:       String(r['wc_policy']       || ''),
     wc_expiry:       String(r['wc_expiry']       || ''),
+    wc_ins_co:       String(r['wc_ins_co']       || ''),
+    wc_ins_contact:  String(r['wc_ins_contact']  || ''),
+    wc_ins_phone:    String(r['wc_ins_phone']    || ''),
+    wc_ins_email:    String(r['wc_ins_email']    || ''),
     wc_coverage:     String(r['wc_coverage']     || ''),
     will_travel:     String(r['will_travel']     || 'No'),
     travel_distance: String(r['travel_distance'] || ''),
@@ -1036,8 +1062,9 @@ function closeEditModal() {
 function clearForm() {
   ['fPayId','fFrom','fCompany','fContact','fContact2','fPhone','fEmail','fEmail2','fSupervisor',
    'fAddress','fCity','fState','fZip','fRegion',
-   'fGLPolicy','fGLExpiry','fGLCoverage','fWCPolicy','fWCExpiry','fWCCoverage',
-   'fInsCompany','fInsContact','fInsPhone','fInsEmail','fTravelDist']
+   'fGLPolicy','fGLExpiry','fGLInsCo','fGLInsContact','fGLInsPhone','fGLInsEmail','fGLCoverage',
+   'fWCPolicy','fWCExpiry','fWCInsCo','fWCInsContact','fWCInsPhone','fWCInsEmail','fWCCoverage',
+   'fTravelDist']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   ['fStatus','fTrade1','fTrade2','fTrade3','fTrade4','fTravel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.selectedIndex = 0; });
@@ -1066,16 +1093,20 @@ function populateForm(c) {
   set('fTrade4',     c.trade4);
   set('fTravel',     c.will_travel);
   set('fTravelDist', c.travel_distance);
-  set('fGLPolicy',   c.gl_policy);
-  set('fGLExpiry',   c.gl_expiry);
-  set('fGLCoverage', c.gl_coverage);
-  set('fWCPolicy',   c.wc_policy);
-  set('fWCExpiry',   c.wc_expiry);
-  set('fWCCoverage', c.wc_coverage);
-  set('fInsCompany', c.ins_company);
-  set('fInsContact', c.ins_contact);
-  set('fInsPhone',   c.ins_phone);
-  set('fInsEmail',   c.ins_email);
+  set('fGLPolicy',     c.gl_policy);
+  set('fGLExpiry',     c.gl_expiry);
+  set('fGLInsCo',      c.gl_ins_co);
+  set('fGLInsContact', c.gl_ins_contact);
+  set('fGLInsPhone',   c.gl_ins_phone);
+  set('fGLInsEmail',   c.gl_ins_email);
+  set('fGLCoverage',   c.gl_coverage);
+  set('fWCPolicy',     c.wc_policy);
+  set('fWCExpiry',     c.wc_expiry);
+  set('fWCInsCo',      c.wc_ins_co);
+  set('fWCInsContact', c.wc_ins_contact);
+  set('fWCInsPhone',   c.wc_ins_phone);
+  set('fWCInsEmail',   c.wc_ins_email);
+  set('fWCCoverage',   c.wc_coverage);
 }
 
 function getFormValues() {
@@ -1104,14 +1135,18 @@ function getFormValues() {
     travel_distance: g('fTravelDist'),
     gl_policy:       g('fGLPolicy'),
     gl_expiry:       g('fGLExpiry'),
+    gl_ins_co:       g('fGLInsCo'),
+    gl_ins_contact:  g('fGLInsContact'),
+    gl_ins_phone:    g('fGLInsPhone'),
+    gl_ins_email:    g('fGLInsEmail'),
     gl_coverage:     g('fGLCoverage'),
     wc_policy:       g('fWCPolicy'),
     wc_expiry:       g('fWCExpiry'),
+    wc_ins_co:       g('fWCInsCo'),
+    wc_ins_contact:  g('fWCInsContact'),
+    wc_ins_phone:    g('fWCInsPhone'),
+    wc_ins_email:    g('fWCInsEmail'),
     wc_coverage:     g('fWCCoverage'),
-    ins_company:     g('fInsCompany'),
-    ins_contact:     g('fInsContact'),
-    ins_phone:       g('fInsPhone'),
-    ins_email:       g('fInsEmail'),
   };
 }
 
