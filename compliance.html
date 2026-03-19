@@ -474,10 +474,11 @@
     <div class="filter-divider"></div>
     <select class="filter-select" id="tradeFilter" onchange="applyFilters()">
       <option value="">All Trades</option>
-      <option value="Roofing">Roofing</option>
-      <option value="Gutters">Gutters</option>
-      <option value="Siding">Siding</option>
-      <option value="Windows">Windows</option>
+      <option value="ROOFING">Roofing</option>
+      <option value="GUTTERS">Gutters</option>
+      <option value="SIDING">Siding</option>
+      <option value="WINDOWS">Windows</option>
+      <option value="SERVICE">Service</option>
     </select>
     <select class="filter-select" id="contractFilter" onchange="applyFilters()">
       <option value="">All Contracts</option>
@@ -722,10 +723,10 @@ function getOverallStatus(c) {
   const glS = getExpiryStatus(c.gl_expiry);
   const wcS = getExpiryStatus(c.wc_expiry);
   const statuses = [glS, wcS];
-  if (statuses.includes('missing'))    return 'missing';
   if (statuses.includes('expired'))    return 'expired';
   if (statuses.includes('expiring30')) return 'expiring30';
   if (statuses.includes('expiring60')) return 'expiring60';
+  if (statuses.includes('missing'))    return 'missing';
   return 'compliant';
 }
 
@@ -899,7 +900,7 @@ function applyFilters() {
   filtered = allContractors.filter(c => {
     const status = getOverallStatus(c);
     if (statusFilter !== 'all' && status !== statusFilter) return false;
-    if (trade    && c.trade !== trade)                      return false;
+    if (trade) { const t = trade.toUpperCase(); if (![c.trade, c.trade2, c.trade3, c.trade4].map(x => (x||'').toUpperCase()).includes(t)) return false; }
     if (contract && c.contract_status !== contract)         return false;
     if (search && ![c.name, c.trade, c.market, c.contact, c.email].join(' ').toLowerCase().includes(search)) return false;
     return true;

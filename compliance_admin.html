@@ -840,10 +840,10 @@ function getOverallStatus(c) {
   const gl = getExpiryStatus(c.gl_expiry);
   const wc = getExpiryStatus(c.wc_expiry);
   const s  = [gl, wc];
-  if (s.includes('missing'))    return 'missing';
   if (s.includes('expired'))    return 'expired';
   if (s.includes('expiring30')) return 'expiring30';
   if (s.includes('expiring60')) return 'expiring60';
+  if (s.includes('missing'))    return 'missing';
   return 'compliant';
 }
 
