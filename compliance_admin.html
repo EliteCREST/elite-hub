@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compliance Admin — Elite Hub</title>
+<style>
+  :root {
+    --navy:        #1B2A4A;
+    --blue:        #1F5FAD;
+    --blue-light:  #2E74CC;
+    --blue-pale:   #EAF1FB;
+    --accent:      #C8A84B;
+    --white:       #FFFFFF;
+    --gray-50:     #F8FAFC;
+    --gray-100:    #F4F6FA;
+    --gray-200:    #E2E8F2;
+    --gray-300:    #CBD5E1;
+    --gray-400:    #94A3B8;
+    --gray-600:    #64748B;
+    --gray-800:    #334155;
+    --text:        #1B2A4A;
+    --green:       #16A34A;
+    --green-pale:  #DCFCE7;
+    --yellow:      #D97706;
+    --yellow-pale: #FEF9C3;
+    --red:         #DC2626;
+    --red-pale:    #FEE2E2;
+    --page-color:  #7C3AED;
+    --page-pale:   #F5F3FF;
+    --shadow-sm:   0 1px 3px rgba(27,42,74,.08);
+    --shadow-md:   0 4px 16px rgba(27,42,74,.12);
+    --shadow-lg:   0 8px 32px rgba(27,42,74,.18);
+    --shadow-xl:   0 16px 48px rgba(27,42,74,.22);
+    --radius:      8px;
+    --radius-lg:   12px;
+    --radius-xl:   16px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    background: var(--gray-100); color: var(--text);
+    min-height: 100vh; display: flex; flex-direction: column;
+  }
+
+  /* ══ HEADER ══════════════════════════════════════════════════ */
+  .elite-header {
+    background: var(--navy);
+    display: grid; grid-template-columns: 6px 200px 1fr auto;
+    align-items: center; height: 68px;
+    position: sticky; top: 0; z-index: 200;
+    box-shadow: var(--shadow-lg);
+  }
+  .header-accent { background: var(--page-color); height: 100%; }
+  .header-logo {
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 22px; border-right: 1px solid rgba(255,255,255,.1);
+  }
+  .logo-mark {
+    width: 40px; height: 40px; background: var(--page-color);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  }
+  .logo-mark span { color: white; font-weight: 700; font-size: 11px; letter-spacing: .3px; }
+  .logo-text .brand { color: white; font-size: 14px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+  .logo-text .sub   { color: rgba(255,255,255,.45); font-size: 10px; letter-spacing: .8px; text-transform: uppercase; margin-top: 1px; }
+  .header-title { padding: 0 28px; }
+  .header-title .page-name  { color: white; font-size: 16px; font-weight: 700; }
+  .header-title .breadcrumb { color: rgba(255,255,255,.45); font-size: 11px; margin-top: 2px; }
+  .header-meta { padding: 0 22px; display: flex; align-items: center; gap: 18px; }
+  .meta-item { text-align: right; }
+  .meta-label { color: rgba(255,255,255,.4); font-size: 10px; letter-spacing: .8px; text-transform: uppercase; }
+  .meta-val   { color: rgba(255,255,255,.88); font-size: 12px; font-weight: 700; margin-top: 1px; }
+  .hdr-divider { width: 1px; height: 30px; background: rgba(255,255,255,.12); }
+  .sub-bar { background: var(--page-color); height: 3px; }
+
+  /* ══ BACK NAV ════════════════════════════════════════════════ */
+  .back-nav { background: var(--navy); padding: 0 32px; border-bottom: 1px solid rgba(255,255,255,.07); }
+  .back-nav a {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: rgba(255,255,255,.5); font-size: 11px; text-decoration: none;
+    padding: 8px 0; transition: color .15s;
+  }
+  .back-nav a:hover { color: white; }
+
+  /* ══ MAIN ════════════════════════════════════════════════════ */
+  main { flex: 1; padding: 28px 32px; max-width: 1800px; width: 100%; margin: 0 auto; }
+
+  /* ══ SECTION HEADING ═════════════════════════════════════════ */
+  .sh {
+    font-size: 11px; font-weight: 700; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--navy);
+    padding-bottom: 7px; border-bottom: 2px solid var(--page-color);
+    display: inline-block;
+  }
+  .section-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px; flex-wrap: wrap; gap: 10px;
+  }
+
+  /* ══ CALLOUT ═════════════════════════════════════════════════ */
+  .callout {
+    background: var(--page-pale); border-left: 4px solid var(--page-color);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 12px 18px; margin-bottom: 28px;
+    font-size: 12.5px; color: var(--navy); line-height: 1.5;
+  }
+
+  /* ══ KPI STRIP ═══════════════════════════════════════════════ */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px; margin-bottom: 28px;
+  }
+  .kpi-card {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius); padding: 16px 18px;
+    position: relative; overflow: hidden; box-shadow: var(--shadow-sm);
+  }
+  .kpi-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background: var(--page-color);
+  }
+  .kpi-card.alert-card::before { background: var(--red); }
+  .kpi-card.warn-card::before  { background: var(--yellow); }
+  .kpi-card.good-card::before  { background: var(--green); }
+  .kpi-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-400); margin-bottom: 8px; }
+  .kpi-value { font-size: 28px; font-weight: 700; color: var(--navy); line-height: 1; }
+  .kpi-sub   { font-size: 11px; color: var(--gray-400); margin-top: 5px; }
+  .kpi-icon  { position: absolute; top: 14px; right: 14px; font-size: 18px; opacity: .13; }
+
+  /* ══ ALERT BANNER ════════════════════════════════════════════ */
+  .alert-banner {
+    background: var(--red-pale); border: 1px solid #FECACA;
+    border-left: 4px solid var(--red); border-radius: var(--radius-lg);
+    padding: 14px 18px; margin-bottom: 24px; display: none;
+  }
+  .alert-banner.visible { display: block; }
+  .alert-banner-title { font-size: 12px; font-weight: 700; color: var(--red); margin-bottom: 8px; letter-spacing: .5px; text-transform: uppercase; }
+  .alert-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .alert-chip {
+    background: white; border: 1px solid #FECACA; border-radius: 20px;
+    padding: 4px 12px; font-size: 11px; color: var(--red); font-weight: 600;
+    cursor: pointer; transition: background .15s;
+  }
+  .alert-chip:hover { background: var(--red-pale); }
+
+  /* ══ FILTER BAR ══════════════════════════════════════════════ */
+  .filter-bar {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg); padding: 14px 18px;
+    margin-bottom: 20px; box-shadow: var(--shadow-sm);
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .search-box {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--gray-50); border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius); padding: 0 12px; flex: 1; min-width: 220px;
+  }
+  .search-box input {
+    border: none; outline: none; font-size: 13px; padding: 9px 0;
+    font-family: Arial, sans-serif; color: var(--text); width: 100%;
+    background: transparent;
+  }
+  .search-box input::placeholder { color: var(--gray-400); }
+  .filter-divider { width: 1px; height: 28px; background: var(--gray-200); flex-shrink: 0; }
+  .filter-pill {
+    padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    letter-spacing: .3px; border: 1.5px solid var(--gray-200); background: white;
+    cursor: pointer; transition: all .15s; font-family: Arial, sans-serif; color: var(--gray-600);
+    white-space: nowrap;
+  }
+  .filter-pill:hover  { border-color: var(--page-color); color: var(--page-color); }
+  .filter-pill.active { background: var(--page-pale); border-color: var(--page-color); color: var(--page-color); }
+  .filter-pill.red-pill.active    { background: var(--red-pale);    border-color: var(--red);    color: var(--red); }
+  .filter-pill.yellow-pill.active { background: var(--yellow-pale); border-color: var(--yellow); color: var(--yellow); }
+  .filter-pill.green-pill.active  { background: var(--green-pale);  border-color: var(--green);  color: var(--green); }
+  .filter-select {
+    padding: 7px 12px; border: 1.5px solid var(--gray-200); border-radius: var(--radius);
+    font-size: 12px; font-family: Arial, sans-serif; color: var(--gray-600);
+    background: white; cursor: pointer; outline: none;
+  }
+  .filter-select:focus { border-color: var(--page-color); }
+
+  /* ══ TABLE ═══════════════════════════════════════════════════ */
+  .table-card {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl); box-shadow: var(--shadow-md); overflow: hidden;
+  }
+  .table-header {
+    background: var(--navy); padding: 13px 20px;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  }
+  .table-header .th-title { color: white; font-size: 13px; font-weight: 700; }
+  .table-header .th-sub   { color: rgba(255,255,255,.4); font-size: 11px; margin-top: 1px; }
+  .table-header .th-actions { display: flex; gap: 8px; }
+
+  .comp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .comp-table th {
+    text-align: left; font-size: 10px; font-weight: 700;
+    letter-spacing: 1.2px; text-transform: uppercase; color: var(--gray-400);
+    padding: 10px 14px; border-bottom: 2px solid var(--gray-200);
+    background: var(--gray-50); white-space: nowrap; cursor: pointer;
+    transition: color .15s; user-select: none;
+  }
+  .comp-table th:hover { color: var(--navy); }
+  .comp-table th.sorted { color: var(--page-color); }
+  .comp-table td {
+    padding: 10px 14px; border-bottom: 1px solid var(--gray-200);
+    vertical-align: middle;
+  }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .comp-table tr:hover td { background: var(--page-pale); }
+  .comp-table tr.inactive-row td { opacity: .5; }
+
+  .contractor-name  { font-weight: 700; color: var(--navy); font-size: 13px; }
+  .contractor-trade { font-size: 11px; color: var(--gray-400); margin-top: 1px; }
+
+  /* ══ BADGES ══════════════════════════════════════════════════ */
+  .badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 20px; white-space: nowrap;
+  }
+  .badge-compliant  { background: var(--green-pale);  color: var(--green); }
+  .badge-expired    { background: var(--red-pale);    color: var(--red); }
+  .badge-expiring30 { background: var(--red-pale);    color: var(--red); }
+  .badge-expiring60 { background: var(--yellow-pale); color: var(--yellow); }
+  .badge-missing    { background: var(--gray-200);    color: var(--gray-600); }
+  .badge-active     { background: var(--green-pale);  color: var(--green); }
+  .badge-inactive   { background: var(--gray-200);    color: var(--gray-600); }
+  .badge-pending    { background: var(--yellow-pale); color: var(--yellow); }
+  .badge-region     { background: var(--blue-pale);   color: var(--blue); font-size: 10px; }
+
+  .expiry-date { font-size: 12px; font-weight: 600; }
+  .expiry-date.expired    { color: var(--red); }
+  .expiry-date.expiring30 { color: var(--red); }
+  .expiry-date.expiring60 { color: var(--yellow); }
+  .expiry-date.ok         { color: var(--green); }
+  .expiry-date.missing    { color: var(--gray-400); font-style: italic; }
+
+  /* ══ ROW ACTIONS ═════════════════════════════════════════════ */
+  .row-actions { display: flex; gap: 5px; }
+  .row-btn {
+    padding: 4px 9px; border-radius: 5px; font-size: 10px; font-weight: 700;
+    border: 1.5px solid var(--gray-200); background: white; cursor: pointer;
+    color: var(--gray-600); font-family: Arial, sans-serif; transition: all .15s;
+    white-space: nowrap;
+  }
+  .row-btn:hover       { border-color: var(--page-color); color: var(--page-color); background: var(--page-pale); }
+  .row-btn.edit-btn:hover    { border-color: var(--blue);   color: var(--blue);   background: var(--blue-pale); }
+  .row-btn.delete-btn:hover  { border-color: var(--red);    color: var(--red);    background: var(--red-pale); }
+  .row-btn.restore-btn:hover { border-color: var(--green);  color: var(--green);  background: var(--green-pale); }
+
+  /* ══ EMPTY STATE ═════════════════════════════════════════════ */
+  .empty-state { padding: 60px 20px; text-align: center; }
+  .empty-state .es-icon  { font-size: 48px; margin-bottom: 12px; opacity: .3; }
+  .empty-state .es-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+  .empty-state .es-sub   { font-size: 12px; color: var(--gray-400); line-height: 1.6; }
+
+  /* ══ MODAL ═══════════════════════════════════════════════════ */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(27,42,74,.72); backdrop-filter: blur(4px);
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white; border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl); width: 100%; max-width: 740px;
+    max-height: 92vh; overflow-y: auto;
+  }
+  .modal-header {
+    background: var(--navy); padding: 16px 22px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 10; border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+  .modal-header .mh-title { color: white; font-size: 15px; font-weight: 700; }
+  .modal-header .mh-sub   { color: rgba(255,255,255,.45); font-size: 11px; margin-top: 2px; }
+  .modal-header .close-btn { background: none; border: none; color: rgba(255,255,255,.6); font-size: 20px; cursor: pointer; line-height: 1; padding: 0; }
+  .modal-body { padding: 24px; }
+  .modal-footer { padding: 16px 22px; border-top: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .modal-footer-right { display: flex; gap: 8px; }
+
+  /* ══ FORM ════════════════════════════════════════════════════ */
+  .form-section-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--gray-400); margin-bottom: 12px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .form-section { margin-bottom: 22px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 11px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--gray-600); }
+  .form-group input,
+  .form-group select {
+    border: 1.5px solid var(--gray-200); border-radius: var(--radius);
+    padding: 9px 12px; font-size: 13px; font-family: Arial, sans-serif;
+    color: var(--text); outline: none; transition: border-color .15s; background: white;
+  }
+  .form-group input:focus,
+  .form-group select:focus { border-color: var(--page-color); }
+  .form-group input.changed,
+  .form-group select.changed { border-color: var(--blue); background: var(--blue-pale); }
+
+  /* ══ BUTTONS ═════════════════════════════════════════════════ */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: var(--radius);
+    font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+    cursor: pointer; border: none; font-family: Arial, sans-serif;
+    transition: opacity .2s, transform .1s;
+  }
+  .btn:hover { opacity: .85; transform: translateY(-1px); }
+  .btn-primary { background: var(--page-color); color: white; }
+  .btn-blue    { background: var(--blue); color: white; }
+  .btn-red     { background: var(--red); color: white; }
+  .btn-outline { background: transparent; color: var(--gray-600); border: 1.5px solid var(--gray-300); }
+  .btn-outline:hover { border-color: var(--page-color); color: var(--page-color); }
+  .btn-sm { padding: 6px 12px; font-size: 10px; }
+
+  /* ══ CONFIRM DIALOG ══════════════════════════════════════════ */
+  .confirm-overlay {
+    position: fixed; inset: 0; z-index: 600;
+    background: rgba(27,42,74,.8); backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center;
+  }
+  .confirm-overlay.open { display: flex; }
+  .confirm-box {
+    background: white; border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl); padding: 28px; max-width: 380px; width: 100%; text-align: center;
+  }
+  .confirm-icon { font-size: 36px; margin-bottom: 14px; }
+  .confirm-title { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+  .confirm-sub   { font-size: 13px; color: var(--gray-600); line-height: 1.5; margin-bottom: 22px; }
+  .confirm-actions { display: flex; gap: 10px; justify-content: center; }
+
+  /* ══ FOOTER ══════════════════════════════════════════════════ */
+  footer {
+    background: var(--navy); border-top: 3px solid var(--page-color);
+    padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between; margin-top: auto;
+  }
+  .footer-brand { color: rgba(255,255,255,.4); font-size: 11px; }
+  .footer-brand strong { color: rgba(255,255,255,.65); }
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a { color: rgba(255,255,255,.35); font-size: 11px; text-decoration: none; transition: color .2s; }
+  .footer-links a:hover { color: rgba(255,255,255,.75); }
+
+  /* ══ TOAST ═══════════════════════════════════════════════════ */
+  .toast {
+    position: fixed; bottom: 28px; right: 24px; z-index: 9999;
+    background: var(--navy); color: white; padding: 14px 20px;
+    border-radius: 10px; font-size: 12.5px; box-shadow: var(--shadow-xl);
+    max-width: 340px; line-height: 1.5; animation: slideUp .25s ease;
+    border-left: 4px solid var(--page-color);
+  }
+  @keyframes slideUp { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)} }
+
+  /* ══ LOADING ═════════════════════════════════════════════════ */
+  .loading-row td { text-align: center; padding: 40px; color: var(--gray-400); font-size: 13px; }
+
+  @media (max-width: 1100px) {
+    .comp-table th:nth-child(n+8),
+    .comp-table td:nth-child(n+8) { display: none; }
+  }
+  @media (max-width: 900px) {
+    main { padding: 20px 16px; }
+    .elite-header { grid-template-columns: 4px 1fr auto; }
+    .header-logo { display: none; }
+    .form-row, .form-row-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="elite-header">
+  <div class="header-accent"></div>
+  <div class="header-logo">
+    <div class="logo-mark"><span>ADMIN</span></div>
+    <div class="logo-text">
+      <div class="brand">Elite Hub</div>
+      <div class="sub">Compliance Admin</div>
+    </div>
+  </div>
+  <div class="header-title">
+    <div class="page-name">Compliance Admin — All Regions</div>
+    <div class="breadcrumb">Elite Hub &rsaquo; Admin &rsaquo; Contractor Compliance</div>
+  </div>
+  <div class="header-meta">
+    <div class="meta-item">
+      <div class="meta-label">Total</div>
+      <div class="meta-val" id="hdrTotal">—</div>
+    </div>
+    <div class="hdr-divider"></div>
+    <div class="meta-item">
+      <div class="meta-label">Alerts</div>
+      <div class="meta-val" id="hdrAlerts">—</div>
+    </div>
+    <div class="hdr-divider"></div>
+    <div class="meta-item">
+      <div class="meta-label">Last Sync</div>
+      <div class="meta-val" id="hdrSync">—</div>
+    </div>
+  </div>
+</header>
+<div class="sub-bar"></div>
+
+<!-- BACK NAV -->
+<nav class="back-nav">
+  <a id="backToMain" href="index.html">← Main Hub &rsaquo; Compliance Admin</a>
+</nav>
+
+<main>
+  <div class="callout">
+    <strong>Compliance Admin — All Regions.</strong> View, edit, add, and manage contractor compliance records across all regions. Inactive contractors are excluded from all region health scores. Changes save directly to the <strong>COMPLIANCE_Data</strong> Google Sheet.
+  </div>
+
+  <!-- ALERT BANNER -->
+  <div class="alert-banner" id="alertBanner">
+    <div class="alert-banner-title">⚠️ Compliance Alerts — Immediate Action Required</div>
+    <div class="alert-list" id="alertList"></div>
+  </div>
+
+  <!-- KPI STRIP -->
+  <div class="section-row">
+    <span class="sh">National Compliance Overview</span>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Contractor</button>
+      <button class="btn btn-outline btn-sm" onclick="syncData()">↻ Sync</button>
+      <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export</button>
+    </div>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi-card good-card"><div class="kpi-icon">👥</div><div class="kpi-label">Total Active</div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-sub" id="kpiInactive">— inactive hidden</div></div>
+    <div class="kpi-card good-card"><div class="kpi-icon">✅</div><div class="kpi-label">Compliant</div><div class="kpi-value" id="kpiCompliant">—</div><div class="kpi-sub" id="kpiCompliantPct">—</div></div>
+    <div class="kpi-card alert-card"><div class="kpi-icon">🔴</div><div class="kpi-label">Expired</div><div class="kpi-value" id="kpiExpired">—</div><div class="kpi-sub">GL or WC expired</div></div>
+    <div class="kpi-card alert-card"><div class="kpi-icon">⚠️</div><div class="kpi-label">Expiring 30 Days</div><div class="kpi-value" id="kpiExp30">—</div><div class="kpi-sub">Immediate action</div></div>
+    <div class="kpi-card warn-card"><div class="kpi-icon">🕐</div><div class="kpi-label">Expiring 60 Days</div><div class="kpi-value" id="kpiExp60">—</div><div class="kpi-sub">Monitor closely</div></div>
+    <div class="kpi-card"><div class="kpi-icon">📄</div><div class="kpi-label">Missing Docs</div><div class="kpi-value" id="kpiMissing">—</div><div class="kpi-sub">No GL or WC on file</div></div>
+    <div class="kpi-card"><div class="kpi-icon">✈️</div><div class="kpi-label">Will Travel</div><div class="kpi-value" id="kpiTravel">—</div><div class="kpi-sub">Available regionally</div></div>
+    <div class="kpi-card"><div class="kpi-icon">🗂️</div><div class="kpi-label">All Records</div><div class="kpi-value" id="kpiAll">—</div><div class="kpi-sub">Including inactive</div></div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="search-box">
+      <span style="color:var(--gray-400);">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search name, contact, trade, region..." oninput="applyFilters()">
+    </div>
+    <div class="filter-divider"></div>
+    <button class="filter-pill active" onclick="setStatusFilter('all',this)">All Active</button>
+    <button class="filter-pill red-pill" onclick="setStatusFilter('expired',this)">Expired</button>
+    <button class="filter-pill red-pill" onclick="setStatusFilter('expiring30',this)">30 Days</button>
+    <button class="filter-pill yellow-pill" onclick="setStatusFilter('expiring60',this)">60 Days</button>
+    <button class="filter-pill green-pill" onclick="setStatusFilter('compliant',this)">Compliant</button>
+    <button class="filter-pill" onclick="setStatusFilter('missing',this)">Missing</button>
+    <button class="filter-pill" id="showInactiveBtn" onclick="toggleInactive(this)">Show Inactive</button>
+    <div class="filter-divider"></div>
+    <select class="filter-select" id="regionFilter" onchange="applyFilters()">
+      <option value="">All Regions</option>
+      <option value="CLE">Cleveland</option>
+      <option value="PHX">Phoenix</option>
+      <option value="ABQ">Albuquerque</option>
+      <option value="MSP">Minneapolis</option>
+      <option value="STL">St. Louis</option>
+      <option value="CHI">Chicago</option>
+      <option value="IND">Indianapolis</option>
+      <option value="PIT">Pittsburgh</option>
+      <option value="MKE">Milwaukee</option>
+    </select>
+    <select class="filter-select" id="tradeFilter" onchange="applyFilters()">
+      <option value="">All Trades</option>
+      <option>Roofing</option>
+      <option>Gutters</option>
+      <option>Siding</option>
+      <option>Windows</option>
+    </select>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <div class="table-header">
+      <div>
+        <div class="th-title">Contractor Records</div>
+        <div class="th-sub" id="tableCount">Loading...</div>
+      </div>
+      <div class="th-actions">
+        <span style="font-size:11px;color:rgba(255,255,255,.4);align-self:center;" id="unsavedNote"></span>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th onclick="sortBy('name')">Contractor ↕</th>
+            <th onclick="sortBy('region')">Region ↕</th>
+            <th onclick="sortBy('trade1')">Trade ↕</th>
+            <th onclick="sortBy('gl_status')">GL Status ↕</th>
+            <th onclick="sortBy('wc_status')">WC Status ↕</th>
+            <th onclick="sortBy('gl_expiry')">GL Expiry ↕</th>
+            <th onclick="sortBy('wc_expiry')">WC Expiry ↕</th>
+            <th onclick="sortBy('contract_status')">Contract ↕</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="contractorTableBody">
+          <tr class="loading-row"><td colspan="9">Loading contractors...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-brand">
+    <strong>Elite Family of Brands</strong> &nbsp;·&nbsp; Compliance Admin &nbsp;·&nbsp; Internal Use Only
+  </div>
+  <div class="footer-links">
+    <a id="footerMainLink" href="index.html">← Main Hub</a>
+    <a href="#" onclick="syncData()">↻ Refresh</a>
+    <a href="#" onclick="exportCSV()">⬇ Export</a>
+  </div>
+</footer>
+
+<!-- ══ EDIT / ADD MODAL ══════════════════════════════════════ -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="mh-title" id="modalTitle">Edit Contractor</div>
+        <div class="mh-sub" id="modalSub">Update contractor compliance record</div>
+      </div>
+      <button class="close-btn" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-section">
+        <div class="form-section-title">Company & Contact</div>
+        <div class="form-row">
+          <div class="form-group"><label>Company Name *</label><input type="text" id="fCompany" placeholder="ABC Roofing LLC"></div>
+          <div class="form-group"><label>Status</label>
+            <select id="fStatus">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Full Name (Primary)</label><input type="text" id="fContact" placeholder="John Smith"></div>
+          <div class="form-group"><label>Full Name 2</label><input type="text" id="fContact2" placeholder="Jane Smith"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Crew Phone</label><input type="text" id="fPhone" placeholder="555-000-0000"></div>
+          <div class="form-group"><label>Email</label><input type="email" id="fEmail" placeholder="john@example.com"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Email 2</label><input type="email" id="fEmail2" placeholder="secondary@example.com"></div>
+          <div class="form-group"><label>Supervisor</label><input type="text" id="fSupervisor" placeholder="Supervisor name"></div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group"><label>Address</label><input type="text" id="fAddress" placeholder="123 Main St"></div>
+          <div class="form-group"><label>City</label><input type="text" id="fCity" placeholder="Cleveland"></div>
+          <div class="form-group"><label>State / ZIP</label><input type="text" id="fStateZip" placeholder="OH 44101"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Region & Trades</div>
+        <div class="form-row">
+          <div class="form-group"><label>Region(s)</label><input type="text" id="fRegion" placeholder="CLE, PIT"></div>
+          <div class="form-group"><label>From</label><input type="text" id="fFrom" placeholder="Source / referral"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Trade 1</label>
+            <select id="fTrade1"><option value="">Select...</option><option>Roofing</option><option>Gutters</option><option>Siding</option><option>Windows</option><option>Other</option></select>
+          </div>
+          <div class="form-group"><label>Trade 2</label>
+            <select id="fTrade2"><option value="">None</option><option>Roofing</option><option>Gutters</option><option>Siding</option><option>Windows</option><option>Other</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Trade 3</label>
+            <select id="fTrade3"><option value="">None</option><option>Roofing</option><option>Gutters</option><option>Siding</option><option>Windows</option><option>Other</option></select>
+          </div>
+          <div class="form-group"><label>Trade 4</label>
+            <select id="fTrade4"><option value="">None</option><option>Roofing</option><option>Gutters</option><option>Siding</option><option>Windows</option><option>Other</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Will Travel</label>
+            <select id="fTravel"><option value="No">No</option><option value="Yes">Yes</option></select>
+          </div>
+          <div class="form-group"><label>Max Distance (miles)</label><input type="number" id="fTravelDist" placeholder="e.g. 50"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">GL Insurance</div>
+        <div class="form-row">
+          <div class="form-group"><label>GL Policy #</label><input type="text" id="fGLPolicy" placeholder="Policy number"></div>
+          <div class="form-group"><label>GL Expiry Date</label><input type="date" id="fGLExpiry"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>GL Coverage For</label><input type="text" id="fGLCoverage" placeholder="Coverage description"></div>
+          <div class="form-group"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">WC Insurance</div>
+        <div class="form-row">
+          <div class="form-group"><label>WC Policy #</label><input type="text" id="fWCPolicy" placeholder="Policy number"></div>
+          <div class="form-group"><label>WC Expiry Date</label><input type="date" id="fWCExpiry"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>WC Coverage For</label><input type="text" id="fWCCoverage" placeholder="Coverage description"></div>
+          <div class="form-group"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Insurance Contact</div>
+        <div class="form-row">
+          <div class="form-group"><label>Ins. Contact Name</label><input type="text" id="fInsContact" placeholder="Agent name"></div>
+          <div class="form-group"><label>Ins. Phone</label><input type="text" id="fInsPhone" placeholder="555-000-0000"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Ins. Email</label><input type="email" id="fInsEmail" placeholder="agent@insurer.com"></div>
+          <div class="form-group"></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <div id="modalInactiveNote" style="font-size:11px;color:var(--red);display:none;">
+        ⚠ Marking Inactive removes this contractor from all region health scores.
+      </div>
+      <div class="modal-footer-right">
+        <button class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveContractor()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONFIRM DIALOG ════════════════════════════════════════ -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">⚠️</div>
+    <div class="confirm-title" id="confirmTitle">Mark as Inactive?</div>
+    <div class="confirm-sub" id="confirmSub">This contractor will be excluded from all region health scores. You can restore them at any time.</div>
+    <div class="confirm-actions">
+      <button class="btn btn-outline" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-red" id="confirmBtn" onclick="">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   CONFIGURATION
+══════════════════════════════════════════════════════════════ */
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec';
+const MAIN_HUB_URL = 'https://elitecrest.github.io/elite-hub/index.html';
+
+const REGION_ABBR_MAP = {
+  CLE: 'Cleveland', PHX: 'Phoenix', ABQ: 'Albuquerque',
+  MSP: 'Minneapolis', STL: 'St. Louis', CHI: 'Chicago',
+  IND: 'Indianapolis', PIT: 'Pittsburgh', MKE: 'Milwaukee',
+};
+
+/* ══════════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════════ */
+let allContractors  = [];   // raw from backend (all regions)
+let filtered        = [];
+let statusFilter    = 'all';
+let showInactive    = false;
+let sortField       = 'name';
+let sortDir         = 1;
+let editingId       = null; // null = add mode, string = edit mode
+let pendingInactiveId = null;
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════ */
+document.getElementById('backToMain').href   = MAIN_HUB_URL;
+document.getElementById('footerMainLink').href = MAIN_HUB_URL;
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeEditModal(); closeConfirm(); }
+});
+
+syncData();
+
+/* ══════════════════════════════════════════════════════════════
+   DATA SYNC
+══════════════════════════════════════════════════════════════ */
+async function syncData() {
+  document.getElementById('tableCount').textContent = 'Loading...';
+  document.getElementById('hdrSync').textContent = '…';
+  try {
+    // Fetch all regions by omitting region param
+    const res  = await fetch(`${BACKEND_URL}?action=complianceData`);
+    const data = await res.json();
+    allContractors = (data.data || []).map(normalizeContractor);
+    document.getElementById('hdrSync').textContent = new Date().toLocaleTimeString();
+    renderAll();
+  } catch(e) {
+    document.getElementById('tableCount').textContent = 'Error loading — check backend';
+    document.getElementById('hdrSync').textContent = 'Error';
+    showToast('Could not load contractor data', 'error');
+  }
+}
+
+function normalizeContractor(r) {
+  return {
+    id:              String(r['id']              || Math.random().toString(36).slice(2)),
+    name:            String(r['name']            || ''),
+    contact:         String(r['contact']         || r['contact_name'] || ''),
+    contact2:        String(r['contact2']        || ''),
+    phone:           String(r['phone']           || ''),
+    email:           String(r['email']           || ''),
+    email2:          String(r['email2']          || ''),
+    supervisor:      String(r['supervisor']      || ''),
+    address:         String(r['address']         || ''),
+    city:            String(r['city']            || ''),
+    state:           String(r['state']           || ''),
+    zip:             String(r['zip']             || ''),
+    ins_contact:     String(r['ins_contact']     || ''),
+    ins_phone:       String(r['ins_phone']       || ''),
+    ins_email:       String(r['ins_email']       || ''),
+    gl_policy:       String(r['gl_policy']       || ''),
+    gl_expiry:       String(r['gl_expiry']       || ''),
+    gl_coverage:     String(r['gl_coverage']     || ''),
+    wc_policy:       String(r['wc_policy']       || ''),
+    wc_expiry:       String(r['wc_expiry']       || ''),
+    wc_coverage:     String(r['wc_coverage']     || ''),
+    will_travel:     String(r['will_travel']     || 'No'),
+    travel_distance: String(r['travel_distance'] || ''),
+    trade1:          String(r['trade1']          || ''),
+    trade2:          String(r['trade2']          || ''),
+    trade3:          String(r['trade3']          || ''),
+    trade4:          String(r['trade4']          || ''),
+    contract_status: String(r['contract_status'] || 'Active'),
+    region:          String(r['region']          || ''),
+    from:            String(r['from']            || ''),
+  };
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STATUS HELPERS
+══════════════════════════════════════════════════════════════ */
+function getExpiryStatus(dateStr) {
+  if (!dateStr || dateStr === '' || dateStr === 'null') return 'missing';
+  const exp  = new Date(dateStr);
+  if (isNaN(exp)) return 'missing';
+  const days = Math.ceil((exp - new Date()) / 86400000);
+  if (days < 0)   return 'expired';
+  if (days <= 30) return 'expiring30';
+  if (days <= 60) return 'expiring60';
+  return 'ok';
+}
+
+function getOverallStatus(c) {
+  if ((c.contract_status || '').toLowerCase() === 'inactive') return 'inactive';
+  const gl = getExpiryStatus(c.gl_expiry);
+  const wc = getExpiryStatus(c.wc_expiry);
+  const s  = [gl, wc];
+  if (s.includes('missing'))    return 'missing';
+  if (s.includes('expired'))    return 'expired';
+  if (s.includes('expiring30')) return 'expiring30';
+  if (s.includes('expiring60')) return 'expiring60';
+  return 'compliant';
+}
+
+function statusBadge(status) {
+  const map = {
+    compliant:  ['badge-compliant',  '✓ Compliant'],
+    expired:    ['badge-expired',    '✗ Expired'],
+    expiring30: ['badge-expiring30', '⚠ 30 Days'],
+    expiring60: ['badge-expiring60', '⏰ 60 Days'],
+    missing:    ['badge-missing',    '— Missing'],
+    ok:         ['badge-compliant',  '✓ OK'],
+  };
+  const [cls, label] = map[status] || ['badge-missing', '—'];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function expiryCell(dateStr) {
+  const s = getExpiryStatus(dateStr);
+  if (s === 'missing') return `<span class="expiry-date missing">Not on file</span>`;
+  return `<span class="expiry-date ${s}">${formatDate(dateStr)}</span>`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RENDER ALL
+══════════════════════════════════════════════════════════════ */
+function renderAll() {
+  updateKPIs();
+  updateAlertBanner();
+  applyFilters();
+}
+
+function updateKPIs() {
+  // Active contractors only for scores
+  const active   = allContractors.filter(c => (c.contract_status||'').toLowerCase() !== 'inactive');
+  const inactive = allContractors.filter(c => (c.contract_status||'').toLowerCase() === 'inactive');
+  const statuses = active.map(c => getOverallStatus(c));
+  const compliant  = statuses.filter(s => s === 'compliant').length;
+  const expired    = statuses.filter(s => s === 'expired').length;
+  const exp30      = statuses.filter(s => s === 'expiring30').length;
+  const exp60      = statuses.filter(s => s === 'expiring60').length;
+  const missing    = statuses.filter(s => s === 'missing').length;
+  const travel     = active.filter(c => (c.will_travel||'').toLowerCase() === 'yes').length;
+  const alerts     = expired + exp30;
+
+  document.getElementById('kpiTotal').textContent       = active.length;
+  document.getElementById('kpiInactive').textContent    = `${inactive.length} inactive hidden`;
+  document.getElementById('kpiCompliant').textContent   = compliant;
+  document.getElementById('kpiCompliantPct').textContent = active.length ? Math.round((compliant/active.length)*100) + '% of active' : '—';
+  document.getElementById('kpiExpired').textContent     = expired;
+  document.getElementById('kpiExp30').textContent       = exp30;
+  document.getElementById('kpiExp60').textContent       = exp60;
+  document.getElementById('kpiMissing').textContent     = missing;
+  document.getElementById('kpiTravel').textContent      = travel;
+  document.getElementById('kpiAll').textContent         = allContractors.length;
+  document.getElementById('hdrTotal').textContent       = active.length;
+  document.getElementById('hdrAlerts').textContent      = alerts;
+}
+
+function updateAlertBanner() {
+  const alerts = allContractors.filter(c => {
+    const s = getOverallStatus(c);
+    return s === 'expired' || s === 'expiring30';
+  });
+  const banner = document.getElementById('alertBanner');
+  const list   = document.getElementById('alertList');
+  if (!alerts.length) { banner.classList.remove('visible'); return; }
+  banner.classList.add('visible');
+  list.innerHTML = alerts.map(c => {
+    const s = getOverallStatus(c);
+    return `<div class="alert-chip" onclick="openEditModal('${c.id}')">
+      ${s === 'expired' ? '🔴' : '⚠️'} ${c.name} <span style="opacity:.6;font-size:10px;">${c.region || ''}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FILTERS & SORT
+══════════════════════════════════════════════════════════════ */
+function setStatusFilter(filter, btn) {
+  statusFilter = filter;
+  document.querySelectorAll('.filter-pill').forEach(p => {
+    if (p.id !== 'showInactiveBtn') p.classList.remove('active');
+  });
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function toggleInactive(btn) {
+  showInactive = !showInactive;
+  btn.classList.toggle('active', showInactive);
+  btn.textContent = showInactive ? 'Hide Inactive' : 'Show Inactive';
+  applyFilters();
+}
+
+function applyFilters() {
+  const search   = document.getElementById('searchInput').value.toLowerCase();
+  const region   = document.getElementById('regionFilter').value.toUpperCase();
+  const trade    = document.getElementById('tradeFilter').value;
+
+  filtered = allContractors.filter(c => {
+    const isInactive = (c.contract_status||'').toLowerCase() === 'inactive';
+    if (!showInactive && isInactive) return false;
+
+    const status = getOverallStatus(c);
+    if (statusFilter === 'all' && isInactive) return showInactive;
+    if (statusFilter !== 'all' && status !== statusFilter) return false;
+
+    if (region) {
+      const parts = (c.region || '').toUpperCase().split(/[\s,]+/);
+      if (!parts.includes(region)) return false;
+    }
+    if (trade && c.trade1 !== trade && c.trade2 !== trade && c.trade3 !== trade && c.trade4 !== trade) return false;
+    if (search && ![c.name, c.contact, c.trade1, c.region, c.email, c.supervisor].join(' ').toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  filtered.sort((a, b) => {
+    let av = a[sortField] || '';
+    let bv = b[sortField] || '';
+    return sortDir * av.toString().localeCompare(bv.toString());
+  });
+
+  renderTable();
+}
+
+function sortBy(field) {
+  document.querySelectorAll('.comp-table th').forEach(th => th.classList.remove('sorted'));
+  event.target.classList.add('sorted');
+  if (sortField === field) sortDir *= -1;
+  else { sortField = field; sortDir = 1; }
+  applyFilters();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RENDER TABLE
+══════════════════════════════════════════════════════════════ */
+function renderTable() {
+  const tbody = document.getElementById('contractorTableBody');
+  document.getElementById('tableCount').textContent =
+    `${filtered.length} of ${allContractors.length} contractors`;
+
+  if (!filtered.length) {
+    tbody.innerHTML = `
+      <tr><td colspan="9">
+        <div class="empty-state">
+          <div class="es-icon">📋</div>
+          <div class="es-title">${allContractors.length === 0 ? 'No data loaded' : 'No results'}</div>
+          <div class="es-sub">${allContractors.length === 0 ? 'Check backend connection or COMPLIANCE_Data tab.' : 'Try adjusting filters or search.'}</div>
+        </div>
+      </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(c => {
+    const glStatus = getExpiryStatus(c.gl_expiry);
+    const wcStatus = getExpiryStatus(c.wc_expiry);
+    const isInactive = (c.contract_status||'').toLowerCase() === 'inactive';
+    const contractBadge = isInactive ? 'badge-inactive' : c.contract_status === 'Active' ? 'badge-active' : 'badge-pending';
+    const regionParts = (c.region || '').split(/[\s,]+/).filter(Boolean);
+
+    return `
+      <tr class="${isInactive ? 'inactive-row' : ''}">
+        <td>
+          <div class="contractor-name">${c.name || '—'}</div>
+          <div class="contractor-trade">${c.contact || ''}</div>
+        </td>
+        <td>
+          ${regionParts.map(r => `<span class="badge badge-region">${r}</span>`).join(' ')}
+        </td>
+        <td style="font-size:12px;color:var(--gray-600);">${c.trade1 || '—'}${c.trade2 ? ', ' + c.trade2 : ''}</td>
+        <td>${statusBadge(glStatus)}</td>
+        <td>${statusBadge(wcStatus)}</td>
+        <td>${expiryCell(c.gl_expiry)}</td>
+        <td>${expiryCell(c.wc_expiry)}</td>
+        <td><span class="badge ${contractBadge}">${c.contract_status || '—'}</span></td>
+        <td>
+          <div class="row-actions">
+            <button class="row-btn edit-btn" onclick="openEditModal('${c.id}')">✏ Edit</button>
+            ${isInactive
+              ? `<button class="row-btn restore-btn" onclick="confirmRestore('${c.id}')">↩ Restore</button>`
+              : `<button class="row-btn delete-btn" onclick="confirmDeactivate('${c.id}')">✕ Deactivate</button>`
+            }
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   EDIT / ADD MODAL
+══════════════════════════════════════════════════════════════ */
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Add Contractor';
+  document.getElementById('modalSub').textContent   = 'Create a new contractor compliance record';
+  document.getElementById('modalInactiveNote').style.display = 'none';
+  clearForm();
+  document.getElementById('fStatus').value = 'Active';
+  document.getElementById('editModal').classList.add('open');
+}
+
+function openEditModal(id) {
+  const c = allContractors.find(x => x.id === id);
+  if (!c) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Edit Contractor';
+  document.getElementById('modalSub').textContent   = c.name || 'Contractor record';
+  document.getElementById('modalInactiveNote').style.display = 'none';
+  populateForm(c);
+  document.getElementById('editModal').classList.add('open');
+
+  // Show inactive warning when status changes
+  document.getElementById('fStatus').onchange = function() {
+    document.getElementById('modalInactiveNote').style.display =
+      this.value === 'Inactive' ? 'block' : 'none';
+  };
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').classList.remove('open');
+  editingId = null;
+}
+
+function clearForm() {
+  ['fCompany','fContact','fContact2','fPhone','fEmail','fEmail2','fSupervisor',
+   'fAddress','fCity','fStateZip','fRegion','fFrom',
+   'fGLPolicy','fGLExpiry','fGLCoverage','fWCPolicy','fWCExpiry','fWCCoverage',
+   'fInsContact','fInsPhone','fInsEmail','fTravelDist']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['fStatus','fTrade1','fTrade2','fTrade3','fTrade4','fTravel']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.selectedIndex = 0; });
+}
+
+function populateForm(c) {
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  set('fCompany',    c.name);
+  set('fStatus',     c.contract_status);
+  set('fContact',    c.contact);
+  set('fContact2',   c.contact2);
+  set('fPhone',      c.phone);
+  set('fEmail',      c.email);
+  set('fEmail2',     c.email2);
+  set('fSupervisor', c.supervisor);
+  set('fAddress',    c.address);
+  set('fCity',       c.city);
+  set('fStateZip',   [c.state, c.zip].filter(Boolean).join(' '));
+  set('fRegion',     c.region);
+  set('fFrom',       c.from);
+  set('fTrade1',     c.trade1);
+  set('fTrade2',     c.trade2);
+  set('fTrade3',     c.trade3);
+  set('fTrade4',     c.trade4);
+  set('fTravel',     c.will_travel);
+  set('fTravelDist', c.travel_distance);
+  set('fGLPolicy',   c.gl_policy);
+  set('fGLExpiry',   c.gl_expiry);
+  set('fGLCoverage', c.gl_coverage);
+  set('fWCPolicy',   c.wc_policy);
+  set('fWCExpiry',   c.wc_expiry);
+  set('fWCCoverage', c.wc_coverage);
+  set('fInsContact', c.ins_contact);
+  set('fInsPhone',   c.ins_phone);
+  set('fInsEmail',   c.ins_email);
+}
+
+function getFormValues() {
+  const g = id => (document.getElementById(id)||{}).value || '';
+  return {
+    name:            g('fCompany'),
+    contract_status: g('fStatus'),
+    contact:         g('fContact'),
+    contact2:        g('fContact2'),
+    phone:           g('fPhone'),
+    email:           g('fEmail'),
+    email2:          g('fEmail2'),
+    supervisor:      g('fSupervisor'),
+    address:         g('fAddress'),
+    city:            g('fCity'),
+    state:           g('fStateZip').split(' ')[0] || '',
+    zip:             g('fStateZip').split(' ')[1] || '',
+    region:          g('fRegion').toUpperCase(),
+    from:            g('fFrom'),
+    trade1:          g('fTrade1'),
+    trade2:          g('fTrade2'),
+    trade3:          g('fTrade3'),
+    trade4:          g('fTrade4'),
+    will_travel:     g('fTravel'),
+    travel_distance: g('fTravelDist'),
+    gl_policy:       g('fGLPolicy'),
+    gl_expiry:       g('fGLExpiry'),
+    gl_coverage:     g('fGLCoverage'),
+    wc_policy:       g('fWCPolicy'),
+    wc_expiry:       g('fWCExpiry'),
+    wc_coverage:     g('fWCCoverage'),
+    ins_contact:     g('fInsContact'),
+    ins_phone:       g('fInsPhone'),
+    ins_email:       g('fInsEmail'),
+  };
+}
+
+async function saveContractor() {
+  const vals = getFormValues();
+  if (!vals.name) { showToast('Company name is required.', 'warn'); return; }
+
+  if (editingId) {
+    // Update existing
+    const idx = allContractors.findIndex(c => c.id === editingId);
+    if (idx >= 0) allContractors[idx] = { ...allContractors[idx], ...vals };
+    showToast(`${vals.name} updated.`, 'info');
+  } else {
+    // Add new
+    const newC = normalizeContractor({ ...vals, id: 'new-' + Date.now() });
+    allContractors.unshift(newC);
+    showToast(`${vals.name} added.`, 'info');
+  }
+
+  closeEditModal();
+  renderAll();
+
+  // Push to backend
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action:     editingId ? 'updateContractor' : 'addContractor',
+        id:         editingId,
+        region:     vals.region,
+        contractor: vals,
+      })
+    });
+  } catch(e) { /* silent — data updated locally */ }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DEACTIVATE / RESTORE
+══════════════════════════════════════════════════════════════ */
+function confirmDeactivate(id) {
+  const c = allContractors.find(x => x.id === id);
+  if (!c) return;
+  pendingInactiveId = id;
+  document.getElementById('confirmTitle').textContent = `Deactivate ${c.name}?`;
+  document.getElementById('confirmSub').textContent   =
+    'This contractor will be marked Inactive and excluded from all region health scores. You can restore them at any time.';
+  document.getElementById('confirmBtn').textContent   = 'Deactivate';
+  document.getElementById('confirmBtn').onclick       = () => executeDeactivate(id);
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+
+function confirmRestore(id) {
+  const c = allContractors.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('confirmTitle').textContent = `Restore ${c.name}?`;
+  document.getElementById('confirmSub').textContent   =
+    'This contractor will be set back to Active and included in region health scores.';
+  document.getElementById('confirmBtn').textContent   = 'Restore';
+  document.getElementById('confirmBtn').onclick       = () => executeRestore(id);
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('open');
+  pendingInactiveId = null;
+}
+
+async function executeDeactivate(id) {
+  closeConfirm();
+  const idx = allContractors.findIndex(c => c.id === id);
+  if (idx < 0) return;
+  allContractors[idx].contract_status = 'Inactive';
+  showToast(`${allContractors[idx].name} marked Inactive.`, 'warn');
+  renderAll();
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'updateContractor', id, contractor: { contract_status: 'Inactive' } })
+    });
+  } catch(e) {}
+}
+
+async function executeRestore(id) {
+  closeConfirm();
+  const idx = allContractors.findIndex(c => c.id === id);
+  if (idx < 0) return;
+  allContractors[idx].contract_status = 'Active';
+  showToast(`${allContractors[idx].name} restored to Active.`, 'info');
+  renderAll();
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'updateContractor', id, contractor: { contract_status: 'Active' } })
+    });
+  } catch(e) {}
+}
+
+/* ══════════════════════════════════════════════════════════════
+   EXPORT
+══════════════════════════════════════════════════════════════ */
+function exportCSV() {
+  if (!filtered.length) { showToast('No data to export.', 'warn'); return; }
+  const headers = ['ID','Company','Region','Status','Contact','Phone','Email',
+    'Trade 1','Trade 2','GL Policy','GL Expiry','WC Policy','WC Expiry','Will Travel','Max Distance'];
+  const rows = filtered.map(c => [
+    c.id, c.name, c.region, c.contract_status, c.contact, c.phone, c.email,
+    c.trade1, c.trade2, c.gl_policy, c.gl_expiry, c.wc_policy, c.wc_expiry,
+    c.will_travel, c.travel_distance
+  ].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
+  const csv  = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `compliance_admin_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════════════ */
+function formatDate(raw) {
+  if (!raw) return '—';
+  try { return new Date(raw).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); }
+  catch { return raw; }
+}
+
+function showToast(msg, type = 'info') {
+  const colors = { info: 'var(--page-color)', warn: '#D97706', error: '#DC2626' };
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.style.borderLeftColor = colors[type] || colors.info;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+</script>
+</body>
+</html>
