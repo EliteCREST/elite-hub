@@ -856,6 +856,26 @@ function showToast(msg, type = 'info') {
 ══════════════════════════════════════════════════════ */
 initRegion();
 syncData();
+
+  // Load from pre-warmed cache instantly
+  try {
+    const _cc = localStorage.getItem('compliance_cleveland');
+    if (_cc) {
+      const { data: cd, ts } = JSON.parse(_cc);
+      if (Date.now() - ts < 300000 && cd.data) {
+        const compData = cd;
+        // Apply cached compliance data
+        const compPct = compData.compliancePct || 0;
+        const total   = compData.total || 0;
+        const alerts  = (compData.expiredGL||0) + (compData.expiredWC||0);
+        if (el('kpiContractors')) el('kpiContractors').textContent = total;
+        if (el('smCompliance'))   el('smCompliance').textContent   = compPct + '%';
+        if (el('kpiAlerts'))      el('kpiAlerts').textContent      = alerts;
+        if (el('kpiCompScore'))   el('kpiCompScore').textContent   = (compData.complianceScore || '—') + '/100';
+      }
+    }
+  } catch(e) {}
+  // elite-hub-cache marker
 setInterval(syncData, 120000); // auto-refresh every 2 min
 </script>
 </body>

@@ -182,7 +182,21 @@
   .empty-state .es-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
   .empty-state .es-sub   { font-size: 12px; color: var(--gray-400); line-height: 1.6; }
 
-  /* ══ TOAST ═══════════════════════════════════════════════════ */
+  
+function getCached(key) {
+  try {
+    const item = localStorage.getItem(key);
+    if (!item) return null;
+    const { data, ts } = JSON.parse(item);
+    if (Date.now() - ts < 300000) return data;
+  } catch(e) {}
+  return null;
+}
+function setCache(key, data) {
+  try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch(e) {}
+}
+
+/* ══ TOAST ═══════════════════════════════════════════════════ */
   .toast { position: fixed; bottom: 28px; right: 24px; z-index: 9999; background: var(--navy); color: white; padding: 14px 20px; border-radius: 10px; font-size: 12.5px; box-shadow: var(--shadow-xl); max-width: 340px; line-height: 1.5; animation: slideUp .25s ease; border-left: 4px solid var(--blue); }
   @keyframes slideUp { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)} }
 
@@ -533,11 +547,19 @@ setInterval(syncData, 120000);
 
 /* ══ SYNC ════════════════════════════════════════════════════ */
 async function syncData() {
-  document.getElementById('hdrSync').textContent = '…';
+  // Show cached instantly
+  const cached = getCached(`legal_${regionKey}`);
+  if (cached && cached.cases) {
+    allCases = cached.cases.map(normalizeCase);
+    renderAll();
+  } else {
+    document.getElementById('hdrSync').textContent = '…';
+  }
   try {
     const res  = await fetch(`${BACKEND_URL}?action=legalData&region=${regionKey}`);
     const data = await res.json();
     allCases = (data.cases || []).map(normalizeCase);
+    setCache(`legal_${regionKey}`, data);
     renderAll();
     document.getElementById('hdrSync').textContent = new Date().toLocaleTimeString();
   } catch(e) {
@@ -824,6 +846,20 @@ function exportCSV() {
   a.href     = URL.createObjectURL(blob);
   a.download = `${regionKey}_legal_${new Date().toISOString().split('T')[0]}.csv`;
   a.click();
+}
+
+
+function getCached(key) {
+  try {
+    const item = localStorage.getItem(key);
+    if (!item) return null;
+    const { data, ts } = JSON.parse(item);
+    if (Date.now() - ts < 300000) return data;
+  } catch(e) {}
+  return null;
+}
+function setCache(key, data) {
+  try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch(e) {}
 }
 
 /* ══ TOAST ═══════════════════════════════════════════════════ */

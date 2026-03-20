@@ -1121,12 +1121,25 @@ async function syncBackend() {
     showToast('Backend URL not configured yet — paste it into BACKEND_URL.', 'warn');
     return;
   }
+
+  // Show cached data instantly
+  try {
+    const _rc = localStorage.getItem('reviews_all');
+    if (_rc) {
+      const { data: cd, ts } = JSON.parse(_rc);
+      if (Date.now() - ts < 300000) {
+        if (cd.summary) { summaryData = cd.summary; renderSummaryTable(); updateKPIsFromSummary(); }
+        if (cd.reviews) { reviewsData = cd.reviews; renderReviewLists(); updateKPIsFromReviews(); }
+      }
+    }
+  } catch(e) {}
   try {
     const res  = await fetch(`${BACKEND_URL}?action=reviewsData`); // admin — no region filter
     const data = await res.json();
     if (data.summary)  { summaryData = data.summary;  renderSummaryTable(); updateKPIsFromSummary(); }
     if (data.reviews)  { reviewsData = data.reviews;  renderReviewLists();  updateKPIsFromReviews(); }
     updateImportStatus();
+    try { localStorage.setItem('reviews_all', JSON.stringify({ data: { summary: summaryData, reviews: reviewsData }, ts: Date.now() })); } catch(e) {}
     showToast('Synced from backend.', 'info');
   } catch(e) {
     showToast('Sync failed — check BACKEND_URL.', 'error');

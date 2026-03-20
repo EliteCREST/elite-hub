@@ -920,5 +920,47 @@ buildRegionCards();
 refreshData();
 setInterval(refreshData, 120000); // auto-refresh every 2 min // auto-refresh every 5 min
 </script>
+
+<script>
+/* ══ SERVICE WORKER REGISTRATION + DATA PRE-WARM ═════════════ */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('https://elitecrest.github.io/elite-hub/sw.js')
+    .then(reg => {
+      console.log('[EliteHub] Service worker registered');
+      // Pre-warm data cache for all regions in background
+      setTimeout(prewarmDataCache, 3000);
+    })
+    .catch(err => console.log('[EliteHub] SW registration failed:', err));
+}
+
+async function prewarmDataCache() {
+  const BACKEND = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec';
+  const REGIONS = ['cleveland', 'phoenix', 'albuquerque', 'minneapolis', 'stlouis', 'chicago', 'indianapolis', 'pittsburgh', 'milwaukee'];
+  const CACHE_KEY = 'elite-hub-data-v1';
+  
+  // Pre-fetch compliance data for all regions
+  for (const region of REGIONS) {
+    try {
+      const res  = await fetch(`${BACKEND}?action=complianceData&region=${region}`);
+      const data = await res.json();
+      localStorage.setItem(`compliance_${region}`, JSON.stringify({ data, ts: Date.now() }));
+    } catch(e) {}
+    await new Promise(r => setTimeout(r, 400)); // small delay between calls
+  }
+  
+  // Pre-fetch fleet data for all regions  
+  for (const region of REGIONS) {
+    try {
+      const res  = await fetch(`${BACKEND}?action=fleetData&region=${region}`);
+      const data = await res.json();
+      localStorage.setItem(`fleet_${region}`, JSON.stringify({ data, ts: Date.now() }));
+    } catch(e) {}
+    await new Promise(r => setTimeout(r, 400));
+  }
+
+  console.log('[EliteHub] Data pre-warm complete');
+}
+</script>
+
 </body>
 </html>
