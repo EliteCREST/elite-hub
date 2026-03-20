@@ -215,7 +215,7 @@
     vertical-align: middle;
   }
   .comp-table tr:last-child td { border-bottom: none; }
-  .comp-table tr:hover td { background: var(--page-pale); cursor: pointer; }
+  .comp-table tr:hover td { background: var(--blue-pale); cursor: pointer; color: var(--navy); }
 
   /* Name cell */
   .contractor-name { font-weight: 700; color: var(--navy); font-size: 13px; }
@@ -464,7 +464,9 @@
   /* Tables */
   body.dark .comp-table th { background: #0F172A !important; color: #9CA3AF !important; border-color: #374151 !important; }
   body.dark .comp-table td { color: #F1F5F9 !important; border-color: #374151 !important; }
-  body.dark .comp-table tr:hover td { background: #1E3A5F !important; }
+  body.dark .comp-table tr:hover td { background: #1E3A5F !important; color: #F1F5F9 !important; }
+  body.dark .comp-table tr:hover td a,
+  body.dark .comp-table tr:hover td span { color: #F1F5F9 !important; }
 
   /* Inputs */
   body.dark input, body.dark select, body.dark textarea {
