@@ -254,7 +254,7 @@
   .badge-pending   { background: var(--yellow-pale); color: var(--yellow); }
   .badge-google    { background: #EAF1FB; color: #1F5FAD; }
   .badge-bbb       { background: #FEE2E2; color: #B91C1C; }
-  .badge-other     { background: var(--gray-200); color: var(--gray-600); }
+  .badge-facebook     { background: var(--gray-200); color: var(--gray-600); }
   .badge-5star     { background: #F0FDF4; color: #15803D; }
   .badge-4star     { background: #F7FEE7; color: #4D7C0F; }
   .badge-3star     { background: var(--yellow-pale); color: #92400E; }
@@ -594,8 +594,7 @@ function toggleDarkMode() {
   <div class="platform-tabs" style="margin-top:14px;">
     <button class="ptab active" id="tab-all"    onclick="switchTab('all')">All <span class="ptab-count" id="cnt-all">0</span></button>
     <button class="ptab"        id="tab-google" onclick="switchTab('google')">Google <span class="ptab-count" id="cnt-google">0</span></button>
-    <button class="ptab"        id="tab-bbb"    onclick="switchTab('bbb')">BBB <span class="ptab-count" id="cnt-bbb">0</span></button>
-    <button class="ptab"        id="tab-other"  onclick="switchTab('other')">Other <span class="ptab-count" id="cnt-other">0</span></button>
+        <button class="ptab"        id="tab-other"  onclick="switchTab('other')">Facebook <span class="ptab-count" id="cnt-other">0</span></button>
   </div>
 
   <div class="platform-panel active" id="panel-all">
@@ -629,27 +628,14 @@ function toggleDarkMode() {
     </div>
   </div>
 
-  <div class="platform-panel" id="panel-bbb">
-    <div class="reviews-card">
-      <div class="rc-header">
-        <div class="rc-title">BBB Reviews</div>
-        <div class="rc-controls">
-          <div class="review-search"><span style="color:var(--gray-400);">🔍</span><input type="text" placeholder="Search..." oninput="filterReviews(this.value,'bbb')"></div>
-          <button class="filter-pill active" onclick="setFilter('bbb','all',this)">All</button>
-          <button class="filter-pill" onclick="setFilter('bbb','pending',this)">Needs Response</button>
-          <button class="filter-pill" onclick="setFilter('bbb','low',this)">1-2 ⭐</button>
-        </div>
-      </div>
-      <div id="list-bbb"></div>
-    </div>
-  </div>
+  
 
   <div class="platform-panel" id="panel-other">
     <div class="reviews-card">
       <div class="rc-header">
         <div class="rc-title">Other Platform Reviews</div>
         <div class="rc-controls">
-          <div class="review-search"><span style="color:var(--gray-400);">🔍</span><input type="text" placeholder="Search..." oninput="filterReviews(this.value,'other')"></div>
+          <div class="review-search"><span style="color:var(--gray-400);">🔍</span><input type="text" placeholder="Search Facebook reviews..." oninput="filterReviews(this.value,'other')"></div>
           <button class="filter-pill active" onclick="setFilter('other','all',this)">All</button>
           <button class="filter-pill" onclick="setFilter('other','pending',this)">Needs Response</button>
           <button class="filter-pill" onclick="setFilter('other','low',this)">1-2 ⭐</button>
@@ -790,7 +776,7 @@ function platformLabel(raw) {
 
 function platformBadgeClass(raw) {
   const key = normalizePlatform(raw);
-  return key === 'google' ? 'badge-google' : key === 'bbb' ? 'badge-bbb' : 'badge-other';
+  return key === 'google' ? 'badge-google' : key === 'bbb' ? 'badge-bbb' : 'badge-facebook';
 }
 
 /* ══════════════════════════════════════════════════════════════
