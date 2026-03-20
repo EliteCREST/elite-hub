@@ -630,6 +630,16 @@ function toggleDarkMode() {
       <option>Wildwood</option>
       <option>123 Exteriors</option>
     </select>
+    <select class="filter-select" id="ownershipFilter" onchange="applyFilters()">
+      <option value="">Owned / Leased</option>
+      <option value="Owned">Owned</option>
+      <option value="Leased">Leased</option>
+    </select>
+    <select class="filter-select" id="fleetTypeFilter" onchange="applyFilters()">
+      <option value="">All Fleets</option>
+      <option value="Elite">Elite</option>
+      <option value="Accuserve">Accuserve</option>
+    </select>
     <select class="filter-select" id="makeFilter" onchange="applyFilters()">
       <option value="">All Makes</option>
     </select>
@@ -710,6 +720,24 @@ function toggleDarkMode() {
               <option>Universal</option>
               <option>Wildwood</option>
               <option>123 Exteriors</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ownership</label>
+            <select id="fOwnership">
+              <option value="">Select...</option>
+              <option value="Owned">Owned</option>
+              <option value="Leased">Leased</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Fleet</label>
+            <select id="fFleetType">
+              <option value="">Select...</option>
+              <option value="Elite">Elite</option>
+              <option value="Accuserve">Accuserve</option>
             </select>
           </div>
         </div>
@@ -1026,8 +1054,10 @@ function setFilter(filter, btn) {
 
 function applyFilters() {
   const search = document.getElementById('searchInput').value.toLowerCase();
-  const brand  = document.getElementById('brandFilter').value.toLowerCase();
-  const make   = document.getElementById('makeFilter').value.toLowerCase();
+  const brand      = document.getElementById('brandFilter').value.toLowerCase();
+  const make       = document.getElementById('makeFilter').value.toLowerCase();
+  const ownership  = (document.getElementById('ownershipFilter')||{}).value || '';
+  const fleetType  = (document.getElementById('fleetTypeFilter')||{}).value || '';
 
   const regionAdmin = (document.getElementById('regionAdminFilter')||{}).value || '';
   filtered = allVehicles.filter(v => {
@@ -1037,8 +1067,10 @@ function applyFilters() {
     if (statusFilter === 'unknown'    && (v.status||'').toLowerCase() !== 'unknown') return false;
     if (statusFilter === 'tag-expired'&& getTagStatus(v.tag_expiration) !== 'expired') return false;
     if (statusFilter === 'unsigned'   && (v.agreement||'').toLowerCase() === 'signed') return false;
-    if (brand && (v.brand||'').toLowerCase() !== brand) return false;
-    if (make  && (v.make||'').toLowerCase()  !== make)  return false;
+    if (brand     && (v.brand||'').toLowerCase()     !== brand)                    return false;
+    if (make      && (v.make||'').toLowerCase()      !== make)                     return false;
+    if (ownership  && (v.ownership||'').toLowerCase()  !== ownership.toLowerCase()) return false;
+    if (fleetType  && (v.fleet_type||'').toLowerCase() !== fleetType.toLowerCase()) return false;
     if (search && ![v.evid, v.driver, v.plate, v.vin, v.make, v.model, v.vehicle_location, v.last_driver].join(' ').toLowerCase().includes(search)) return false;
     return true;
   });
@@ -1102,6 +1134,8 @@ function renderVehicles() {
             ${v.vehicle_location ? `<span class="tag tag-location">${v.vehicle_location}</span>` : ''}
             ${tagExpiryTag(v)}
             ${v.wrap === 'Yes' ? `<span class="tag tag-wrap">Wrapped</span>` : ''}
+            ${v.ownership ? `<span class="tag tag-gray">${v.ownership}</span>` : ''}
+            ${v.fleet_type ? `<span class="tag ${v.fleet_type === 'Accuserve' ? 'tag-brand' : 'tag-signed'}">${v.fleet_type}</span>` : ''}
           </div>
         </div>
         <div class="vc-status">
@@ -1126,6 +1160,8 @@ function renderVehicles() {
           <div class="detail-item"><div class="di-label">Last Maintenance</div><div class="di-val ${!v.last_maint?'missing':''}">${v.last_maint ? formatDate(v.last_maint) : '—'}</div></div>
           <div class="detail-item"><div class="di-label">Maintenance Due</div><div class="di-val ${!v.maint_due?'missing':''}">${v.maint_due ? formatDate(v.maint_due) : '—'}</div></div>
           <div class="detail-item"><div class="di-label">Toll / Transponder</div><div class="di-val ${!v.toll?'missing':''}">${v.toll||'—'}</div></div>
+          <div class="detail-item"><div class="di-label">Ownership</div><div class="di-val ${!v.ownership?'missing':''}">${v.ownership||'—'}</div></div>
+          <div class="detail-item"><div class="di-label">Fleet</div><div class="di-val ${!v.fleet_type?'missing':''}">${v.fleet_type||'—'}</div></div>
           <div class="detail-item"><div class="di-label">GeoTab Device</div><div class="di-val ${!v.device_name?'missing':''}">${v.device_name||'—'}</div></div>
           <div class="detail-item"><div class="di-label">Serial #</div><div class="di-val ${!v.serial?'missing':''}">${v.serial||'—'}</div></div>
           <div class="detail-item"><div class="di-label">Last Communicated</div><div class="di-val ${!v.last_communicated?'missing':''}">${v.last_communicated||'—'}</div></div>
@@ -1218,6 +1254,8 @@ function populateForm(v) {
   set('fLastMaint',     v.last_maint);
   set('fMaintDue',      v.maint_due);
   set('fOilDue',        v.oil_due);
+  set('fOwnership',     v.ownership);
+  set('fFleetType',     v.fleet_type);
   set('fNotes',         v.notes);
 }
 
@@ -1254,6 +1292,8 @@ function getFormValues() {
     last_maint:       g('fLastMaint'),
     maint_due:        g('fMaintDue'),
     oil_due:          g('fOilDue'),
+    ownership:        g('fOwnership'),
+    fleet_type:       g('fFleetType'),
     notes:            g('fNotes'),
     region:           regionKey,
   };
