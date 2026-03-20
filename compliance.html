@@ -122,11 +122,11 @@
   .kpi-card:hover { box-shadow: var(--shadow-md); }
   .kpi-card::before {
     content:''; position:absolute; top:0; left:0; right:0; height:3px;
-    background: var(--page-color);
+    background: var(--blue);
   }
-  .kpi-card.alert-card::before { background: var(--red); }
-  .kpi-card.warn-card::before  { background: var(--yellow); }
-  .kpi-card.good-card::before  { background: var(--green); }
+  .kpi-card.alert-card::before { background: var(--blue); }
+  .kpi-card.warn-card::before  { background: var(--blue); }
+  .kpi-card.good-card::before  { background: var(--blue); }
   .kpi-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-400); margin-bottom: 8px; }
   .kpi-value { font-size: 28px; font-weight: 700; color: var(--navy); line-height: 1; }
   .kpi-value .unit { font-size: 12px; font-weight: 400; color: var(--gray-400); }
@@ -135,21 +135,21 @@
 
   /* ══ ALERT BANNER ════════════════════════════════════════════ */
   .alert-banner {
-    background: var(--red-pale); border: 1px solid #FECACA;
-    border-left: 4px solid var(--red); border-radius: var(--radius-lg);
+    background: var(--blue-pale); border: 1px solid var(--gray-200);
+    border-left: 4px solid var(--blue); border-radius: var(--radius-lg);
     padding: 14px 18px; margin-bottom: 24px;
     display: none;
   }
   .alert-banner.visible { display: block; }
-  .alert-banner-title { font-size: 12px; font-weight: 700; color: var(--red); margin-bottom: 8px; letter-spacing: .5px; text-transform: uppercase; }
+  .alert-banner-title { font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 8px; letter-spacing: .5px; text-transform: uppercase; }
   .alert-list { display: flex; flex-wrap: wrap; gap: 8px; }
   .alert-chip {
-    background: white; border: 1px solid #FECACA;
+    background: white; border: 1px solid var(--gray-200);
     border-radius: 20px; padding: 4px 12px;
-    font-size: 11px; color: var(--red); font-weight: 600;
+    font-size: 11px; color: var(--navy); font-weight: 600;
     cursor: pointer; transition: background .15s;
   }
-  .alert-chip:hover { background: var(--red-pale); }
+  .alert-chip:hover { background: var(--blue-pale); }
 
   /* ══ FILTERS & SEARCH ════════════════════════════════════════ */
   .filter-bar {
@@ -177,9 +177,9 @@
   }
   .filter-pill:hover  { border-color: var(--page-color); color: var(--page-color); }
   .filter-pill.active { background: var(--page-pale); border-color: var(--page-color); color: var(--page-color); }
-  .filter-pill.red-pill.active    { background: var(--red-pale);    border-color: var(--red);    color: var(--red); }
-  .filter-pill.yellow-pill.active { background: var(--yellow-pale); border-color: var(--yellow); color: var(--yellow); }
-  .filter-pill.green-pill.active  { background: var(--green-pale);  border-color: var(--green);  color: var(--green); }
+  .filter-pill.red-pill.active    { background: var(--blue-pale); border-color: var(--blue); color: var(--blue); }
+  .filter-pill.yellow-pill.active { background: var(--blue-pale); border-color: var(--blue); color: var(--blue); }
+  .filter-pill.green-pill.active  { background: var(--blue-pale); border-color: var(--blue); color: var(--blue); }
   .filter-select {
     padding: 7px 12px; border: 1.5px solid var(--gray-200); border-radius: var(--radius);
     font-size: 12px; font-family: Arial, sans-serif; color: var(--gray-600);
