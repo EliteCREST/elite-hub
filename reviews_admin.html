@@ -951,13 +951,14 @@ function updateKPIsFromReviews() {
 ══════════════════════════════════════════════════════════════ */
 function renderReviewLists() {
   updateTabCounts();
-  ['all','google','bbb','other'].forEach(tab => renderList(tab));
+  ['all','google','other'].forEach(tab => renderList(tab));
+  // Ensure active tab panel is visible
+  switchTab(activeTab || 'all');
 }
 
 function updateTabCounts() {
   document.getElementById('cnt-all').textContent    = reviewsData.length;
   document.getElementById('cnt-google').textContent = reviewsData.filter(r=>r.platform==='google').length;
-  document.getElementById('cnt-bbb').textContent    = reviewsData.filter(r=>r.platform==='bbb').length;
   document.getElementById('cnt-other').textContent  = reviewsData.filter(r=>r.platform==='other').length;
 }
 
