@@ -878,6 +878,7 @@ document.addEventListener('keydown', e => {
 });
 
 syncData();
+setInterval(syncData, 120000); // auto-refresh every 2 min
 
 /* ══════════════════════════════════════════════════════════════
    DATA SYNC

@@ -635,6 +635,7 @@ async function saveNote(regionKey) {
 }
 
 loadAllNotes();
+setInterval(loadAllNotes, 120000); // auto-refresh every 2 min
 </script>
 </body>
 </html>
