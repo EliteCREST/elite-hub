@@ -544,7 +544,7 @@ function toggleDarkMode() {
 <main>
 
   <div class="callout" id="pageCallout">
-    <strong>Reviews Admin — All Regions.</strong> View and manage reviews across all regions. Filter by region below. Data synced from Google Sheets. &nbsp;·&nbsp; <a href="https://app.removify.com/reviews/reports" target="_blank" style="color:var(--blue);font-weight:700;">📊 Removify Data →</a>
+    <strong>Reviews Admin — All Regions.</strong> View and manage reviews across all regions. Filter by region below. Data synced from Google Sheets. &nbsp;·&nbsp; <a href="https://app.removify.com/reviews/reports" target="_blank" style="color:var(--blue);font-weight:700;">📊 Removify Data →</a> &nbsp;·&nbsp; <a href="https://app.removify.com/reviews/monitors?publisher=Facebook,Google+Maps,Google+My+Business&page=1" target="_blank" style="color:var(--blue);font-weight:700;">🔍 Removify Reviews →</a>
   </div>
 
   <!-- KPI STRIP -->
@@ -757,8 +757,8 @@ const REGION_MAP = {
    STATE
 ══════════════════════════════════════════════════════════════ */
 const params    = new URLSearchParams(window.location.search);
-const regionKey = params.get('region') || 'cleveland';
-const region    = REGION_MAP[regionKey] || { city: regionKey, abbr: '—', hubUrl: '' };
+const regionKey = null; // admin view — no region filter
+const region    = { city: 'All Regions', abbr: 'ALL', hubUrl: 'https://elitecrest.github.io/elite-hub/admin.html' };
 
 let summaryData  = [];   // from Google Sheets
 let reviewsData  = [];   // from Tab 2 CSV + manual entries
@@ -1122,7 +1122,7 @@ async function syncBackend() {
     return;
   }
   try {
-    const res  = await fetch(`${BACKEND_URL}?action=reviewsData`);
+    const res  = await fetch(`${BACKEND_URL}?action=reviewsData`); // all regions
     const data = await res.json();
     if (data.summary)  { summaryData = data.summary;  renderSummaryTable(); updateKPIsFromSummary(); }
     if (data.reviews)  { reviewsData = data.reviews;  renderReviewLists();  updateKPIsFromReviews(); }
@@ -1145,7 +1145,7 @@ function exportData() {
   const blob = new Blob([csv], { type: 'text/csv' });
   const a    = document.createElement('a');
   a.href     = URL.createObjectURL(blob);
-  a.download = `${regionKey}_reviews_export.csv`;
+  a.download = `all_regions_reviews_export.csv`;
   a.click();
 }
 
