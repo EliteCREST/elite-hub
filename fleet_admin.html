@@ -582,6 +582,7 @@ function toggleDarkMode() {
       <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Vehicle</button>
       <button class="btn btn-outline btn-sm" onclick="if(typeof syncData==='function')syncData()">↻ Sync</button>
       <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export</button>
+      <button class="btn btn-navy btn-sm" onclick="openBulkInsurance()">🛡 Bulk Insurance Update</button>
     </div>
   </div>
   <div class="kpi-grid">
@@ -1384,5 +1385,51 @@ function setCache(key, data) {
 }
 
 </script>
+
+<!-- ══ BULK INSURANCE MODAL ══════════════════════════════════ -->
+<div class="modal-overlay" id="bulkInsModal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <div>
+        <div class="mh-title">🛡 Bulk Insurance Update</div>
+        <div class="mh-sub">Update insurance expiry date for all vehicles in a state</div>
+      </div>
+      <button class="close-btn" onclick="closeBulkInsurance()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--blue-pale);border-left:4px solid var(--blue);border-radius:0 var(--radius) var(--radius) 0;padding:12px 16px;margin-bottom:20px;font-size:12.5px;color:var(--navy);line-height:1.5;">
+        Select a tag state and new insurance expiry date. All vehicles with that tag state will be updated at once.
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div class="form-group">
+          <label>Tag State</label>
+          <select id="biState" onchange="previewBulkInsurance()" style="border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:8px 10px;font-size:13px;font-family:Arial,sans-serif;color:var(--text);outline:none;width:100%;">
+            <option value="">Select state...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>New Insurance Expiry Date</label>
+          <input type="date" id="biDate" onchange="previewBulkInsurance()" style="border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:8px 10px;font-size:13px;font-family:Arial,sans-serif;color:var(--text);outline:none;width:100%;">
+        </div>
+      </div>
+
+      <div id="biPreview" style="display:none;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gray-400);margin-bottom:8px;">Vehicles to be updated</div>
+        <div id="biPreviewList" style="border:1px solid var(--gray-200);border-radius:var(--radius-lg);overflow:hidden;max-height:280px;overflow-y:auto;"></div>
+        <div style="margin-top:10px;padding:10px 14px;background:var(--blue-pale);border-radius:var(--radius);font-size:12px;color:var(--navy);">
+          <strong id="biCount">0</strong> vehicles will have their insurance expiry updated to <strong id="biDateDisplay">—</strong>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div style="font-size:11px;color:var(--gray-400);">Changes save directly to Google Sheets</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline" onclick="closeBulkInsurance()">Cancel</button>
+        <button class="btn btn-primary" id="biSaveBtn" onclick="saveBulkInsurance()" disabled style="opacity:.5;cursor:not-allowed;">Apply to All</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
