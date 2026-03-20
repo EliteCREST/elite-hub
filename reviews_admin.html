@@ -529,7 +529,7 @@ function toggleDarkMode() {
 <div class="sub-bar"></div>
 <nav class="tool-nav"><span class="tool-nav-label">Tools</span><a class="tn-btn tn-dynamic" data-file="fleet.html"><span class="tn-icon">🚗</span>Fleet</a><a class="tn-btn tn-dynamic" data-file="compliance.html"><span class="tn-icon">📋</span>Compliance</a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">⚖️</span>Licensing</span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🏷️</span>Pricing</span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">📊</span>CFB</span><a class="tn-btn active tn-dynamic" data-file="reviews.html"><span class="tn-icon">⭐</span>Reviews</a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🔍</span>Invoices</span><a class="tn-btn tn-dynamic" data-file="documents.html"><span class="tn-icon">📁</span>Documents</a></nav><script>
 (function(){
-  var rk = new URLSearchParams(window.location.search).get('region') || 'cleveland';
+  var rk = new URLSearchParams(window.location.search).get('region') || '';
   document.querySelectorAll('.tn-dynamic').forEach(function(a){
     a.href = 'https://elitecrest.github.io/elite-hub/' + a.dataset.file + '?region=' + rk;
   });
@@ -538,13 +538,13 @@ function toggleDarkMode() {
 
 <!-- BACK NAV -->
 <nav class="back-nav">
-  <a id="backToHub" href="#">← <span id="navRegion">Region</span> Hub &rsaquo; Reviews &amp; Reputation</a>
+  <a id="backToHub" href="https://elitecrest.github.io/elite-hub/admin.html">← Admin Center &rsaquo; Reviews &amp; Reputation</a>
 </nav>
 
 <main>
 
   <div class="callout" id="pageCallout">
-    <strong>Reviews Admin — All Regions.</strong> View and manage reviews across all regions. Filter by region below. Data synced from Google Sheets. &nbsp;·&nbsp; <a href="https://app.removify.com/reviews/reports" target="_blank" style="color:var(--blue);font-weight:700;">📊 Removify Data →</a> &nbsp;·&nbsp; <a href="https://app.removify.com/reviews/monitors?publisher=Facebook,Google+Maps,Google+My+Business&page=1" target="_blank" style="color:var(--blue);font-weight:700;">🔍 Removify Reviews →</a>
+    <strong>Reviews Admin — All Regions.</strong> View and manage reviews across all 9 regions. Data synced from Google Sheets. &nbsp;·&nbsp; <a href="https://app.removify.com/reviews/reports" target="_blank" style="color:var(--blue);font-weight:700;">📊 Removify Data →</a> &nbsp;·&nbsp; <a href="https://app.removify.com/reviews/monitors?publisher=Facebook,Google+Maps,Google+My+Business&page=1" target="_blank" style="color:var(--blue);font-weight:700;">🔍 Removify Reviews →</a>
   </div>
 
   <!-- KPI STRIP -->
@@ -602,19 +602,19 @@ function toggleDarkMode() {
       <div class="rc-header">
         <div class="rc-title">All Reviews</div>
         <div class="rc-controls">
-          <select id="adminRegionFilter" onchange="filterByRegion(this.value)" style="padding:7px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius);font-size:12px;font-family:Arial,sans-serif;color:var(--gray-600);background:white;cursor:pointer;outline:none;margin-bottom:10px;width:100%;">
-      <option value="">All Regions</option>
-      <option value="Cleveland">Cleveland</option>
-      <option value="Phoenix">Phoenix</option>
-      <option value="Albuquerque">Albuquerque</option>
-      <option value="Minneapolis">Minneapolis</option>
-      <option value="St. Louis">St. Louis</option>
-      <option value="Chicago">Chicago</option>
-      <option value="Indianapolis">Indianapolis</option>
-      <option value="Pittsburgh">Pittsburgh</option>
-      <option value="Milwaukee">Milwaukee</option>
-    </select>
-    <div class="review-search"><span style="color:var(--gray-400);">🔍</span><input type="text" placeholder="Search reviews..." oninput="filterReviews(this.value,'all')"></div>
+          <select id="adminRegionFilter" onchange="filterByRegion(this.value)" style="width:100%;padding:7px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius);font-size:12px;font-family:Arial,sans-serif;color:var(--gray-600);background:white;cursor:pointer;outline:none;margin-bottom:8px;">
+            <option value="">All Regions</option>
+            <option value="Cleveland">Cleveland</option>
+            <option value="Phoenix">Phoenix</option>
+            <option value="Albuquerque">Albuquerque</option>
+            <option value="Minneapolis">Minneapolis</option>
+            <option value="St. Louis">St. Louis</option>
+            <option value="Chicago">Chicago</option>
+            <option value="Indianapolis">Indianapolis</option>
+            <option value="Pittsburgh">Pittsburgh</option>
+            <option value="Milwaukee">Milwaukee</option>
+          </select>
+          <div class="review-search"><span style="color:var(--gray-400);">🔍</span><input type="text" placeholder="Search reviews..." oninput="filterReviews(this.value,'all')"></div>
           <button class="filter-pill active" onclick="setFilter('all','all',this)">All</button>
           <button class="filter-pill" onclick="setFilter('all','responded',this)">Responded</button>
           <button class="filter-pill" onclick="setFilter('all','pending',this)">Needs Response</button>
@@ -757,7 +757,7 @@ const REGION_MAP = {
    STATE
 ══════════════════════════════════════════════════════════════ */
 const params    = new URLSearchParams(window.location.search);
-const regionKey = null; // admin view — no region filter
+const regionKey = null; // admin — all regions
 const region    = { city: 'All Regions', abbr: 'ALL', hubUrl: 'https://elitecrest.github.io/elite-hub/admin.html' };
 
 let summaryData  = [];   // from Google Sheets
@@ -1122,7 +1122,7 @@ async function syncBackend() {
     return;
   }
   try {
-    const res  = await fetch(`${BACKEND_URL}?action=reviewsData`); // all regions
+    const res  = await fetch(`${BACKEND_URL}?action=reviewsData&region=${regionKey}`);
     const data = await res.json();
     if (data.summary)  { summaryData = data.summary;  renderSummaryTable(); updateKPIsFromSummary(); }
     if (data.reviews)  { reviewsData = data.reviews;  renderReviewLists();  updateKPIsFromReviews(); }
@@ -1176,9 +1176,9 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAddModa
 function initPage() {
   document.title = `${region.city} Reviews — Elite Hub`;
   document.getElementById('hdrSub').textContent       = region.abbr + ' Reviews';
-  document.getElementById('hdrPageName').textContent  = region.city + ' — Reviews & Reputation';
-  document.getElementById('hdrRegion').textContent    = 'National';
-  document.getElementById('hdrAbbr').textContent      = 'ALL';
+  document.getElementById('hdrPageName').textContent  = 'Reviews Admin — All Regions';
+  document.getElementById('hdrRegion').textContent    = region.city;
+  document.getElementById('hdrAbbr').textContent      = region.abbr;
   document.getElementById('navRegion').textContent    = region.city;
   document.getElementById('footerRegion').textContent = region.city;
   const hubUrl = region.hubUrl || '#';
@@ -1193,16 +1193,8 @@ initPage();
 setInterval(syncBackend, 120000); // auto-refresh every 2 min
 
 function filterByRegion(regionName) {
-  // Filter summary cards
-  document.querySelectorAll('[data-region]').forEach(el => {
-    if (!regionName || el.dataset.region === regionName) {
-      el.style.display = '';
-    } else {
-      el.style.display = 'none';
-    }
-  });
-  // Also filter individual reviews
-  filterReviews(document.querySelector('.review-search input')?.value || '', 'all');
+  const search = document.querySelector('.review-search input')?.value || '';
+  filterReviews(search, 'all');
 }
 
 </script>
