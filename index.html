@@ -340,9 +340,20 @@
 
   /* Text colors — primary */
   body.dark .pc-city, body.dark .pc-score-num, body.dark .kpi-value,
-  body.dark .rc-name, body.dark .vc-vehicle, body.dark .ac-name,
+  body.dark .rc-name, body.dark .rc-city, body.dark .rc-region-name,
+  body.dark .vc-vehicle, body.dark .ac-name,
   body.dark .di-val, body.dark .sh, body.dark .page-name,
   body.dark .rule-label, body.dark .sc-title, body.dark .mh-title { color: #F1F5F9 !important; }
+  /* Force all text in region cards to be visible */
+  body.dark .region-card, body.dark .region-card span,
+  body.dark .region-card div, body.dark .region-card p,
+  body.dark .region-card h1, body.dark .region-card h2,
+  body.dark .region-card h3,
+  body.dark .rc-city, body.dark .rc-state,
+  body.dark .rc-brands span { color: #F1F5F9 !important; }
+  body.dark .rc-state { color: #9CA3AF !important; }
+  body.dark .region-card .kpi-sub,
+  body.dark .region-card .rc-meta { color: #9CA3AF !important; }
 
   /* Text colors — secondary */
   body.dark .pc-state, body.dark .kpi-label, body.dark .kpi-sub,
