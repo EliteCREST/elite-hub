@@ -480,7 +480,7 @@ function toggleDarkMode() {
         </div>
       </div>
       <div class="sc-header-right">
-        <span class="sc-status pending">Pending Setup</span>
+        <span class="sc-status pending">Loading...</span>
         <span class="sc-chevron" id="chevron-fleet">▼</span>
       </div>
     </div>
@@ -577,7 +577,7 @@ function toggleDarkMode() {
         </div>
       </div>
       <div class="sc-header-right">
-        <span class="sc-status pending">Pending Setup</span>
+        <span class="sc-status pending">Loading...</span>
         <span class="sc-chevron" id="chevron-reviews">▼</span>
       </div>
     </div>
@@ -651,7 +651,7 @@ function toggleDarkMode() {
         </div>
       </div>
       <div class="sc-header-right">
-        <span class="sc-status pending">Pending Setup</span>
+        <span class="sc-status pending">Loading...</span>
         <span class="sc-chevron" id="chevron-licensing">▼</span>
       </div>
     </div>
@@ -900,15 +900,22 @@ async function loadAllRules() {
   try {
     const res  = await fetch(`${BACKEND_URL}?action=getScoringRules`);
     const data = await res.json();
-    if (data.rules) {
+    if (data.rules && Object.keys(data.rules).length > 0) {
       Object.entries(data.rules).forEach(([key, val]) => {
         const el = document.getElementById('r-' + key);
         if (el) el.value = val;
       });
       // Update all previews
       Object.keys(SECTIONS).forEach(updatePreview);
+      // Mark all section badges as Live — rules are saved in the sheet
+      document.querySelectorAll('.sc-status').forEach(badge => {
+        if (badge.id !== 'weights-total-badge') {
+          badge.textContent = 'Live';
+          badge.className   = 'sc-status live';
+        }
+      });
     }
-  } catch(e) { /* use defaults */ }
+  } catch(e) { /* use defaults — keep pending */ }
 }
 
 loadAllRules();
