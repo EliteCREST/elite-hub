@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fleet Report Merge Tool — Elite Hub</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --navy:       #1B2A4A;
+    --blue:       #1F5FAD;
+    --blue-light: #2E74CC;
+    --blue-pale:  #EAF1FB;
+    --accent:     #C8A84B;
+    --white:      #FFFFFF;
+    --gray-50:    #F8FAFC;
+    --gray-100:   #F1F5F9;
+    --gray-200:   #E2E8F2;
+    --gray-400:   #94A3B8;
+    --gray-600:   #64748B;
+    --green:      #16A34A;
+    --green-pale: #DCFCE7;
+    --red:        #DC2626;
+    --red-pale:   #FEF2F2;
+    --yellow:     #D97706;
+    --yellow-pale:#FEF9C3;
+    --conflict:   #7C3AED;
+    --conflict-pale:#F5F3FF;
+    --radius:     8px;
+    --shadow:     0 4px 24px rgba(27,42,74,.10);
+    --shadow-lg:  0 8px 40px rgba(27,42,74,.16);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--gray-50);
+    color: var(--navy);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ─────────────────────────────────────────────── */
+  .app-header {
+    background: var(--navy);
+    padding: 0 32px;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 3px solid var(--blue);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .app-header .logo {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .logo-mark {
+    width: 34px; height: 34px; background: var(--blue);
+    border-radius: 7px; display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .logo-text { color: white; font-weight: 700; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; }
+  .logo-sub  { color: rgba(255,255,255,.4); font-size: 10px; letter-spacing: .5px; margin-top: 1px; }
+  .header-badge {
+    background: var(--blue-pale); color: var(--blue);
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 20px;
+  }
+
+  /* ── MAIN ───────────────────────────────────────────────── */
+  .container { max-width: 1400px; margin: 0 auto; padding: 32px; }
+
+  /* ── STEP INDICATOR ─────────────────────────────────────── */
+  .steps {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 32px; background: white;
+    border: 1px solid var(--gray-200); border-radius: var(--radius);
+    overflow: hidden; box-shadow: var(--shadow);
+  }
+  .step {
+    flex: 1; padding: 14px 20px;
+    display: flex; align-items: center; gap: 10px;
+    border-right: 1px solid var(--gray-200);
+    transition: background .2s;
+    position: relative;
+  }
+  .step:last-child { border-right: none; }
+  .step-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--gray-200); color: var(--gray-600);
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all .2s;
+  }
+  .step-label { font-size: 11px; font-weight: 600; color: var(--gray-600); letter-spacing: .3px; }
+  .step.active .step-num  { background: var(--blue); color: white; }
+  .step.active .step-label { color: var(--navy); }
+  .step.done .step-num    { background: var(--green); color: white; }
+  .step.done .step-label  { color: var(--green); }
+  .step.active { background: var(--blue-pale); }
+
+  /* ── PANELS ─────────────────────────────────────────────── */
+  .panel {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    margin-bottom: 24px; overflow: hidden;
+  }
+  .panel-header {
+    background: var(--navy); padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-title {
+    color: white; font-size: 12px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+  }
+  .panel-body { padding: 24px; }
+
+  /* ── DROP ZONE ──────────────────────────────────────────── */
+  .drop-zone {
+    border: 2.5px dashed var(--gray-200);
+    border-radius: 12px; padding: 48px 32px;
+    text-align: center; cursor: pointer;
+    transition: all .2s; position: relative;
+    background: var(--gray-50);
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--blue); background: var(--blue-pale);
+  }
+  .drop-icon { font-size: 40px; margin-bottom: 12px; opacity: .5; }
+  .drop-title { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+  .drop-sub   { font-size: 12px; color: var(--gray-400); line-height: 1.6; }
+  .drop-zone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .file-types {
+    display: flex; gap: 8px; justify-content: center; margin-top: 14px;
+  }
+  .file-type-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: .5px;
+    padding: 3px 9px; border-radius: 4px; background: var(--gray-200); color: var(--gray-600);
+  }
+
+  /* ── FILE LIST ──────────────────────────────────────────── */
+  .file-list { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
+  .file-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--gray-50); border: 1px solid var(--gray-200);
+    border-radius: var(--radius); padding: 10px 14px;
+  }
+  .file-icon { font-size: 20px; flex-shrink: 0; }
+  .file-info { flex: 1; min-width: 0; }
+  .file-name { font-size: 13px; font-weight: 600; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-meta { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+  .file-status {
+    font-size: 10px; font-weight: 700; letter-spacing: .5px;
+    padding: 3px 9px; border-radius: 20px; flex-shrink: 0;
+  }
+  .file-status.ok      { background: var(--green-pale); color: var(--green); }
+  .file-status.parsing { background: var(--yellow-pale); color: var(--yellow); }
+  .file-status.error   { background: var(--red-pale); color: var(--red); }
+  .file-remove {
+    background: none; border: none; cursor: pointer;
+    color: var(--gray-400); font-size: 16px; padding: 0 4px;
+    transition: color .15s;
+  }
+  .file-remove:hover { color: var(--red); }
+
+  /* ── COLUMN MAP ─────────────────────────────────────────── */
+  .col-map-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 10px; margin-top: 8px;
+  }
+  .col-map-item {
+    background: var(--gray-50); border: 1px solid var(--gray-200);
+    border-radius: var(--radius); padding: 10px 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .col-source {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    background: var(--navy); color: white;
+    padding: 2px 7px; border-radius: 4px; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; max-width: 130px;
+  }
+  .col-arrow { color: var(--gray-400); font-size: 12px; flex-shrink: 0; }
+  .col-target {
+    font-size: 11px; font-weight: 600; color: var(--blue);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .col-unmapped { color: var(--gray-400); font-style: italic; }
+
+  /* ── STATS BAR ──────────────────────────────────────────── */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px; margin-bottom: 20px;
+  }
+  .stat-card {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius); padding: 14px 16px;
+    border-top: 3px solid var(--blue);
+  }
+  .stat-card.conflicts { border-top-color: var(--conflict); }
+  .stat-card.warnings  { border-top-color: var(--yellow); }
+  .stat-card.ok        { border-top-color: var(--green); }
+  .stat-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-400); margin-bottom: 4px; }
+  .stat-val   { font-size: 24px; font-weight: 700; color: var(--navy); line-height: 1; }
+  .stat-sub   { font-size: 11px; color: var(--gray-400); margin-top: 3px; }
+
+  /* ── TABLE ──────────────────────────────────────────────── */
+  .table-wrap {
+    overflow-x: auto; border: 1px solid var(--gray-200);
+    border-radius: var(--radius); max-height: 480px; overflow-y: auto;
+  }
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 11px; font-family: 'DM Mono', monospace;
+    min-width: 900px;
+  }
+  thead th {
+    background: var(--navy); color: white;
+    padding: 8px 12px; text-align: left;
+    font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    white-space: nowrap; position: sticky; top: 0; z-index: 2;
+  }
+  tbody tr:nth-child(even) { background: var(--gray-50); }
+  tbody tr:hover { background: var(--blue-pale); }
+  tbody tr.has-conflict { background: var(--conflict-pale); }
+  tbody tr.has-conflict:hover { background: #EDE9FE; }
+  td {
+    padding: 7px 12px; border-bottom: 1px solid var(--gray-200);
+    max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    color: var(--navy);
+  }
+  td.conflict-cell {
+    background: var(--conflict-pale); color: var(--conflict);
+    font-weight: 600; cursor: help; position: relative;
+  }
+  td.conflict-cell::after {
+    content: '⚠'; margin-left: 4px; font-size: 9px;
+  }
+  .evid-cell {
+    font-weight: 700; color: var(--blue); white-space: nowrap;
+  }
+  .source-badge {
+    display: inline-block; font-size: 9px; padding: 1px 6px;
+    border-radius: 3px; background: var(--blue-pale); color: var(--blue);
+    font-weight: 600; margin-right: 3px;
+  }
+
+  /* ── CONFLICT PANEL ─────────────────────────────────────── */
+  .conflict-list { display: flex; flex-direction: column; gap: 10px; }
+  .conflict-item {
+    background: var(--conflict-pale); border: 1px solid #DDD6FE;
+    border-radius: var(--radius); padding: 12px 16px;
+  }
+  .conflict-evid { font-weight: 700; color: var(--conflict); font-size: 13px; margin-bottom: 8px; }
+  .conflict-field { font-size: 11px; margin-bottom: 6px; }
+  .conflict-field-name { font-weight: 700; color: var(--navy); }
+  .conflict-options { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .conflict-opt {
+    font-size: 11px; padding: 4px 10px;
+    border: 1.5px solid var(--gray-200); border-radius: 5px;
+    background: white; cursor: pointer; transition: all .15s;
+    font-family: 'DM Mono', monospace;
+  }
+  .conflict-opt:hover   { border-color: var(--conflict); color: var(--conflict); }
+  .conflict-opt.chosen  { background: var(--conflict); color: white; border-color: var(--conflict); }
+  .conflict-source { font-size: 9px; color: var(--gray-400); display: block; margin-top: 2px; }
+
+  /* ── SHEETS CONFIG ──────────────────────────────────────── */
+  .sheets-config { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--gray-600); }
+  .form-group input, .form-group select {
+    border: 1.5px solid var(--gray-200); border-radius: var(--radius);
+    padding: 9px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif;
+    color: var(--navy); outline: none; transition: border-color .15s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--blue); }
+  .form-hint { font-size: 10px; color: var(--gray-400); margin-top: 3px; }
+
+  /* ── BUTTONS ────────────────────────────────────────────── */
+  .btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 20px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 10px 20px; border-radius: var(--radius);
+    font-size: 11px; font-weight: 700; letter-spacing: .5px;
+    text-transform: uppercase; cursor: pointer; border: none;
+    font-family: 'DM Sans', sans-serif; transition: opacity .2s, transform .1s;
+  }
+  .btn:hover { opacity: .85; transform: translateY(-1px); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-navy    { background: var(--navy); color: white; }
+  .btn-green   { background: var(--green); color: white; }
+  .btn-outline {
+    background: transparent; color: var(--gray-600);
+    border: 1.5px solid var(--gray-300);
+  }
+  .btn-outline:hover { border-color: var(--blue); color: var(--blue); }
+
+  /* ── TOAST ──────────────────────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    background: var(--navy); color: white; padding: 13px 18px;
+    border-radius: 10px; font-size: 12px; box-shadow: var(--shadow-lg);
+    max-width: 320px; animation: slideUp .2s ease;
+    border-left: 4px solid var(--blue);
+  }
+  .toast.success { border-left-color: var(--green); }
+  .toast.error   { border-left-color: var(--red); }
+  @keyframes slideUp { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)} }
+
+  /* ── EMPTY ──────────────────────────────────────────────── */
+  .empty-hint {
+    text-align: center; padding: 40px 20px;
+    color: var(--gray-400); font-size: 13px;
+  }
+  .empty-hint .ei { font-size: 32px; margin-bottom: 8px; opacity: .4; }
+
+  .section-divider {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--gray-400);
+    margin: 20px 0 12px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .badge {
+    display: inline-flex; align-items: center;
+    font-size: 10px; font-weight: 700; padding: 2px 8px;
+    border-radius: 20px; letter-spacing: .3px;
+  }
+  .badge-blue    { background: var(--blue-pale); color: var(--blue); }
+  .badge-green   { background: var(--green-pale); color: var(--green); }
+  .badge-red     { background: var(--red-pale); color: var(--red); }
+  .badge-purple  { background: var(--conflict-pale); color: var(--conflict); }
+  .badge-yellow  { background: var(--yellow-pale); color: var(--yellow); }
+
+  #pushStatus { font-size: 12px; color: var(--gray-600); }
+
+  .progress-bar {
+    height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden; margin-top: 8px;
+  }
+  .progress-fill {
+    height: 100%; background: var(--blue); border-radius: 2px;
+    transition: width .3s ease; width: 0%;
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="logo">
+    <div class="logo-mark">🚗</div>
+    <div>
+      <div class="logo-text">Elite Hub</div>
+      <div class="logo-sub">Fleet Report Merge Tool</div>
+    </div>
+  </div>
+  <span class="header-badge">Internal Use Only</span>
+</header>
+
+<div class="container">
+
+  <!-- STEP INDICATOR -->
+  <div class="steps">
+    <div class="step active" id="step1"><div class="step-num">1</div><div class="step-label">Drop Reports</div></div>
+    <div class="step" id="step2"><div class="step-num">2</div><div class="step-label">Review &amp; Resolve</div></div>
+    <div class="step" id="step3"><div class="step-num">3</div><div class="step-label">Push to Sheets</div></div>
+  </div>
+
+  <!-- STEP 1: UPLOAD -->
+  <div id="view-upload">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">📂 Drop Your GeoTab Reports</span>
+        <span class="badge badge-blue">Up to 10 files</span>
+      </div>
+      <div class="panel-body">
+        <div class="drop-zone" id="dropZone">
+          <input type="file" id="fileInput" multiple accept=".xlsx,.xls,.csv">
+          <div class="drop-icon">⬇</div>
+          <div class="drop-title">Drop files here or click to browse</div>
+          <div class="drop-sub">Export your GeoTab reports as Excel or CSV and drop them all at once.<br>The tool will merge them automatically using the EVID column.</div>
+          <div class="file-types">
+            <span class="file-type-badge">.xlsx</span>
+            <span class="file-type-badge">.xls</span>
+            <span class="file-type-badge">.csv</span>
+          </div>
+        </div>
+        <div class="file-list" id="fileList"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btnMerge" disabled onclick="runMerge()">⚡ Merge Reports</button>
+          <button class="btn btn-outline" onclick="clearAll()">✕ Clear All</button>
+          <span id="fileCount" style="font-size:12px;color:var(--gray-400);"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: REVIEW -->
+  <div id="view-review" style="display:none;">
+    <div class="stats-bar" id="statsBar"></div>
+
+    <!-- CONFLICTS -->
+    <div class="panel" id="conflictPanel" style="display:none;">
+      <div class="panel-header" style="background:#4C1D95;">
+        <span class="panel-title">⚠ Conflicts — Same EVID, Different Values</span>
+        <span class="badge" style="background:rgba(255,255,255,.15);color:white;" id="conflictCount"></span>
+      </div>
+      <div class="panel-body">
+        <p style="font-size:12px;color:var(--gray-600);margin-bottom:16px;">
+          The same EVID appears in multiple files with different values. Click a value to choose which one to keep.
+        </p>
+        <div class="conflict-list" id="conflictList"></div>
+      </div>
+    </div>
+
+    <!-- MERGED TABLE PREVIEW -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">📋 Merged Data Preview</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span class="badge badge-blue" id="previewCount"></span>
+          <button class="btn btn-outline btn-sm" style="padding:4px 12px;font-size:10px;" onclick="exportExcel()">⬇ Export Excel</button>
+        </div>
+      </div>
+      <div class="panel-body" style="padding:0;">
+        <div class="table-wrap" id="tableWrap">
+          <div class="empty-hint"><div class="ei">📋</div>Merged data will appear here</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-navy" onclick="goToStep(3)">→ Next: Push to Google Sheets</button>
+      <button class="btn btn-outline" onclick="goToStep(1)">← Back</button>
+      <button class="btn btn-outline" onclick="exportExcel()">⬇ Export Excel</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: PUSH TO SHEETS -->
+  <div id="view-push" style="display:none;">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">📤 Push to Google Sheets</span>
+      </div>
+      <div class="panel-body">
+        <div class="sheets-config">
+          <div class="form-group">
+            <label>Google Sheet ID</label>
+            <input type="text" id="sheetId" value="1xeUHhrQc9AyfhY37yVQ3YKvT3OP-masa5d9r2EeoTU8">
+            <span class="form-hint">Main Fleet_Data sheet</span>
+          </div>
+          <div class="form-group">
+            <label>Tab Name</label>
+            <input type="text" id="sheetTab" value="Fleet_Data" placeholder="e.g. Fleet_Data">
+            <span class="form-hint">The sheet tab to write to</span>
+          </div>
+          <div class="form-group">
+            <label>Write Mode</label>
+            <select id="writeMode">
+              <option value="overwrite">Overwrite entire tab</option>
+              <option value="append">Append new rows only</option>
+              <option value="upsert">Update existing + append new (by EVID)</option>
+            </select>
+            <span class="form-hint">How to handle existing data</span>
+          </div>
+          <div class="form-group">
+            <label>Google OAuth Token</label>
+            <input type="password" id="oauthToken" placeholder="Paste your access token">
+            <span class="form-hint">
+              <a href="https://developers.google.com/oauthplayground" target="_blank" style="color:var(--blue);">Get token from OAuth Playground</a>
+              — scope: spreadsheets
+            </span>
+          </div>
+        </div>
+
+        <div style="background:var(--blue-pale);border-left:4px solid var(--blue);border-radius:0 var(--radius) var(--radius) 0;padding:12px 16px;margin-top:16px;font-size:12px;color:var(--navy);line-height:1.6;">
+          <strong>How to get a token:</strong> Go to <a href="https://developers.google.com/oauthplayground" target="_blank" style="color:var(--blue);">OAuth Playground</a> →
+          select <em>Google Sheets API v4</em> → authorize with your Google account → exchange for access token → paste it above.
+          Tokens expire after 1 hour.
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-green" onclick="pushToSheets()">🚀 Push to Google Sheets</button>
+          <button class="btn btn-outline" onclick="exportExcel()">⬇ Export Excel Instead</button>
+          <button class="btn btn-outline" onclick="goToStep(2)">← Back</button>
+        </div>
+        <div id="pushStatus" style="margin-top:12px;"></div>
+        <div class="progress-bar" id="progressBar" style="display:none;">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════ */
+let loadedFiles   = [];   // { name, size, data: [{...}], columns: [...] }
+let mergedRows    = [];   // final merged array
+let allColumns    = [];   // union of all columns
+let conflicts     = {};   // { evid: { field: [ {val, source}, ... ] } }
+let resolutions   = {};   // { evid_field: chosenVal }
+
+const EVID_ALIASES = ['evid','evid #','device','device name','vehicle id','id','unit','unit #','unit#'];
+
+/* ══════════════════════════════════════════════════════
+   FILE HANDLING
+══════════════════════════════════════════════════════ */
+const dropZone  = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  handleFiles([...e.dataTransfer.files]);
+});
+fileInput.addEventListener('change', () => handleFiles([...fileInput.files]));
+
+function handleFiles(files) {
+  files.forEach(f => {
+    if (loadedFiles.find(x => x.name === f.name)) return;
+    const ext = f.name.split('.').pop().toLowerCase();
+    if (!['xlsx','xls','csv'].includes(ext)) {
+      showToast(`${f.name} — unsupported format (use Excel or CSV)`, 'error'); return;
+    }
+    const entry = { name: f.name, size: f.size, ext, status: 'parsing', data: [], columns: [] };
+    loadedFiles.push(entry);
+    renderFileList();
+    parseFile(f, entry);
+  });
+}
+
+function parseFile(file, entry) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb   = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+      const ws   = wb.Sheets[wb.SheetNames[0]];
+      const raw  = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      if (!raw.length) throw new Error('No data rows found');
+      entry.columns = Object.keys(raw[0]);
+      entry.data    = raw;
+      entry.status  = 'ok';
+      entry.rows    = raw.length;
+    } catch(err) {
+      entry.status = 'error';
+      entry.error  = err.message;
+    }
+    renderFileList();
+    updateMergeBtn();
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function renderFileList() {
+  const el = document.getElementById('fileList');
+  if (!loadedFiles.length) { el.innerHTML = ''; return; }
+  el.innerHTML = loadedFiles.map((f, i) => `
+    <div class="file-item">
+      <div class="file-icon">${f.ext === 'csv' ? '📄' : '📊'}</div>
+      <div class="file-info">
+        <div class="file-name">${f.name}</div>
+        <div class="file-meta">${f.status === 'ok' ? `${f.rows} rows · ${f.columns.length} columns · ${(f.size/1024).toFixed(1)} KB` : f.status === 'parsing' ? 'Parsing...' : f.error || 'Error'}</div>
+      </div>
+      <span class="file-status ${f.status}">${f.status === 'ok' ? '✓ Ready' : f.status === 'parsing' ? '⏳ Parsing' : '✕ Error'}</span>
+      <button class="file-remove" onclick="removeFile(${i})">✕</button>
+    </div>`).join('');
+  document.getElementById('fileCount').textContent = `${loadedFiles.length} file${loadedFiles.length!==1?'s':''} loaded`;
+}
+
+function removeFile(i) {
+  loadedFiles.splice(i, 1);
+  renderFileList();
+  updateMergeBtn();
+}
+
+function clearAll() {
+  loadedFiles = []; mergedRows = []; allColumns = []; conflicts = {}; resolutions = {};
+  renderFileList(); updateMergeBtn();
+  goToStep(1);
+}
+
+function updateMergeBtn() {
+  document.getElementById('btnMerge').disabled = !loadedFiles.some(f => f.status === 'ok');
+}
+
+/* ══════════════════════════════════════════════════════
+   MERGE LOGIC
+══════════════════════════════════════════════════════ */
+function detectEvidColumn(columns) {
+  for (const alias of EVID_ALIASES) {
+    const match = columns.find(c => c.trim().toLowerCase() === alias);
+    if (match) return match;
+  }
+  // Partial match fallback
+  return columns.find(c => c.toLowerCase().includes('evid') || c.toLowerCase().includes('device')) || columns[0];
+}
+
+function normalizeKey(k) {
+  return k.trim().toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+}
+
+function runMerge() {
+  const okFiles = loadedFiles.filter(f => f.status === 'ok');
+  if (!okFiles.length) return;
+
+  // Build unified column set (normalized → original display name)
+  const colMap     = new Map(); // normalizedKey → display label
+  const fileColMap = [];        // per file: Map(normalizedKey → originalKey)
+
+  okFiles.forEach(f => {
+    const fcm = new Map();
+    f.columns.forEach(c => {
+      const nk = normalizeKey(c);
+      fcm.set(nk, c);
+      if (!colMap.has(nk)) colMap.set(nk, c);
+    });
+    fileColMap.push(fcm);
+  });
+
+  allColumns = [...colMap.keys()];
+  const evidNorm = allColumns.find(k => EVID_ALIASES.includes(k) || k.includes('evid') || k.includes('device'));
+
+  // Merge by EVID
+  const merged = new Map(); // evidVal → { ...fields, _sources: [], _conflictFields: Set }
+  conflicts    = {};
+
+  okFiles.forEach((f, fi) => {
+    const fcm     = fileColMap[fi];
+    const evidOrig = fcm.get(evidNorm) || detectEvidColumn(f.columns);
+
+    f.data.forEach(row => {
+      const evidVal = String(row[evidOrig] || '').trim();
+      if (!evidVal) return;
+
+      if (!merged.has(evidVal)) {
+        // New EVID — create entry
+        const entry = { _sources: [f.name], _conflictFields: new Set() };
+        allColumns.forEach(nk => {
+          const origKey = fcm.get(nk);
+          entry[nk] = origKey ? String(row[origKey] || '').trim() : '';
+        });
+        merged.set(evidVal, entry);
+      } else {
+        // Existing EVID — check for conflicts
+        const entry = merged.get(evidVal);
+        entry._sources.push(f.name);
+
+        allColumns.forEach(nk => {
+          if (nk === evidNorm || nk.startsWith('_')) return;
+          const origKey  = fcm.get(nk);
+          const newVal   = origKey ? String(row[origKey] || '').trim() : '';
+          const existing = entry[nk] || '';
+          if (newVal && existing && newVal !== existing) {
+            // CONFLICT
+            entry._conflictFields.add(nk);
+            if (!conflicts[evidVal]) conflicts[evidVal] = {};
+            if (!conflicts[evidVal][nk]) {
+              conflicts[evidVal][nk] = [{ val: existing, source: entry._sources[0] }];
+            }
+            if (!conflicts[evidVal][nk].find(x => x.val === newVal)) {
+              conflicts[evidVal][nk].push({ val: newVal, source: f.name });
+            }
+          } else if (newVal && !existing) {
+            entry[nk] = newVal; // fill in blank
+          }
+        });
+      }
+    });
+  });
+
+  mergedRows = [...merged.values()];
+
+  goToStep(2);
+  renderReview();
+}
+
+/* ══════════════════════════════════════════════════════
+   RENDER REVIEW
+══════════════════════════════════════════════════════ */
+function renderReview() {
+  const conflictCount = Object.keys(conflicts).length;
+  const totalFields   = Object.values(conflicts).reduce((s, c) => s + Object.keys(c).length, 0);
+
+  // Stats
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat-card ok">
+      <div class="stat-label">Total Rows</div>
+      <div class="stat-val">${mergedRows.length}</div>
+      <div class="stat-sub">Unique EVIDs merged</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Source Files</div>
+      <div class="stat-val">${loadedFiles.filter(f=>f.status==='ok').length}</div>
+      <div class="stat-sub">Reports combined</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Columns</div>
+      <div class="stat-val">${allColumns.filter(c=>!c.startsWith('_')).length}</div>
+      <div class="stat-sub">Unified fields</div>
+    </div>
+    <div class="stat-card ${conflictCount ? 'conflicts' : 'ok'}">
+      <div class="stat-label">Conflicts</div>
+      <div class="stat-val">${conflictCount}</div>
+      <div class="stat-sub">${totalFields} field${totalFields!==1?'s':''} need review</div>
+    </div>`;
+
+  // Conflicts
+  if (conflictCount) {
+    document.getElementById('conflictPanel').style.display = '';
+    document.getElementById('conflictCount').textContent   = `${conflictCount} EVIDs`;
+    renderConflicts();
+  } else {
+    document.getElementById('conflictPanel').style.display = 'none';
+  }
+
+  document.getElementById('previewCount').textContent = `${mergedRows.length} rows`;
+  renderTable();
+}
+
+function renderConflicts() {
+  const list = document.getElementById('conflictList');
+  list.innerHTML = Object.entries(conflicts).map(([evid, fields]) => `
+    <div class="conflict-item">
+      <div class="conflict-evid">EVID: ${evid}</div>
+      ${Object.entries(fields).map(([field, opts]) => {
+        const key = `${evid}||${field}`;
+        return `
+          <div class="conflict-field">
+            <span class="conflict-field-name">${field.replace(/_/g,' ').toUpperCase()}</span>
+            <div class="conflict-options">
+              ${opts.map((o, i) => `
+                <div>
+                  <button class="conflict-opt ${resolutions[key]===o.val?'chosen':''}"
+                    onclick="resolveConflict('${key}','${escQ(o.val)}',this)">
+                    ${o.val || '(blank)'}
+                  </button>
+                  <span class="conflict-source">from: ${o.source}</span>
+                </div>`).join('')}
+              <div>
+                <button class="conflict-opt ${resolutions[key]==='__blank__'?'chosen':''}"
+                  onclick="resolveConflict('${key}','__blank__',this)">
+                  (clear this field)
+                </button>
+              </div>
+            </div>
+          </div>`;
+      }).join('')}
+    </div>`).join('');
+}
+
+function escQ(s) { return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+function resolveConflict(key, val, btn) {
+  resolutions[key] = val;
+  btn.closest('.conflict-options').querySelectorAll('.conflict-opt').forEach(b => b.classList.remove('chosen'));
+  btn.classList.add('chosen');
+  renderTable();
+}
+
+function getResolvedRows() {
+  return mergedRows.map(row => {
+    const out = {};
+    allColumns.filter(c => !c.startsWith('_')).forEach(col => {
+      const evidNorm = allColumns.find(k => EVID_ALIASES.includes(k) || k.includes('evid'));
+      const evid     = row[evidNorm] || '';
+      const key      = `${evid}||${col}`;
+      if (resolutions[key] !== undefined) {
+        out[col] = resolutions[key] === '__blank__' ? '' : resolutions[key];
+      } else {
+        out[col] = row[col] || '';
+      }
+    });
+    return out;
+  });
+}
+
+function renderTable() {
+  const displayCols = allColumns.filter(c => !c.startsWith('_'));
+  const rows        = getResolvedRows();
+  const evidNorm    = displayCols.find(k => EVID_ALIASES.includes(k) || k.includes('evid')) || displayCols[0];
+
+  const thead = `<thead><tr>
+    <th>#</th>
+    ${displayCols.map(c => `<th>${c.replace(/_/g,' ')}</th>`).join('')}
+  </tr></thead>`;
+
+  const tbody = `<tbody>${rows.map((row, i) => {
+    const origRow  = mergedRows[i];
+    const hasConfl = origRow._conflictFields && origRow._conflictFields.size > 0;
+    return `<tr class="${hasConfl?'has-conflict':''}">
+      <td style="color:var(--gray-400);text-align:right;">${i+1}</td>
+      ${displayCols.map(col => {
+        const isEvid    = col === evidNorm;
+        const isConfl   = origRow._conflictFields && origRow._conflictFields.has(col);
+        const unresolved = isConfl && resolutions[`${row[evidNorm]}||${col}`] === undefined;
+        const title     = isConfl ? `Conflict: multiple values found` : '';
+        return `<td class="${isEvid?'evid-cell':''} ${unresolved?'conflict-cell':''}" title="${title}">
+          ${isEvid && origRow._sources?.length > 1 ? `<span class="source-badge">${origRow._sources.length}×</span>` : ''}
+          ${row[col] || ''}
+        </td>`;
+      }).join('')}
+    </tr>`;
+  }).join('')}</tbody>`;
+
+  document.getElementById('tableWrap').innerHTML = `<table>${thead}${tbody}</table>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   EXPORT EXCEL
+══════════════════════════════════════════════════════ */
+function exportExcel() {
+  const rows     = getResolvedRows();
+  const cols     = allColumns.filter(c => !c.startsWith('_'));
+  const sheetData = [cols, ...rows.map(r => cols.map(c => r[c] || ''))];
+  const ws       = XLSX.utils.aoa_to_sheet(sheetData);
+  const wb       = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Fleet_Data');
+  XLSX.writeFile(wb, `Fleet_Merged_${new Date().toISOString().split('T')[0]}.xlsx`);
+  showToast('Excel file downloaded', 'success');
+}
+
+/* ══════════════════════════════════════════════════════
+   PUSH TO GOOGLE SHEETS
+══════════════════════════════════════════════════════ */
+async function pushToSheets() {
+  const token   = document.getElementById('oauthToken').value.trim();
+  const sheetId = document.getElementById('sheetId').value.trim();
+  const tabName = document.getElementById('sheetTab').value.trim();
+  const mode    = document.getElementById('writeMode').value;
+
+  if (!token)   { showToast('Paste your OAuth token first', 'error'); return; }
+  if (!sheetId) { showToast('Sheet ID is required', 'error'); return; }
+
+  const rows   = getResolvedRows();
+  const cols   = allColumns.filter(c => !c.startsWith('_'));
+  const values = [cols, ...rows.map(r => cols.map(c => r[c] || ''))];
+
+  const statusEl   = document.getElementById('pushStatus');
+  const progressBar = document.getElementById('progressBar');
+  const progressFill = document.getElementById('progressFill');
+  progressBar.style.display = '';
+  progressFill.style.width  = '20%';
+  statusEl.textContent = 'Connecting to Google Sheets…';
+
+  try {
+    const baseUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}`;
+    const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+    if (mode === 'overwrite') {
+      // Clear then write
+      progressFill.style.width = '40%';
+      statusEl.textContent = 'Clearing existing data…';
+      await fetch(`${baseUrl}/values/${encodeURIComponent(tabName)}:clear`, { method: 'POST', headers });
+
+      progressFill.style.width = '70%';
+      statusEl.textContent = `Writing ${rows.length} rows…`;
+      const res = await fetch(`${baseUrl}/values/${encodeURIComponent(tabName)}?valueInputOption=USER_ENTERED`, {
+        method: 'PUT', headers,
+        body: JSON.stringify({ range: tabName, majorDimension: 'ROWS', values })
+      });
+      if (!res.ok) throw new Error(`Sheets API error: ${res.status} ${await res.text()}`);
+
+    } else if (mode === 'append') {
+      progressFill.style.width = '60%';
+      statusEl.textContent = `Appending ${rows.length} rows…`;
+      const res = await fetch(`${baseUrl}/values/${encodeURIComponent(tabName)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`, {
+        method: 'POST', headers,
+        body: JSON.stringify({ range: tabName, majorDimension: 'ROWS', values: values.slice(1) })
+      });
+      if (!res.ok) throw new Error(`Sheets API error: ${res.status} ${await res.text()}`);
+
+    } else if (mode === 'upsert') {
+      // Read existing, match by EVID, update or append
+      progressFill.style.width = '30%';
+      statusEl.textContent = 'Reading existing sheet data…';
+      const getRes = await fetch(`${baseUrl}/values/${encodeURIComponent(tabName)}`, { headers });
+      if (!getRes.ok) throw new Error(`Could not read sheet: ${getRes.status}`);
+      const existing   = (await getRes.json()).values || [];
+      const existHdr   = existing[0] || [];
+      const evidIdx    = existHdr.findIndex(h => EVID_ALIASES.includes(normalizeKey(h)) || h.toLowerCase().includes('evid'));
+      const newEvidIdx = cols.findIndex(c => EVID_ALIASES.includes(c) || c.includes('evid'));
+
+      progressFill.style.width = '60%';
+      statusEl.textContent = 'Computing upsert plan…';
+
+      const existMap = {};
+      existing.slice(1).forEach((r, i) => { if (r[evidIdx]) existMap[r[evidIdx]] = i + 2; });
+
+      const updates = []; const appends = [];
+      rows.forEach(r => {
+        const evid = r[cols[newEvidIdx]];
+        if (existMap[evid]) updates.push({ row: existMap[evid], data: r });
+        else appends.push(r);
+      });
+
+      // Batch update existing rows
+      if (updates.length) {
+        const batchData = updates.map(u => ({
+          range: `${tabName}!A${u.row}`,
+          values: [cols.map(c => u.data[c] || '')]
+        }));
+        progressFill.style.width = '75%';
+        statusEl.textContent = `Updating ${updates.length} existing rows…`;
+        await fetch(`${baseUrl}/values:batchUpdate`, {
+          method: 'POST', headers,
+          body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data: batchData })
+        });
+      }
+
+      // Append new rows
+      if (appends.length) {
+        progressFill.style.width = '88%';
+        statusEl.textContent = `Appending ${appends.length} new rows…`;
+        await fetch(`${baseUrl}/values/${encodeURIComponent(tabName)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`, {
+          method: 'POST', headers,
+          body: JSON.stringify({ range: tabName, majorDimension: 'ROWS', values: appends.map(r => cols.map(c => r[c] || '')) })
+        });
+      }
+    }
+
+    progressFill.style.width = '100%';
+    statusEl.innerHTML = `<span style="color:var(--green);font-weight:700;">✓ Success!</span> ${rows.length} rows pushed to <strong>${tabName}</strong>.`;
+    showToast(`${rows.length} rows pushed to Google Sheets`, 'success');
+
+  } catch(err) {
+    progressFill.style.width = '100%';
+    progressFill.style.background = 'var(--red)';
+    statusEl.innerHTML = `<span style="color:var(--red);font-weight:700;">✕ Error:</span> ${err.message}`;
+    showToast(err.message, 'error');
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════════ */
+function goToStep(n) {
+  document.getElementById('view-upload').style.display = n === 1 ? '' : 'none';
+  document.getElementById('view-review').style.display = n === 2 ? '' : 'none';
+  document.getElementById('view-push').style.display   = n === 3 ? '' : 'none';
+  [1,2,3].forEach(i => {
+    const el = document.getElementById(`step${i}`);
+    el.classList.remove('active','done');
+    if (i < n) el.classList.add('done');
+    if (i === n) el.classList.add('active');
+  });
+}
+
+function normalizeKey(k) {
+  return k.trim().toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+}
+
+/* ══════════════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════════════ */
+function showToast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+</script>
+</body>
+</html>
