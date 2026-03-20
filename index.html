@@ -837,11 +837,16 @@ async function refreshData() {
     // Load weights + all compliance scores in parallel — single round trip each
     let weights = { compliance: 0.40, fleet: 0.25, reviews: 0.25, licensing: 0.10 };
     try {
-      const [wRes, scoresRes] = await Promise.all([
+      const [wRes, scoresRes, fleetRes, reviewsRes, legalRes] = await Promise.all([
         fetch(`${BACKEND_URL}?action=getScoringRules`),
-        fetch(`${BACKEND_URL}?action=allComplianceScores`)
+        fetch(`${BACKEND_URL}?action=allComplianceScores`),
+        fetch(`${BACKEND_URL}?action=allFleetScores`),
+        fetch(`${BACKEND_URL}?action=allReviewsScores`),
+        fetch(`${BACKEND_URL}?action=allLegalScores`)
       ]);
-      const [wData, scoresData] = await Promise.all([wRes.json(), scoresRes.json()]);
+      const [wData, scoresData, fleetData, reviewsData, legalData] = await Promise.all([
+        wRes.json(), scoresRes.json(), fleetRes.json(), reviewsRes.json(), legalRes.json()
+      ]);
 
       // Apply weights
       if (wData.rules) {

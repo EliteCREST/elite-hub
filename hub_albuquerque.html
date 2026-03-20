@@ -762,8 +762,19 @@ async function syncData() {
     // Pull live compliance stats directly — small delay to avoid GAS rate limit
     await new Promise(r => setTimeout(r, 800));
     try {
-      const compRes  = await fetch(`${BACKEND_URL}?action=complianceData&region=${REGION.key}`);
+      const [compRes, fleetRes] = await Promise.all([
+        fetch(`${BACKEND_URL}?action=complianceData&region=${REGION.key}`),
+        fetch(`${BACKEND_URL}?action=fleetData&region=${REGION.key}`)
+      ]);
       const compData = await compRes.json();
+      // Fleet KPI
+      try {
+        const fleetD = await fleetRes.json();
+        if (fleetD && fleetD.total !== undefined) {
+          set('kpiFleet', fleetD.total);
+          set('smFleet',  fleetD.total + ' vehicles');
+        }
+      } catch(e) {}
       if (compData && !compData.error) {
         const total     = compData.total     || 0;
         const compliant = compData.compliant || 0;
