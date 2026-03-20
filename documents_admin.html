@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Documents Admin — Elite Hub</title>
+<style>
+  :root {
+    --navy:#1B2A4A; --blue:#1F5FAD; --blue-light:#2E74CC; --blue-pale:#EAF1FB;
+    --accent:#C8A84B; --white:#FFFFFF; --gray-50:#F8FAFC; --gray-100:#F4F6FA;
+    --gray-200:#E2E8F2; --gray-300:#CBD5E1; --gray-400:#94A3B8; --gray-600:#64748B;
+    --text:#1B2A4A; --green:#16A34A; --green-pale:#DCFCE7; --yellow:#D97706;
+    --yellow-pale:#FEF9C3; --red:#DC2626; --red-pale:#FEE2E2;
+    --shadow-sm:0 1px 3px rgba(27,42,74,.08); --shadow-md:0 4px 16px rgba(27,42,74,.12);
+    --shadow-lg:0 8px 32px rgba(27,42,74,.18); --shadow-xl:0 16px 48px rgba(27,42,74,.22);
+    --radius:8px; --radius-lg:12px; --radius-xl:16px;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;background:var(--gray-100);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+
+  .elite-header{background:var(--navy);display:grid;grid-template-columns:6px 200px 1fr auto;align-items:center;height:68px;position:sticky;top:0;z-index:200;box-shadow:var(--shadow-lg);}
+  .header-accent{background:var(--accent);height:100%;}
+  .header-logo{display:flex;align-items:center;gap:12px;padding:0 22px;border-right:1px solid rgba(255,255,255,.1);}
+  .logo-mark{width:40px;height:40px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;}
+  .logo-mark span{color:var(--navy);font-weight:700;font-size:11px;}
+  .logo-text .brand{color:white;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
+  .logo-text .sub{color:rgba(255,255,255,.45);font-size:10px;letter-spacing:.8px;text-transform:uppercase;margin-top:1px;}
+  .header-title{padding:0 28px;}
+  .header-title .page-name{color:white;font-size:16px;font-weight:700;}
+  .header-title .breadcrumb{color:rgba(255,255,255,.45);font-size:11px;margin-top:2px;}
+  .header-meta{padding:0 22px;display:flex;align-items:center;gap:18px;}
+  .meta-label{color:rgba(255,255,255,.4);font-size:10px;letter-spacing:.8px;text-transform:uppercase;}
+  .meta-val{color:rgba(255,255,255,.88);font-size:12px;font-weight:700;margin-top:1px;}
+  .hdr-divider{width:1px;height:30px;background:rgba(255,255,255,.12);}
+  .sub-bar{background:var(--accent);height:3px;}
+  .back-nav{background:var(--navy);padding:0 32px;border-bottom:1px solid rgba(255,255,255,.07);}
+  .back-nav a{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.5);font-size:11px;text-decoration:none;padding:8px 0;transition:color .15s;}
+  .back-nav a:hover{color:white;}
+
+  main{flex:1;padding:28px 32px;max-width:1600px;width:100%;margin:0 auto;}
+  .sh{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--navy);padding-bottom:7px;border-bottom:2px solid var(--blue);display:inline-block;}
+  .section-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+  .callout{background:var(--blue-pale);border-left:4px solid var(--blue);border-radius:0 var(--radius) var(--radius) 0;padding:12px 18px;margin-bottom:28px;font-size:12.5px;color:var(--navy);line-height:1.5;}
+
+  /* Filter bar */
+  .filter-bar{background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:12px 16px;margin-bottom:20px;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .search-box{display:flex;align-items:center;gap:7px;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:0 12px;flex:1;min-width:220px;}
+  .search-box input{border:none;outline:none;font-size:13px;padding:8px 0;font-family:Arial,sans-serif;color:var(--text);width:100%;background:transparent;}
+  .search-box input::placeholder{color:var(--gray-400);}
+  .filter-select{padding:6px 10px;border:1.5px solid var(--gray-200);border-radius:var(--radius);font-size:12px;font-family:Arial,sans-serif;color:var(--gray-600);background:white;cursor:pointer;outline:none;}
+  .filter-select:focus{border-color:var(--blue);}
+
+  /* Region sections */
+  .region-section{background:white;border:1px solid var(--gray-200);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm);margin-bottom:20px;overflow:hidden;}
+  .rs-header{background:var(--navy);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+  .rs-header:hover{background:#243657;}
+  .rs-title{color:white;font-size:14px;font-weight:700;display:flex;align-items:center;gap:10px;}
+  .rs-abbr{background:rgba(255,255,255,.15);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:1px;}
+  .rs-meta{color:rgba(255,255,255,.5);font-size:11px;display:flex;align-items:center;gap:16px;}
+  .rs-total{color:rgba(255,255,255,.9);font-weight:700;}
+  .rs-chevron{color:rgba(255,255,255,.5);font-size:14px;transition:transform .2s;}
+  .rs-chevron.open{transform:rotate(180deg);}
+  .rs-body{display:none;padding:16px 20px;}
+  .rs-body.open{display:block;}
+
+  /* Folder grid inside region */
+  .folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+  .folder-block{border:1px solid var(--gray-200);border-radius:var(--radius-lg);overflow:hidden;}
+  .fb-header{background:var(--gray-50);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--gray-200);}
+  .fb-name{font-size:12px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:7px;}
+  .fb-count{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;}
+  .fb-count.has-files{background:var(--blue-pale);color:var(--blue);}
+  .fb-count.no-files{background:var(--gray-100);color:var(--gray-400);}
+  .fb-files{padding:8px 0;}
+
+  /* File rows */
+  .file-row{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;font-size:11.5px;border-bottom:1px solid var(--gray-100);transition:background .1s;}
+  .file-row:last-child{border-bottom:none;}
+  .file-row:hover{background:var(--blue-pale);}
+  .file-info{display:flex;align-items:center;gap:8px;flex:1;min-width:0;}
+  .file-icon{font-size:14px;flex-shrink:0;}
+  .file-name{font-weight:600;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
+  .file-date{font-size:10px;color:var(--gray-400);white-space:nowrap;}
+  .file-size{font-size:10px;color:var(--gray-400);white-space:nowrap;}
+  .file-actions{display:flex;gap:4px;flex-shrink:0;}
+  .file-btn{padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid var(--gray-200);background:white;color:var(--gray-600);font-family:Arial,sans-serif;text-decoration:none;transition:all .15s;}
+  .file-btn:hover{border-color:var(--blue);color:var(--blue);}
+  .file-btn.view{background:var(--blue-pale);border-color:var(--blue);color:var(--blue);}
+  .no-files-msg{padding:12px 14px;font-size:11px;color:var(--gray-400);font-style:italic;}
+
+  /* KPI strip */
+  .kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:28px;}
+  .kpi-card{background:white;border:1px solid var(--gray-200);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden;box-shadow:var(--shadow-sm);}
+  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--blue);}
+  .kpi-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-400);margin-bottom:6px;}
+  .kpi-value{font-size:26px;font-weight:700;color:var(--navy);line-height:1;}
+  .kpi-sub{font-size:11px;color:var(--gray-400);margin-top:4px;}
+
+  /* Buttons */
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius);font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;border:none;font-family:Arial,sans-serif;transition:opacity .2s;}
+  .btn:hover{opacity:.85;}
+  .btn-primary{background:var(--blue);color:white;}
+  .btn-outline{background:transparent;color:var(--gray-600);border:1.5px solid var(--gray-300);}
+  .btn-sm{padding:5px 12px;font-size:10px;}
+
+  /* Toast */
+  .toast{position:fixed;bottom:28px;right:24px;z-index:9999;background:var(--navy);color:white;padding:14px 20px;border-radius:10px;font-size:12.5px;box-shadow:var(--shadow-xl);max-width:340px;line-height:1.5;animation:slideUp .25s ease;border-left:4px solid var(--blue);}
+  @keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+  /* Footer */
+  footer{background:var(--navy);border-top:3px solid var(--accent);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
+  .footer-brand{color:rgba(255,255,255,.4);font-size:11px;}
+  .footer-brand strong{color:rgba(255,255,255,.65);}
+  .footer-links{display:flex;gap:20px;}
+  .footer-links a{color:rgba(255,255,255,.35);font-size:11px;text-decoration:none;transition:color .2s;}
+  .footer-links a:hover{color:rgba(255,255,255,.75);}
+
+  /* Dark mode */
+  body.dark{background:#111827;color:#F1F5F9;}
+  body.dark .region-section,body.dark .kpi-card,body.dark .filter-bar,body.dark .folder-block{background:#1F2937!important;border-color:#374151!important;}
+  body.dark .rs-header{background:#0F172A!important;}
+  body.dark .fb-header{background:#111827!important;border-color:#374151!important;}
+  body.dark .fb-name,body.dark .file-name,body.dark .kpi-value,body.dark .sh{color:#F1F5F9!important;}
+  body.dark .file-date,body.dark .file-size,body.dark .kpi-label,body.dark .kpi-sub{color:#9CA3AF!important;}
+  body.dark .file-row:hover{background:#1E3A5F!important;}
+  body.dark .file-btn{background:#1F2937!important;color:#D1D5DB!important;border-color:#374151!important;}
+  body.dark .sh{border-color:#3B82F6!important;}
+  body.dark .callout{background:#1E3A5F!important;border-color:#3B82F6!important;color:#F1F5F9!important;}
+  body.dark .back-nav{background:#0F172A!important;}
+  body.dark .back-nav a{color:#9CA3AF!important;}
+  body.dark .filter-select,body.dark input{background:#1F2937!important;color:#F1F5F9!important;border-color:#374151!important;}
+  body.dark .elite-header{background:#0F172A!important;}
+  .dark-toggle{background:none;border:1.5px solid rgba(255,255,255,.2);border-radius:20px;color:rgba(255,255,255,.7);font-size:14px;cursor:pointer;padding:4px 8px;transition:all .2s;line-height:1;}
+  .dark-toggle:hover{border-color:rgba(255,255,255,.5);color:white;}
+
+  @media(max-width:900px){main{padding:16px;}.elite-header{grid-template-columns:4px 1fr auto;}.header-logo{display:none;}.folder-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<script>
+(function(){
+  if(localStorage.getItem('eliteDarkMode')==='dark') document.body.classList.add('dark');
+  window.addEventListener('DOMContentLoaded',function(){
+    const btn=document.getElementById('darkToggle');
+    if(btn) btn.textContent=document.body.classList.contains('dark')?'☀️':'🌙';
+  });
+})();
+function toggleDarkMode(){
+  document.body.classList.toggle('dark');
+  const isDark=document.body.classList.contains('dark');
+  localStorage.setItem('eliteDarkMode',isDark?'dark':'light');
+  const btn=document.getElementById('darkToggle');
+  if(btn) btn.textContent=isDark?'☀️':'🌙';
+}
+</script>
+
+<header class="elite-header">
+  <div class="header-accent"></div>
+  <div class="header-logo">
+    <div class="logo-mark"><span>ADMIN</span></div>
+    <div class="logo-text"><div class="brand">Elite Hub</div><div class="sub">Documents</div></div>
+  </div>
+  <div class="header-title">
+    <div class="page-name">Documents Admin — All Regions</div>
+    <div class="breadcrumb">Elite Hub &rsaquo; Admin &rsaquo; Documents</div>
+  </div>
+  <div class="header-meta">
+    <div><div class="meta-label">Total Files</div><div class="meta-val" id="hdrTotal">—</div></div>
+    <div class="hdr-divider"></div>
+    <div><div class="meta-label">Last Sync</div><div class="meta-val" id="hdrSync">—</div></div>
+    <div class="hdr-divider"></div>
+    <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
+  </div>
+</header>
+<div class="sub-bar"></div>
+<nav class="back-nav">
+  <a href="https://elitecrest.github.io/elite-hub/admin.html">← Admin Center &rsaquo; Documents</a>
+</nav>
+
+<main>
+  <div class="callout"><strong>Documents Admin — All Regions.</strong> View all uploaded documents across all 9 regions, organized by folder. Click any file to preview or download. Data pulled live from Google Drive.</div>
+
+  <div class="section-row">
+    <span class="sh">Document Overview</span>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-primary btn-sm" onclick="syncData()">↻ Sync</button>
+      <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export List</button>
+    </div>
+  </div>
+
+  <div class="kpi-strip">
+    <div class="kpi-card"><div class="kpi-label">Total Files</div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-sub">All regions</div></div>
+    <div class="kpi-card"><div class="kpi-label">Regions w/ Files</div><div class="kpi-value" id="kpiRegions">—</div><div class="kpi-sub">Active</div></div>
+    <div class="kpi-card"><div class="kpi-label">Contracts</div><div class="kpi-value" id="kpiContracts">—</div><div class="kpi-sub">Uploaded</div></div>
+    <div class="kpi-card"><div class="kpi-label">Sub. Compliance</div><div class="kpi-value" id="kpiInsurance">—</div><div class="kpi-sub">Uploaded</div></div>
+    <div class="kpi-card"><div class="kpi-label">Fleet Records</div><div class="kpi-value" id="kpiFleet">—</div><div class="kpi-sub">Uploaded</div></div>
+    <div class="kpi-card"><div class="kpi-label">Most Recent</div><div class="kpi-value" id="kpiRecent" style="font-size:14px;">—</div><div class="kpi-sub" id="kpiRecentRegion">—</div></div>
+  </div>
+
+  <div class="filter-bar">
+    <div class="search-box"><span style="color:var(--gray-400);">🔍</span><input type="text" id="searchInput" placeholder="Search file names..." oninput="applyFilters()"></div>
+    <select class="filter-select" id="regionFilter" onchange="applyFilters()">
+      <option value="">All Regions</option>
+      <option value="cleveland">Cleveland</option>
+      <option value="phoenix">Phoenix</option>
+      <option value="albuquerque">Albuquerque</option>
+      <option value="minneapolis">Minneapolis</option>
+      <option value="stlouis">St. Louis</option>
+      <option value="chicago">Chicago</option>
+      <option value="indianapolis">Indianapolis</option>
+      <option value="pittsburgh">Pittsburgh</option>
+      <option value="milwaukee">Milwaukee</option>
+    </select>
+    <select class="filter-select" id="folderFilter" onchange="applyFilters()">
+      <option value="">All Folders</option>
+      <option value="contracts">Contracts</option>
+      <option value="insurance">Subcontractor Compliance</option>
+      <option value="licensing">Licensing & Permits</option>
+      <option value="fleet">Fleet Records</option>
+      <option value="misc">Miscellaneous</option>
+    </select>
+    <span id="fileCount" style="font-size:11px;color:var(--gray-400);margin-left:auto;"></span>
+  </div>
+
+  <div id="regionsContainer">
+    <div style="text-align:center;padding:60px 20px;color:var(--gray-400);">
+      <div style="font-size:48px;margin-bottom:12px;opacity:.3;">📁</div>
+      <div style="font-size:15px;font-weight:700;color:var(--navy);">Loading documents...</div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-brand"><strong>Elite Family of Brands</strong> &nbsp;·&nbsp; Documents Admin &nbsp;·&nbsp; Internal Use Only</div>
+  <div class="footer-links"><a href="https://elitecrest.github.io/elite-hub/admin.html">← Admin Center</a></div>
+</footer>
+
+<script>
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec';
+
+const REGIONS = {
+  cleveland:    'Cleveland',    phoenix:      'Phoenix',
+  albuquerque:  'Albuquerque',  minneapolis:  'Minneapolis',
+  stlouis:      'St. Louis',    chicago:      'Chicago',
+  indianapolis: 'Indianapolis', pittsburgh:   'Pittsburgh',
+  milwaukee:    'Milwaukee',
+};
+const REGION_ABBR = {
+  cleveland:'CLE', phoenix:'PHX', albuquerque:'ABQ', minneapolis:'MSP',
+  stlouis:'STL', chicago:'CHI', indianapolis:'IND', pittsburgh:'PIT', milwaukee:'MKE',
+};
+const FOLDERS = {
+  contracts:  { name: 'Contracts',               icon: '📄' },
+  insurance:  { name: 'Subcontractor Compliance', icon: '🛡️' },
+  licensing:  { name: 'Licensing & Permits',      icon: '⚖️' },
+  fleet:      { name: 'Fleet Records',            icon: '🚗' },
+  misc:       { name: 'Miscellaneous',            icon: '📁' },
+};
+
+let allData    = {}; // { regionKey: { folderKey: [files] } }
+let allFiles   = []; // flat list for search/export
+
+async function syncData() {
+  document.getElementById('hdrSync').textContent = '…';
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=allDocuments`);
+    const data = await res.json();
+    allData = data.regions || {};
+    buildFlatList();
+    updateKPIs();
+    applyFilters();
+    document.getElementById('hdrSync').textContent = new Date().toLocaleTimeString();
+  } catch(e) {
+    document.getElementById('hdrSync').textContent = 'Error';
+    showToast('Could not load documents — check backend.', 'error');
+  }
+}
+
+function buildFlatList() {
+  allFiles = [];
+  Object.entries(allData).forEach(([rkey, folders]) => {
+    Object.entries(folders).forEach(([fkey, files]) => {
+      files.forEach(f => allFiles.push({ ...f, regionKey: rkey, folderKey: fkey }));
+    });
+  });
+  allFiles.sort((a, b) => new Date(b.uploaded) - new Date(a.uploaded));
+}
+
+function updateKPIs() {
+  const total     = allFiles.length;
+  const regions   = Object.values(allData).filter(r => Object.values(r).some(f => f.length > 0)).length;
+  const contracts = allFiles.filter(f => f.folderKey === 'contracts').length;
+  const insurance = allFiles.filter(f => f.folderKey === 'insurance').length;
+  const fleet     = allFiles.filter(f => f.folderKey === 'fleet').length;
+  const recent    = allFiles[0];
+
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('kpiTotal',     total);
+  set('kpiRegions',   regions);
+  set('kpiContracts', contracts);
+  set('kpiInsurance', insurance);
+  set('kpiFleet',     fleet);
+  set('hdrTotal',     total);
+  if (recent) {
+    set('kpiRecent',       recent.name.length > 18 ? recent.name.slice(0,18)+'…' : recent.name);
+    set('kpiRecentRegion', REGIONS[recent.regionKey] + ' · ' + formatDate(recent.uploaded));
+  }
+}
+
+function applyFilters() {
+  const search    = document.getElementById('searchInput').value.toLowerCase();
+  const regionF   = document.getElementById('regionFilter').value;
+  const folderF   = document.getElementById('folderFilter').value;
+
+  const container = document.getElementById('regionsContainer');
+  let html        = '';
+  let shownFiles  = 0;
+
+  const regionsToShow = regionF ? [regionF] : Object.keys(REGIONS);
+
+  regionsToShow.forEach(rkey => {
+    const folders  = allData[rkey] || {};
+    const foldersToShow = folderF ? [folderF] : Object.keys(FOLDERS);
+
+    // Filter files
+    let regionTotal = 0;
+    const folderHtml = foldersToShow.map(fkey => {
+      let files = (folders[fkey] || []);
+      if (search) files = files.filter(f => f.name.toLowerCase().includes(search));
+      regionTotal += files.length;
+      shownFiles  += files.length;
+
+      const filesHtml = files.length > 0
+        ? files.map(f => `
+          <div class="file-row">
+            <div class="file-info">
+              <span class="file-icon">${fileIcon(f.mimeType)}</span>
+              <div>
+                <div class="file-name" title="${f.name}">${f.name}</div>
+                <div class="file-date">${formatDate(f.uploaded)} · ${formatSize(f.size)}</div>
+              </div>
+            </div>
+            <div class="file-actions">
+              <a class="file-btn view" href="${f.embedUrl}" target="_blank">👁 View</a>
+              <a class="file-btn" href="${f.downloadUrl}" target="_blank">⬇</a>
+            </div>
+          </div>`).join('')
+        : `<div class="no-files-msg">No files uploaded</div>`;
+
+      return `
+        <div class="folder-block">
+          <div class="fb-header">
+            <div class="fb-name">${FOLDERS[fkey]?.icon || '📁'} ${FOLDERS[fkey]?.name || fkey}</div>
+            <span class="fb-count ${files.length > 0 ? 'has-files' : 'no-files'}">${files.length} file${files.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div class="fb-files">${filesHtml}</div>
+        </div>`;
+    }).join('');
+
+    // Skip region if no results and searching
+    if (search && regionTotal === 0 && !folderF) return;
+
+    html += `
+      <div class="region-section" id="rs-${rkey}">
+        <div class="rs-header" onclick="toggleRegion('${rkey}')">
+          <div class="rs-title">
+            ${REGIONS[rkey]}
+            <span class="rs-abbr">${REGION_ABBR[rkey]}</span>
+          </div>
+          <div class="rs-meta">
+            <span class="rs-total">${regionTotal} file${regionTotal !== 1 ? 's' : ''}</span>
+            <span class="rs-chevron open" id="chev-${rkey}">▼</span>
+          </div>
+        </div>
+        <div class="rs-body open" id="body-${rkey}">
+          <div class="folder-grid">${folderHtml}</div>
+        </div>
+      </div>`;
+  });
+
+  if (!html) {
+    html = `<div style="text-align:center;padding:60px 20px;background:white;border-radius:var(--radius-xl);border:1px solid var(--gray-200);">
+      <div style="font-size:48px;margin-bottom:12px;opacity:.3;">📭</div>
+      <div style="font-size:15px;font-weight:700;color:var(--navy);">No documents found</div>
+      <div style="font-size:12px;color:var(--gray-400);margin-top:6px;">Try adjusting your filters or sync to reload.</div>
+    </div>`;
+  }
+
+  container.innerHTML = html;
+  document.getElementById('fileCount').textContent = `${shownFiles} file${shownFiles !== 1 ? 's' : ''} shown`;
+}
+
+function toggleRegion(rkey) {
+  const body = document.getElementById('body-' + rkey);
+  const chev = document.getElementById('chev-' + rkey);
+  if (body) body.classList.toggle('open');
+  if (chev) chev.classList.toggle('open');
+}
+
+function fileIcon(mimeType) {
+  if (!mimeType) return '📄';
+  if (mimeType.includes('pdf'))   return '📕';
+  if (mimeType.includes('image')) return '🖼️';
+  if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
+  if (mimeType.includes('sheet') || mimeType.includes('excel'))   return '📊';
+  return '📄';
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  try { return new Date(iso).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); }
+  catch { return iso; }
+}
+
+function formatSize(bytes) {
+  if (!bytes) return '—';
+  if (bytes < 1024)       return bytes + ' B';
+  if (bytes < 1048576)    return Math.round(bytes / 1024) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function exportCSV() {
+  if (!allFiles.length) { showToast('No files to export.', 'warn'); return; }
+  const headers = ['Region','Folder','File Name','Uploaded','Size'];
+  const rows = allFiles.map(f => [
+    REGIONS[f.regionKey]||f.regionKey,
+    FOLDERS[f.folderKey]?.name||f.folderKey,
+    f.name, formatDate(f.uploaded), formatSize(f.size)
+  ].map(x => `"${(x||'').replace(/"/g,'""')}"`).join(','));
+  const csv  = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `elite_hub_documents_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+}
+
+function showToast(msg, type='info') {
+  const colors = { info:'var(--blue)', warn:'#D97706', error:'#DC2626' };
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.style.borderLeftColor = colors[type]||colors.info;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+syncData();
+setInterval(syncData, 120000);
+</script>
+</body>
+</html>
