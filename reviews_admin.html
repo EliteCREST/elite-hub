@@ -1122,7 +1122,7 @@ async function syncBackend() {
     return;
   }
   try {
-    const res  = await fetch(`${BACKEND_URL}?action=reviewsData&region=${regionKey}`);
+    const res  = await fetch(`${BACKEND_URL}?action=reviewsData`); // admin — no region filter
     const data = await res.json();
     if (data.summary)  { summaryData = data.summary;  renderSummaryTable(); updateKPIsFromSummary(); }
     if (data.reviews)  { reviewsData = data.reviews;  renderReviewLists();  updateKPIsFromReviews(); }
