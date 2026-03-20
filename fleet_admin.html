@@ -586,7 +586,7 @@ function toggleDarkMode() {
     </div>
   </div>
   <div class="kpi-grid">
-    <div class="kpi-card good-card"><div class="kpi-icon">🚗</div><div class="kpi-label">Total Vehicles</div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-sub">This region</div></div>
+    <div class="kpi-card good-card"><div class="kpi-icon">🚗</div><div class="kpi-label">Total Vehicles</div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-sub">All regions</div></div>
     <div class="kpi-card good-card"><div class="kpi-icon">✅</div><div class="kpi-label">Active</div><div class="kpi-value" id="kpiActive">—</div><div class="kpi-sub">In service</div></div>
     <div class="kpi-card"><div class="kpi-icon">🔧</div><div class="kpi-label">In Shop</div><div class="kpi-value" id="kpiShop">—</div><div class="kpi-sub">Under maintenance</div></div>
     <div class="kpi-card warn-card"><div class="kpi-icon">⚠️</div><div class="kpi-label">Tag Expiring</div><div class="kpi-value" id="kpiTagWarn">—</div><div class="kpi-sub">Within 60 days</div></div>
@@ -871,14 +871,14 @@ let editingId    = null;
 ══════════════════════════════════════════════════════════════ */
 document.getElementById('hdrSub').textContent       = 'ALL REGIONS';
 document.getElementById('hdrPageName').textContent  = 'Fleet Admin — All Regions';
-document.getElementById('hdrRegion').textContent    = region.city;
-document.getElementById('hdrAbbr').textContent      = region.abbr;
-if(document.getElementById('navRegion')) document.getElementById('navRegion').textContent = region.city;
-document.getElementById('footerRegion').textContent = region.city;
+document.getElementById('hdrRegion').textContent    = 'All Regions';
+document.getElementById('hdrAbbr').textContent      = 'ALL';
+if(document.getElementById('navRegion')) document.getElementById('navRegion').textContent = 'All Regions';
+document.getElementById('footerRegion').textContent = 'All Regions';
 document.getElementById('backToHub').href           = 'https://elitecrest.github.io/elite-hub/admin.html';
 document.getElementById('footerHubLink').href       = 'https://elitecrest.github.io/elite-hub/admin.html';
 document.getElementById('pageCallout').innerHTML    =
-  `<strong>${region.city} — Fleet Management</strong> — Vehicle tracking, GeoTab health, registration, and maintenance for all vehicles in the ${region.city} region. Data synced from Google Sheets (<strong>Fleet_Data</strong> tab).`;
+  `<strong>Fleet Management — All Regions</strong> — Vehicle tracking, GeoTab health, registration, and maintenance across all regions. Data synced from Google Sheets (<strong>Fleet_Data</strong> tab).`;
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
