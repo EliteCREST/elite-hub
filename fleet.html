@@ -268,6 +268,13 @@
 
   .vc-detail-actions { display: flex; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--gray-200); }
 
+
+  .btn-shop     { background: #0369A1; color: white; }
+  .btn-shop:hover { opacity: .85; }
+  .btn-unshop   { background: var(--green); color: white; }
+  .btn-unshop:hover { opacity: .85; }
+  .shop-badge   { display:inline-flex;align-items:center;gap:5px;background:#DBEAFE;color:#0369A1;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.3px; }
+
   /* ══ EMPTY STATE ═════════════════════════════════════════════ */
   .empty-state { padding: 60px 20px; text-align: center; background: white; border-radius: var(--radius-xl); border: 1px solid var(--gray-200); }
   .empty-state .es-icon  { font-size: 48px; margin-bottom: 12px; opacity: .3; }
@@ -1059,7 +1066,9 @@ function renderVehicles() {
   }
 
   grid.innerHTML = filtered.map(v => {
+    const isShop = (v.status||'').toLowerCase().includes('shop');
     const sc   = vehicleStatusClass(v);
+        const sc   = vehicleStatusClass(v);
     const ec   = evidClass(v);
     const sl   = statusLabel(v);
     const driverDisplay = v.driver || (v.last_driver ? `<em style="color:var(--gray-400);">${v.last_driver}</em>` : '<em style="color:var(--gray-400);">Unassigned</em>');
@@ -1110,6 +1119,10 @@ function renderVehicles() {
         </div>
         <div class="vc-detail-actions">
           <button class="btn btn-navy btn-sm" onclick="event.stopPropagation();openEditModal('${v.id}')">✏ Edit</button>
+          <button class="btn btn-sm ${isShop ? 'btn-unshop' : 'btn-shop'}"
+            onclick="event.stopPropagation();toggleShop('${v.id}')">
+            ${isShop ? '✓ Back to Active' : '🔧 Send to Shop'}
+          </button>
         </div>
       </div>
     </div>`;
