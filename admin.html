@@ -356,6 +356,64 @@ function toggleDarkMode() {
     <strong>Elite Hub — Admin Center.</strong> Manage data, settings, and backend records for all regions. Select a section below to open its admin management tool.
   </div>
 
+  <!-- ADMIN NOTES PANEL -->
+  <div class="section-row" style="margin-bottom:16px;">
+    <span class="sh">Admin Notes</span>
+    <span style="font-size:11px;color:var(--gray-400);">Notes appear on region hub pages</span>
+  </div>
+  <div style="background:white;border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:22px;margin-bottom:36px;box-shadow:var(--shadow-sm);">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+      <!-- NATIONAL NOTE -->
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <span style="font-size:16px;">📢</span>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);">National Note</div>
+            <div style="font-size:11px;color:var(--gray-400);">Shows on ALL region hubs</div>
+          </div>
+        </div>
+        <textarea id="noteNational" rows="3" placeholder="e.g. Q1 audits due by March 31. All regions must submit compliance reports."
+          style="width:100%;border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:10px;font-size:13px;font-family:Arial,sans-serif;resize:vertical;outline:none;"
+          onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--gray-200)'"></textarea>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+          <span style="font-size:10px;color:var(--gray-400);" id="noteNationalUpdated"></span>
+          <button onclick="saveNote('all')" style="padding:6px 16px;background:var(--blue);color:white;border:none;border-radius:var(--radius);font-size:11px;font-weight:700;cursor:pointer;font-family:Arial,sans-serif;">💾 Save</button>
+        </div>
+      </div>
+
+      <!-- REGION-SPECIFIC NOTE -->
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <span style="font-size:16px;">📍</span>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);">Region Note</div>
+            <div style="font-size:11px;color:var(--gray-400);">Shows on a specific region hub only</div>
+          </div>
+        </div>
+        <select id="noteRegion" style="width:100%;border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:8px 10px;font-size:13px;font-family:Arial,sans-serif;outline:none;margin-bottom:8px;background:white;cursor:pointer;" onchange="loadRegionNote(this.value)">
+          <option value="">Select a region...</option>
+          <option value="cleveland">Cleveland (CLE)</option>
+          <option value="phoenix">Phoenix (PHX)</option>
+          <option value="albuquerque">Albuquerque (ABQ)</option>
+          <option value="minneapolis">Minneapolis (MSP)</option>
+          <option value="stlouis">St. Louis (STL)</option>
+          <option value="chicago">Chicago (CHI)</option>
+          <option value="indianapolis">Indianapolis (IND)</option>
+          <option value="pittsburgh">Pittsburgh (PIT)</option>
+          <option value="milwaukee">Milwaukee (MKE)</option>
+        </select>
+        <textarea id="noteRegional" rows="3" placeholder="Select a region above, then type a note..."
+          style="width:100%;border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:10px;font-size:13px;font-family:Arial,sans-serif;resize:vertical;outline:none;"
+          onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--gray-200)'"></textarea>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+          <span style="font-size:10px;color:var(--gray-400);" id="noteRegionalUpdated"></span>
+          <button onclick="saveNote(document.getElementById('noteRegion').value)" style="padding:6px 16px;background:var(--navy);color:white;border:none;border-radius:var(--radius);font-size:11px;font-weight:700;cursor:pointer;font-family:Arial,sans-serif;">💾 Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- QUICK LINKS -->
   <div class="section-row">
     <span class="sh">Quick Links</span>
@@ -554,5 +612,59 @@ function toggleDarkMode() {
   </div>
 </footer>
 
+<script>
+/* ══ ADMIN NOTES ═════════════════════════════════════════════ */
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec';
+
+async function loadAllNotes() {
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=getAdminNotes&region=all`);
+    const data = await res.json();
+    if (data.national) {
+      document.getElementById('noteNational').value = data.national;
+      if (data.nationalUpdated) document.getElementById('noteNationalUpdated').textContent = 'Last saved: ' + new Date(data.nationalUpdated).toLocaleString();
+    }
+  } catch(e) {}
+}
+
+async function loadRegionNote(regionKey) {
+  if (!regionKey) { document.getElementById('noteRegional').value = ''; return; }
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=getAdminNotes&region=${regionKey}`);
+    const data = await res.json();
+    document.getElementById('noteRegional').value = data.regional || '';
+    document.getElementById('noteRegionalUpdated').textContent = data.regionalUpdated ? 'Last saved: ' + new Date(data.regionalUpdated).toLocaleString() : '';
+  } catch(e) {}
+}
+
+async function saveNote(regionKey) {
+  if (!regionKey) { alert('Please select a region first.'); return; }
+  const note = regionKey === 'all'
+    ? document.getElementById('noteNational').value
+    : document.getElementById('noteRegional').value;
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'saveAdminNote', region: regionKey, note })
+    });
+    const ts = 'Last saved: ' + new Date().toLocaleString();
+    if (regionKey === 'all') {
+      document.getElementById('noteNationalUpdated').textContent = ts;
+    } else {
+      document.getElementById('noteRegionalUpdated').textContent = ts;
+    }
+    // Show toast
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1B2A4A;color:white;padding:12px 18px;border-radius:8px;font-size:12px;font-family:Arial,sans-serif;border-left:4px solid #1F5FAD;z-index:9999;';
+    t.textContent = regionKey === 'all' ? 'National note saved.' : `${regionKey} note saved.`;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  } catch(e) {
+    alert('Could not save note — check backend connection.');
+  }
+}
+
+loadAllNotes();
+</script>
 </body>
 </html>

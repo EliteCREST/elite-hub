@@ -634,7 +634,39 @@ function initRegion() {
   document.getElementById('toolsRegionName').textContent = REGION.city;
   document.getElementById('footerRegion').textContent  = REGION.city;
   document.getElementById('regionCallout').innerHTML   =
-    `<strong>${REGION.city} Regional Hub</strong> — Command center for the ${REGION.city} office. All tools, data, and compliance tracking scoped to this region. Health score is calculated against national Elite standards and reported to the Main Hub leaderboard.`;
+    `<strong>${REGION.city} Regional Hub</strong> — Loading notes...`;
+
+  // Load admin notes and update callout
+  async function loadAdminNotes() {
+    try {
+      const res  = await fetch(`${BACKEND_URL}?action=getAdminNotes&region=${REGION.key}`);
+      const data = await res.json();
+      const national = (data.national || '').trim();
+      const regional = (data.regional || '').trim();
+
+      let html = '';
+      if (national) {
+        html += `<div style="margin-bottom:${regional ? '8px' : '0'};">
+          <span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--blue);margin-right:8px;">📢 ALL REGIONS</span>
+          ${national}
+        </div>`;
+      }
+      if (regional) {
+        html += `<div>
+          <span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--navy);margin-right:8px;">📍 ${REGION.abbr}</span>
+          ${regional}
+        </div>`;
+      }
+      if (!national && !regional) {
+        html = `<strong>${REGION.city} Regional Hub</strong> — Command center for the ${REGION.city} office. All tools, data, and compliance tracking scoped to this region. Health score is calculated against national Elite standards and reported to the Main Hub leaderboard.`;
+      }
+      const el = document.getElementById('regionCallout');
+      if (el) el.innerHTML = html;
+    } catch(e) {
+      // Keep default text on error
+    }
+  }
+  loadAdminNotes();
 
   if (MAIN_HUB_URL) {
     document.getElementById('backToMain').href   = MAIN_HUB_URL;
