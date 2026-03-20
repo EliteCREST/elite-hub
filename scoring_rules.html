@@ -660,7 +660,9 @@ function toggleDarkMode() {
         <div class="f-title">Formula</div>
         <div class="f-line">Score = 100</div>
         <div class="f-line">Score -= (Expired License × <span id="preview-expiredLicense">0</span>) + (Missing License × <span id="preview-missingLicense">0</span>)</div>
-        <div class="f-comment">// Floor: 0</div>
+        <div class="f-line">Score -= (Open Lawsuit × <span id="preview-openLawsuit">0</span>) + (AG Complaint × <span id="preview-openAG">0</span>)</div>
+        <div class="f-line">Score -= (BBB Complaint × <span id="preview-openBBB">0</span>) + (ROC Complaint × <span id="preview-openROC">0</span>) + (Open Lien × <span id="preview-openLien">0</span>)</div>
+        <div class="f-comment">// Open/In Progress cases only · Floor: 0</div>
       </div>
       <div class="rules-grid">
         <div class="rule-section">
@@ -683,6 +685,64 @@ function toggleDarkMode() {
             </div>
             <div class="rule-input-wrap">
               <input type="number" class="rule-input" id="r-missingLicense" value="0" step="0.5" min="0" max="100"
+                oninput="markChanged(this);updatePreview('licensing')">
+              <span class="rule-unit">pts each</span>
+            </div>
+          </div>
+        </div>
+        <div class="rule-section">
+          <div class="rule-section-title">⚠️ Legal Cases</div>
+          <div class="rule-row">
+            <div>
+              <div class="rule-label">Open Lawsuit</div>
+              <div class="rule-desc">Each active lawsuit</div>
+            </div>
+            <div class="rule-input-wrap">
+              <input type="number" class="rule-input" id="r-openLawsuit" value="0" step="0.5" min="0" max="100"
+                oninput="markChanged(this);updatePreview('licensing')">
+              <span class="rule-unit">pts each</span>
+            </div>
+          </div>
+          <div class="rule-row">
+            <div>
+              <div class="rule-label">AG Complaint</div>
+              <div class="rule-desc">Each open AG complaint</div>
+            </div>
+            <div class="rule-input-wrap">
+              <input type="number" class="rule-input" id="r-openAG" value="0" step="0.5" min="0" max="100"
+                oninput="markChanged(this);updatePreview('licensing')">
+              <span class="rule-unit">pts each</span>
+            </div>
+          </div>
+          <div class="rule-row">
+            <div>
+              <div class="rule-label">BBB Complaint</div>
+              <div class="rule-desc">Each open BBB complaint</div>
+            </div>
+            <div class="rule-input-wrap">
+              <input type="number" class="rule-input" id="r-openBBB" value="0" step="0.5" min="0" max="100"
+                oninput="markChanged(this);updatePreview('licensing')">
+              <span class="rule-unit">pts each</span>
+            </div>
+          </div>
+          <div class="rule-row">
+            <div>
+              <div class="rule-label">ROC Complaint</div>
+              <div class="rule-desc">Each open ROC complaint</div>
+            </div>
+            <div class="rule-input-wrap">
+              <input type="number" class="rule-input" id="r-openROC" value="0" step="0.5" min="0" max="100"
+                oninput="markChanged(this);updatePreview('licensing')">
+              <span class="rule-unit">pts each</span>
+            </div>
+          </div>
+          <div class="rule-row">
+            <div>
+              <div class="rule-label">Open Lien</div>
+              <div class="rule-desc">Each active lien</div>
+            </div>
+            <div class="rule-input-wrap">
+              <input type="number" class="rule-input" id="r-openLien" value="0" step="0.5" min="0" max="100"
                 oninput="markChanged(this);updatePreview('licensing')">
               <span class="rule-unit">pts each</span>
             </div>
@@ -828,8 +888,8 @@ const SECTIONS = {
     defaults: { onestar: 0, twostar: 0, unanswered: 0 },
   },
   licensing: {
-    fields: ['expiredLicense', 'missingLicense'],
-    defaults: { expiredLicense: 0, missingLicense: 0 },
+    fields: ['expiredLicense', 'missingLicense', 'openLawsuit', 'openAG', 'openBBB', 'openROC', 'openLien'],
+    defaults: { expiredLicense: 0, missingLicense: 0, openLawsuit: 0, openAG: 0, openBBB: 0, openROC: 0, openLien: 0 },
   },
 };
 
