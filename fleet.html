@@ -580,7 +580,7 @@ function toggleDarkMode() {
     <span class="sh">Fleet Overview</span>
     <div style="display:flex;gap:8px;align-items:center;">
       <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Vehicle</button>
-      <button class="btn btn-outline btn-sm" onclick="syncData()">↻ Sync</button>
+      <button class="btn btn-outline btn-sm" onclick="if(typeof syncData==='function')syncData()">↻ Sync</button>
       <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export</button>
     </div>
   </div>
@@ -1068,7 +1068,6 @@ function renderVehicles() {
   grid.innerHTML = filtered.map(v => {
     const isShop = (v.status||'').toLowerCase().includes('shop');
     const sc   = vehicleStatusClass(v);
-        const sc   = vehicleStatusClass(v);
     const ec   = evidClass(v);
     const sl   = statusLabel(v);
     const driverDisplay = v.driver || (v.last_driver ? `<em style="color:var(--gray-400);">${v.last_driver}</em>` : '<em style="color:var(--gray-400);">Unassigned</em>');
