@@ -920,11 +920,9 @@ async function syncData(useCache = false) {
   }
 }
 
-// Auto-sync: always fetch fresh on load, then every 2 minutes
-document.addEventListener('DOMContentLoaded', () => {
-  syncData(false);
-  setInterval(() => syncData(false), 120000);
-});
+// Script is at bottom of body — DOM is already ready, call directly
+syncData(false);
+setInterval(() => syncData(false), 120000);
 
 function normalizeVehicle(r) {
   return {
