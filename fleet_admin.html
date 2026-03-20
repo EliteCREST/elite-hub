@@ -787,6 +787,47 @@ function toggleDarkMode() {
           <div class="form-group"><label>Device Name</label><input type="text" id="fDeviceName" placeholder="GeoTab device name"></div>
           <div class="form-group"><label>Serial #</label><input type="text" id="fSerial" placeholder="Device serial"></div>
         </div>
+        <div class="form-row">
+          <div class="form-group"><label>Firmware Version</label><input type="text" id="fFirmware" placeholder="e.g. 124.45.29"></div>
+          <div class="form-group"><label>Download Status</label>
+            <select id="fDownloadStatus">
+              <option value="">Unknown</option>
+              <option value="OK">OK</option>
+              <option value="Device is not downloading data">Not Downloading</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Current Activity</label>
+            <select id="fCurrentActivity">
+              <option value="">Unknown</option>
+              <option value="Stopped">Stopped</option>
+              <option value="Driving">Driving</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Work Time</label>
+            <select id="fWorkTime">
+              <option value="">Unknown</option>
+              <option value="Standard Hours">Standard Hours</option>
+              <option value="All Hours">All Hours</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Engine Hours</label><input type="text" id="fEngineHours" placeholder="e.g. 929:57"></div>
+          <div class="form-group"><label>Last Trip Date</label><input type="date" id="fLastTrip"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Last Stop Zone</label><input type="text" id="fLastStopZone" placeholder="e.g. Home Zone, Customer Zone"></div>
+          <div class="form-group"><label>Privacy Mode</label>
+            <select id="fPrivacyMode">
+              <option value="">Unknown</option>
+              <option value="FALSE">Off</option>
+              <option value="TRUE">On</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Device Group</label><input type="text" id="fDeviceGroup" placeholder="e.g. Vehicle, Gasoline or Petrol, Chicago"></div>
       </div>
 
       <div class="form-section fs-reg">
@@ -960,6 +1001,15 @@ function normalizeVehicle(r) {
     oil_due:          String(r['oil_change_due_(miles)'] || ''),
     ins_exp:          String(r['insurance_exp_date'] || ''),
     notes:            String(r['notes']             || ''),
+    device_group:     String(r['device_group']      || ''),
+    work_time:        String(r['work_time']         || ''),
+    current_activity: String(r['current_activity']  || ''),
+    in_privacy_mode:  String(r['in_privacy_mode']   || ''),
+    last_stop_zone:   String(r['last_stop_zone']    || ''),
+    engine_hours:     String(r['engine_hours'] || r['current_engine_hours'] || ''),
+    firmware_version: String(r['firmware_version']  || ''),
+    download_status:  String(r['download_status']   || ''),
+    last_trip:        String(r['last_trip']         || ''),
   };
 }
 
@@ -1144,6 +1194,7 @@ function renderVehicles() {
             ${v.vehicle_location ? `<span class="tag tag-location">${v.vehicle_location}</span>` : ''}
             ${tagExpiryTag(v)}
             ${v.wrap === 'Yes' ? `<span class="tag tag-wrap">Wrapped</span>` : ''}
+            ${v.download_status && v.download_status !== 'OK' ? `<span class="tag" style="background:var(--red-pale);color:var(--red);">⚠ Not Downloading</span>` : ''}
             ${v.ownership ? `<span class="tag tag-gray">${v.ownership}</span>` : ''}
             ${v.fleet_type ? `<span class="tag ${v.fleet_type === 'Accuserve' ? 'tag-brand' : 'tag-signed'}">${v.fleet_type}</span>` : ''}
           </div>
@@ -1175,6 +1226,15 @@ function renderVehicles() {
           <div class="detail-item"><div class="di-label">GeoTab Device</div><div class="di-val ${!v.device_name?'missing':''}">${v.device_name||'—'}</div></div>
           <div class="detail-item"><div class="di-label">Serial #</div><div class="di-val ${!v.serial?'missing':''}">${v.serial||'—'}</div></div>
           <div class="detail-item"><div class="di-label">Last Communicated</div><div class="di-val ${!v.last_communicated?'missing':''}">${v.last_communicated||'—'}</div></div>
+          <div class="detail-item"><div class="di-label">Download Status</div><div class="di-val">${v.download_status === 'OK' ? '<span style="color:var(--green);font-weight:700;">✓ OK</span>' : v.download_status ? '<span style="color:var(--red);font-weight:700;">' + v.download_status + '</span>' : '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Last Trip</div><div class="di-val ${!v.last_trip?'missing':''}">${v.last_trip ? formatDate(v.last_trip) : '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Engine Hours</div><div class="di-val ${!v.engine_hours?'missing':''}">${v.engine_hours || '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Firmware</div><div class="di-val ${!v.firmware_version?'missing':''}">${v.firmware_version || '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Current Activity</div><div class="di-val ${!v.current_activity?'missing':''}">${v.current_activity || '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Last Stop Zone</div><div class="di-val ${!v.last_stop_zone?'missing':''}">${v.last_stop_zone || '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Work Time</div><div class="di-val ${!v.work_time?'missing':''}">${v.work_time || '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Privacy Mode</div><div class="di-val">${v.in_privacy_mode === 'TRUE' ? 'Yes' : v.in_privacy_mode === 'FALSE' ? 'No' : '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Device Group</div><div class="di-val ${!v.device_group?'missing':''}">${v.device_group || '—'}</div></div>
           ${v.notes ? `<div class="detail-item" style="grid-column:1/-1"><div class="di-label">Notes</div><div class="di-val">${v.notes}</div></div>` : ''}
         </div>
         <div class="vc-detail-actions">
@@ -1222,14 +1282,16 @@ function closeModal() {
 }
 
 function clearForm() {
-  ['fEVID','fDeviceName','fSerial','fDriver','fLastDriver','fVIN','fColor',
-   'fPlate','fTagState','fToll','fOdometer','fOdomDate','fLastMaint','fMaintDue',
-   'fOilDue','fInsExp','fNotes','fCabSize','fBedSize','fAccessory','fYear','fMake','fModel']
+  ['fEVID','fDeviceName','fSerial','fFirmware','fEngineHours','fLastStopZone','fDeviceGroup',
+   'fDriver','fLastDriver','fVIN','fColor','fPlate','fTagState','fToll','fOdometer','fOdomDate',
+   'fLastMaint','fMaintDue','fOilDue','fInsExp','fNotes','fCabSize','fBedSize','fAccessory',
+   'fYear','fMake','fModel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  ['fStatus','fAgreement','fGeotab','fBrand','fWrap']
+  ['fStatus','fAgreement','fGeotab','fBrand','fWrap','fDownloadStatus','fCurrentActivity','fWorkTime','fPrivacyMode']
     .forEach(id => { const el = document.getElementById(id); if (el) el.selectedIndex = 0; });
   document.getElementById('fTagExp') && (document.getElementById('fTagExp').value = '');
   document.getElementById('fInsExp') && (document.getElementById('fInsExp').value = '');
+  document.getElementById('fLastTrip') && (document.getElementById('fLastTrip').value = '');
 }
 
 function populateForm(v) {
@@ -1267,6 +1329,15 @@ function populateForm(v) {
   set('fOwnership',     v.ownership);
   set('fFleetType',     v.fleet_type);
   set('fNotes',         v.notes);
+  set('fFirmware',      v.firmware_version);
+  set('fDownloadStatus',v.download_status);
+  set('fCurrentActivity',v.current_activity);
+  set('fWorkTime',      v.work_time);
+  set('fEngineHours',   v.engine_hours);
+  set('fLastTrip',      v.last_trip);
+  set('fLastStopZone',  v.last_stop_zone);
+  set('fPrivacyMode',   v.in_privacy_mode);
+  set('fDeviceGroup',   v.device_group);
 }
 
 function getFormValues() {
@@ -1305,6 +1376,15 @@ function getFormValues() {
     ownership:        g('fOwnership'),
     fleet_type:       g('fFleetType'),
     notes:            g('fNotes'),
+    firmware_version: g('fFirmware'),
+    download_status:  g('fDownloadStatus'),
+    current_activity: g('fCurrentActivity'),
+    work_time:        g('fWorkTime'),
+    engine_hours:     g('fEngineHours'),
+    last_trip:        g('fLastTrip'),
+    last_stop_zone:   g('fLastStopZone'),
+    in_privacy_mode:  g('fPrivacyMode'),
+    device_group:     g('fDeviceGroup'),
     region:           regionKey,
   };
 }
