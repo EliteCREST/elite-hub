@@ -319,17 +319,6 @@
     .lb-row > *:nth-child(n+5) { display: none; }
   }
 </style>
-<script>
-// Auto-unregister any stale service workers from previously cached hub pages
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(regs => {
-    regs.forEach(reg => {
-      reg.unregister();
-      console.log('[Elite Hub] Unregistered stale SW:', reg.scope);
-    });
-  });
-}
-</script>
 </head>
 <body>
 
