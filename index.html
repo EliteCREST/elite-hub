@@ -674,6 +674,23 @@ function openRegion(key) {
    BACKEND SYNC
 ══════════════════════════════════════════════════════ */
 async function refreshData() {
+  // Show cached data instantly while fetching fresh
+  try {
+    const cached = localStorage.getItem('eliteHubScores');
+    if (cached) {
+      const { data: cachedRegions, ts } = JSON.parse(cached);
+      if (Date.now() - ts < 300000) { // 5 min cache
+        cachedRegions.forEach(r => {
+          const idx = regionData.findIndex(x => x.key === r.key);
+          if (idx >= 0) regionData[idx] = { ...regionData[idx], ...r };
+        });
+        buildLeaderboard();
+        buildRegionCards();
+        document.getElementById('syncLabel').textContent = 'Cached';
+      }
+    }
+  } catch(e) {}
+
   document.getElementById('syncLabel').textContent = 'Syncing…';
   document.getElementById('lastSync').textContent  = '…';
 
@@ -686,21 +703,121 @@ async function refreshData() {
   }
 
   try {
-    const res  = await fetch(`${BACKEND_URL}?action=allRegionSummaries`);
-    const data = await res.json();
+    // First load HUB_SUMMARY for any manually pushed scores (non-fatal if it fails)
+    try {
+      const res  = await fetch(`${BACKEND_URL}?action=allRegionSummaries`);
+      const data = await res.json();
+      if (data.regions) {
+        data.regions.forEach(r => {
+          const idx = regionData.findIndex(x => x.key === r.key);
+          if (idx >= 0) regionData[idx] = { ...regionData[idx], ...r };
+        });
+      }
+    } catch(e) { console.warn('[EliteHub] allRegionSummaries failed (non-fatal):', e); }
 
-    if (data.regions) {
-      data.regions.forEach(r => {
-        const idx = regionData.findIndex(x => x.key === r.key);
-        if (idx >= 0) regionData[idx] = { ...regionData[idx], ...r };
-      });
-    }
+    // Load weights + all component scores in parallel
+    let weights = { compliance: 0.40, fleet: 0.25, reviews: 0.25, licensing: 0.10 };
+    try {
+      const [wRes, scoresRes, fleetRes, reviewsRes, legalRes] = await Promise.allSettled([
+        fetch(`${BACKEND_URL}?action=getScoringRules`),
+        fetch(`${BACKEND_URL}?action=allComplianceScores`),
+        fetch(`${BACKEND_URL}?action=allFleetScores`),
+        fetch(`${BACKEND_URL}?action=allReviewsScores`),
+        fetch(`${BACKEND_URL}?action=allLegalScores`)
+      ]);
 
+      const safeJson = async (settled) => {
+        if (settled.status === 'fulfilled') {
+          try { return await settled.value.json(); } catch(e) { return {}; }
+        }
+        return {};
+      };
+
+      const [wData, scoresData, fleetData, reviewsData, legalData] = await Promise.all([
+        safeJson(wRes), safeJson(scoresRes), safeJson(fleetRes), safeJson(reviewsRes), safeJson(legalRes)
+      ]);
+
+      // Apply weights from scoring rules
+      if (wData.rules) {
+        weights.compliance = (wData.rules['wCompliance'] ?? 40) / 100;
+        weights.fleet      = (wData.rules['wFleet']      ?? 25) / 100;
+        weights.reviews    = (wData.rules['wReviews']    ?? 25) / 100;
+        weights.licensing  = (wData.rules['wLicensing']  ?? 10) / 100;
+      }
+
+      // Apply fleet scores
+      if (fleetData.scores) {
+        REGIONS.forEach(region => {
+          const fd = fleetData.scores[region.key];
+          const idx = regionData.findIndex(x => x.key === region.key);
+          if (idx >= 0 && fd) {
+            regionData[idx].fleetScore = fd.fleetScore ?? null;
+            regionData[idx].fleet      = fd.activeVehicles ?? null;
+          }
+        });
+      }
+
+      // Apply reviews scores
+      if (reviewsData.scores) {
+        REGIONS.forEach(region => {
+          const rd = reviewsData.scores[region.key];
+          const idx = regionData.findIndex(x => x.key === region.key);
+          if (idx >= 0 && rd) {
+            regionData[idx].reviewsScore = rd.reviewsScore ?? null;
+            regionData[idx].reviews      = rd.avgRating    ?? null;
+          }
+        });
+      }
+
+      // Apply legal/licensing scores
+      if (legalData.scores) {
+        REGIONS.forEach(region => {
+          const ld = legalData.scores[region.key];
+          const idx = regionData.findIndex(x => x.key === region.key);
+          if (idx >= 0 && ld) {
+            regionData[idx].licensingScore = ld.licensingScore ?? null;
+          }
+        });
+      }
+
+      // Compute composite scores from compliance + component scores
+      if (scoresData.scores) {
+        REGIONS.forEach(region => {
+          const compData = scoresData.scores[region.key];
+          const idx = regionData.findIndex(x => x.key === region.key);
+          if (idx < 0) return;
+          if (!compData || compData.total === 0) {
+            regionData[idx].score      = null;
+            regionData[idx].compliance = null;
+          } else {
+            const compScore = compData.complianceScore ?? 0;
+            regionData[idx].complianceScore = compScore;
+            regionData[idx].compliance      = compData.compliancePct;
+            const available = [
+              { score: compScore,                               weight: weights.compliance, has: true },
+              { score: regionData[idx].fleetScore    ?? null,  weight: weights.fleet,      has: regionData[idx].fleetScore    !== null },
+              { score: regionData[idx].reviewsScore  ?? null,  weight: weights.reviews,    has: regionData[idx].reviewsScore  !== null },
+              { score: regionData[idx].licensingScore ?? null, weight: weights.licensing,  has: regionData[idx].licensingScore !== null },
+            ];
+            const totalWeight = available.filter(s => s.has).reduce((sum, s) => sum + s.weight, 0);
+            const weighted    = available.filter(s => s.has).reduce((sum, s) => sum + (s.score * s.weight), 0);
+            const normalized  = totalWeight > 0 ? weighted / totalWeight : compScore;
+            regionData[idx].score = Math.round(300 + (normalized / 100) * 550);
+          }
+        });
+      }
+    } catch(e) { console.error('Score load error:', e); }
+
+    // Cache scores for instant load next time
+    try { localStorage.setItem('eliteHubScores', JSON.stringify({ data: regionData, ts: Date.now() })); } catch(e) {}
     document.getElementById('syncLabel').textContent  = 'Live';
     document.getElementById('lastSync').textContent   = new Date().toLocaleTimeString();
     document.getElementById('lbTimestamp').textContent = 'Updated ' + new Date().toLocaleTimeString();
   } catch(err) {
+    console.error('[EliteHub] Sync error:', err);
     document.getElementById('syncLabel').textContent = 'Sync Error';
+    document.getElementById('lbTimestamp').textContent = 'Sync failed — check GAS deployment permissions';
+    showToast('Sync failed: ' + err.message + ' — Ensure GAS is deployed with "Anyone" access.', 'error');
   }
 
   buildLeaderboard();
@@ -733,7 +850,7 @@ function showToast(msg, type = 'info') {
 buildLeaderboard();
 buildRegionCards();
 refreshData();
-setInterval(refreshData, 300000); // auto-refresh every 5 min
+setInterval(refreshData, 120000); // auto-refresh every 2 min
 </script>
 </body>
 </html>
