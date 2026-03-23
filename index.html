@@ -318,129 +318,20 @@
     .lb-header span:nth-child(n+5),
     .lb-row > *:nth-child(n+5) { display: none; }
   }
-
-  /* ══ DARK MODE ════════════════════════════════════════════ */
-  body.dark { background: #111827; color: #F1F5F9; }
-  body.dark main { background: #111827; }
-
-  /* Cards */
-  body.dark .kpi-card,
-  body.dark .vehicle-card,
-  body.dark .scoring-card,
-  body.dark .admin-card,
-  body.dark .modal,
-  body.dark .file-browser,
-  body.dark .folder-card,
-  body.dark .rule-row,
-  body.dark .filter-bar,
-  body.dark .podium-card { background: #1F2937 !important; border-color: #374151 !important; }
-
-  /* Region cards — blue border */
-  body.dark .region-card { background: #1F2937 !important; border: 1.5px solid #1F5FAD !important; }
-
-  /* Text colors — primary */
-  body.dark .pc-city, body.dark .pc-score-num, body.dark .kpi-value,
-  body.dark .rc-name, body.dark .rc-city, body.dark .rc-region-name,
-  body.dark .vc-vehicle, body.dark .ac-name,
-  body.dark .di-val, body.dark .sh, body.dark .page-name,
-  body.dark .rule-label, body.dark .sc-title, body.dark .mh-title { color: #F1F5F9 !important; }
-  /* Force all text in region cards to be visible */
-  body.dark .region-card, body.dark .region-card span,
-  body.dark .region-card div, body.dark .region-card p,
-  body.dark .region-card h1, body.dark .region-card h2,
-  body.dark .region-card h3,
-  body.dark .rc-city, body.dark .rc-state,
-  body.dark .rc-brands span { color: #F1F5F9 !important; }
-  body.dark .brand-chip { background: #1E3A5F !important; color: #93C5FD !important; }
-  body.dark .rc-state { color: #9CA3AF !important; }
-  body.dark .region-card .kpi-sub,
-  body.dark .region-card .rc-meta { color: #9CA3AF !important; }
-
-  /* Text colors — secondary */
-  body.dark .pc-state, body.dark .kpi-label, body.dark .kpi-sub,
-  body.dark .ps-lbl, body.dark .rc-meta, body.dark .vc-driver,
-  body.dark .ac-desc, body.dark .di-label, body.dark .rule-desc,
-  body.dark .breadcrumb, body.dark .sort-label, body.dark .meta-label,
-  body.dark .footer-brand, body.dark .sc-subtitle { color: #9CA3AF !important; }
-
-  /* Section headings */
-  body.dark .sh { border-color: #3B82F6 !important; }
-
-  /* Callout */
-  body.dark .callout { background: #1E3A5F !important; border-color: #3B82F6 !important; color: #F1F5F9 !important; }
-
-  /* Back nav */
-  body.dark .back-nav { background: #0F172A !important; border-color: #1F2937 !important; }
-  body.dark .back-nav a { color: #9CA3AF !important; }
-  body.dark .back-nav a:hover { color: #F1F5F9 !important; }
-
-  /* Tables */
-  body.dark .comp-table th { background: #0F172A !important; color: #9CA3AF !important; border-color: #374151 !important; }
-  body.dark .comp-table td { color: #F1F5F9 !important; border-color: #374151 !important; }
-  body.dark .comp-table tr:hover td { background: #1E3A5F !important; }
-
-  /* Inputs */
-  body.dark input, body.dark select, body.dark textarea {
-    background: #111827 !important; color: #F1F5F9 !important; border-color: #374151 !important;
-  }
-
-  /* Filter pills & sort buttons */
-  body.dark .filter-pill, body.dark .sort-btn, body.dark .filter-select {
-    background: #1F2937 !important; color: #D1D5DB !important; border-color: #374151 !important;
-  }
-  body.dark .filter-pill.active { background: #1D4ED8 !important; color: white !important; border-color: #1D4ED8 !important; }
-  body.dark .sort-btn.active { background: #1F5FAD !important; color: white !important; border-color: #1F5FAD !important; }
-
-  /* Form sections */
-  body.dark .form-section { background: #1F2937 !important; }
-  body.dark .form-group label { color: #9CA3AF !important; }
-
-  /* Status/score badges */
-  body.dark .tag-geotab-ok, body.dark .tag-expiry-ok, body.dark .badge-green { background: #064E3B !important; color: #6EE7B7 !important; }
-  body.dark .tag-geotab-bad, body.dark .tag-expiry-exp, body.dark .badge-red { background: #7F1D1D !important; color: #FCA5A5 !important; }
-  body.dark .tag-expiry-warn, body.dark .badge-yellow { background: #78350F !important; color: #FCD34D !important; }
-  body.dark .tag-brand, body.dark .tag-plate, body.dark .badge-blue { background: #1E3A5F !important; color: #93C5FD !important; }
-  body.dark .tag-location, body.dark .tag-gray { background: #374151 !important; color: #D1D5DB !important; }
-
-  /* rc-footer */
-  body.dark .rc-footer { background: #111827 !important; border-color: #374151 !important; }
-
-  /* Header stays dark */
-  body.dark .elite-header { background: #0F172A !important; }
-
-
-  .dark-toggle {
-    background: none; border: 1.5px solid rgba(255,255,255,.2);
-    border-radius: 20px; color: rgba(255,255,255,.7);
-    font-size: 14px; cursor: pointer; padding: 4px 8px;
-    transition: all .2s; line-height: 1;
-  }
-  .dark-toggle:hover { border-color: rgba(255,255,255,.5); color: white; }
-
 </style>
-</head>
-<body>
-
 <script>
-/* ══ DARK MODE ════════════════════════════════════════════ */
-(function() {
-  const saved = localStorage.getItem('eliteDarkMode');
-  if (saved === 'dark') document.body.classList.add('dark');
-  // Update button icon after DOM loads
-  window.addEventListener('DOMContentLoaded', function() {
-    const btn = document.getElementById('darkToggle');
-    if (btn) btn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+// Auto-unregister any stale service workers from previously cached hub pages
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(reg => {
+      reg.unregister();
+      console.log('[Elite Hub] Unregistered stale SW:', reg.scope);
+    });
   });
-})();
-function toggleDarkMode() {
-  document.body.classList.toggle('dark');
-  const isDark = document.body.classList.contains('dark');
-  localStorage.setItem('eliteDarkMode', isDark ? 'dark' : 'light');
-  const btn = document.getElementById('darkToggle');
-  if (btn) btn.textContent = isDark ? '☀️' : '🌙';
 }
 </script>
-
+</head>
+<body>
 
 <!-- BUILD MODE BANNER -->
 <div class="build-banner" id="buildBanner">
@@ -480,7 +371,6 @@ function toggleDarkMode() {
     </div>
     <div class="hdr-divider"></div>
     <a class="admin-btn" href="https://elitecrest.github.io/elite-hub/admin.html">⚙ Admin</a>
-    <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle light/dark mode">🌙</button>
   </div>
 </header>
 <div class="sub-bar"></div>
@@ -672,7 +562,7 @@ function buildLeaderboard() {
 
 function getSortedRegions() {
   const scored   = [...regionData].filter(r => r.score !== null)
-                    .sort((a, b) => b[sortField] - a[sortField]); // highest score first
+                    .sort((a, b) => sortDir * (b[sortField] - a[sortField]));
   const unscored = regionData.filter(r => r.score === null);
   return [...scored, ...unscored];
 }
@@ -795,23 +685,6 @@ function openRegion(key) {
    BACKEND SYNC
 ══════════════════════════════════════════════════════ */
 async function refreshData() {
-  // Show cached data instantly while fetching fresh
-  try {
-    const cached = localStorage.getItem('eliteHubScores');
-    if (cached) {
-      const { data: cachedRegions, ts } = JSON.parse(cached);
-      if (Date.now() - ts < 300000) { // 5 min cache
-        cachedRegions.forEach(r => {
-          const idx = regionData.findIndex(x => x.key === r.key);
-          if (idx >= 0) regionData[idx] = { ...regionData[idx], ...r };
-        });
-        buildLeaderboard();
-        buildRegionCards();
-        document.getElementById('syncLabel').textContent = 'Cached';
-      }
-    }
-  } catch(e) {}
-
   document.getElementById('syncLabel').textContent = 'Syncing…';
   document.getElementById('lastSync').textContent  = '…';
 
@@ -824,9 +697,9 @@ async function refreshData() {
   }
 
   try {
-    // First load HUB_SUMMARY for any manually pushed scores
     const res  = await fetch(`${BACKEND_URL}?action=allRegionSummaries`);
     const data = await res.json();
+
     if (data.regions) {
       data.regions.forEach(r => {
         const idx = regionData.findIndex(x => x.key === r.key);
@@ -834,58 +707,6 @@ async function refreshData() {
       });
     }
 
-    // Load weights + all compliance scores in parallel — single round trip each
-    let weights = { compliance: 0.40, fleet: 0.25, reviews: 0.25, licensing: 0.10 };
-    try {
-      const [wRes, scoresRes, fleetRes, reviewsRes, legalRes] = await Promise.all([
-        fetch(`${BACKEND_URL}?action=getScoringRules`),
-        fetch(`${BACKEND_URL}?action=allComplianceScores`),
-        fetch(`${BACKEND_URL}?action=allFleetScores`),
-        fetch(`${BACKEND_URL}?action=allReviewsScores`),
-        fetch(`${BACKEND_URL}?action=allLegalScores`)
-      ]);
-      const [wData, scoresData, fleetData, reviewsData, legalData] = await Promise.all([
-        wRes.json(), scoresRes.json(), fleetRes.json(), reviewsRes.json(), legalRes.json()
-      ]);
-
-      // Apply weights
-      if (wData.rules) {
-        weights.compliance = (wData.rules['wCompliance'] ?? 40) / 100;
-        weights.fleet      = (wData.rules['wFleet']      ?? 25) / 100;
-        weights.reviews    = (wData.rules['wReviews']    ?? 25) / 100;
-        weights.licensing  = (wData.rules['wLicensing']  ?? 10) / 100;
-      }
-
-      // Apply scores to regionData
-      if (scoresData.scores) {
-        REGIONS.forEach(region => {
-          const compData = scoresData.scores[region.key];
-          const idx = regionData.findIndex(x => x.key === region.key);
-          if (idx < 0) return;
-          if (!compData || compData.total === 0) {
-            regionData[idx].score      = null;
-            regionData[idx].compliance = null;
-          } else {
-            const compScore = compData.complianceScore ?? 0;
-            regionData[idx].complianceScore = compScore;
-            regionData[idx].compliance      = compData.compliancePct;
-            const available = [
-              { score: compScore,                               weight: weights.compliance, has: true },
-              { score: regionData[idx].fleetScore    ?? null,  weight: weights.fleet,      has: regionData[idx].fleetScore    !== null },
-              { score: regionData[idx].reviewsScore  ?? null,  weight: weights.reviews,    has: regionData[idx].reviewsScore  !== null },
-              { score: regionData[idx].licensingScore ?? null, weight: weights.licensing,  has: regionData[idx].licensingScore !== null },
-            ];
-            const totalWeight = available.filter(s => s.has).reduce((sum, s) => sum + s.weight, 0);
-            const weighted    = available.filter(s => s.has).reduce((sum, s) => sum + (s.score * s.weight), 0);
-            const normalized  = totalWeight > 0 ? weighted / totalWeight : compScore;
-            regionData[idx].score = Math.round(300 + (normalized / 100) * 550);
-          }
-        });
-      }
-    } catch(e) { console.error('Score load error:', e); }
-
-    // Cache the scores for instant load next time
-    try { localStorage.setItem('eliteHubScores', JSON.stringify({ data: regionData, ts: Date.now() })); } catch(e) {}
     document.getElementById('syncLabel').textContent  = 'Live';
     document.getElementById('lastSync').textContent   = new Date().toLocaleTimeString();
     document.getElementById('lbTimestamp').textContent = 'Updated ' + new Date().toLocaleTimeString();
@@ -923,49 +744,7 @@ function showToast(msg, type = 'info') {
 buildLeaderboard();
 buildRegionCards();
 refreshData();
-setInterval(refreshData, 120000); // auto-refresh every 2 min // auto-refresh every 5 min
+setInterval(refreshData, 300000); // auto-refresh every 5 min
 </script>
-
-<script>
-/* ══ SERVICE WORKER REGISTRATION + DATA PRE-WARM ═════════════ */
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('https://elitecrest.github.io/elite-hub/sw.js')
-    .then(reg => {
-      console.log('[EliteHub] Service worker registered');
-      // Pre-warm data cache for all regions in background
-      setTimeout(prewarmDataCache, 3000);
-    })
-    .catch(err => console.log('[EliteHub] SW registration failed:', err));
-}
-
-async function prewarmDataCache() {
-  const BACKEND = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec';
-  const REGIONS = ['cleveland', 'phoenix', 'albuquerque', 'minneapolis', 'stlouis', 'chicago', 'indianapolis', 'pittsburgh', 'milwaukee'];
-  const CACHE_KEY = 'elite-hub-data-v1';
-  
-  // Pre-fetch compliance data for all regions
-  for (const region of REGIONS) {
-    try {
-      const res  = await fetch(`${BACKEND}?action=complianceData&region=${region}`);
-      const data = await res.json();
-      localStorage.setItem(`compliance_${region}`, JSON.stringify({ data, ts: Date.now() }));
-    } catch(e) {}
-    await new Promise(r => setTimeout(r, 400)); // small delay between calls
-  }
-  
-  // Pre-fetch fleet data for all regions  
-  for (const region of REGIONS) {
-    try {
-      const res  = await fetch(`${BACKEND}?action=fleetData&region=${region}`);
-      const data = await res.json();
-      localStorage.setItem(`fleet_${region}`, JSON.stringify({ data, ts: Date.now() }));
-    } catch(e) {}
-    await new Promise(r => setTimeout(r, 400));
-  }
-
-  console.log('[EliteHub] Data pre-warm complete');
-}
-</script>
-
 </body>
 </html>
