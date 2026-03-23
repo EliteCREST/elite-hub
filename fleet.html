@@ -1004,7 +1004,13 @@ function renderAll() {
 
 function updateKPIs() {
   const total    = allVehicles.length;
-  const active   = allVehicles.filter(v => (v.status||'').toLowerCase() === 'active').length;
+  const active   = allVehicles.filter(v => {
+    const agreement = (v.agreement || '').toLowerCase();
+    const inShop    = (v.status || '').toLowerCase().includes('shop');
+    const tagOk     = getTagStatus(v.tag_expiration) !== 'expired';
+    const geotabOk  = (v.geotab || '').toLowerCase() === 'active';
+    return agreement === 'signed' && !inShop && tagOk && geotabOk;
+  }).length;
   const shop     = allVehicles.filter(v => (v.status||'').toLowerCase().includes('shop')).length;
   const tagExp   = allVehicles.filter(v => getTagStatus(v.tag_expiration) === 'expired').length;
   const tagWarn  = allVehicles.filter(v => getTagStatus(v.tag_expiration) === 'expiring').length;
@@ -1282,6 +1288,33 @@ function getFormValues() {
     notes:            g('fNotes'),
     region:           regionKey,
   };
+}
+
+async function toggleShop(id) {
+  const v = allVehicles.find(v => v.id === id);
+  if (!v) return;
+
+  const isShop  = (v.status || '').toLowerCase().includes('shop');
+  const newStatus = isShop ? 'Active' : 'In Shop';
+  v.status = newStatus;
+
+  // Re-render immediately so UI updates
+  renderAll();
+
+  // Save back to sheet
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'updateVehicle',
+        evid:    v.evid,
+        vehicle: { status: newStatus },
+      })
+    });
+    showToast(`Vehicle ${v.evid} marked as ${newStatus}.`, 'info');
+  } catch(e) {
+    showToast('Could not save status change to sheet.', 'error');
+  }
 }
 
 async function saveVehicle() {
