@@ -914,7 +914,7 @@ function normalizeVehicle(r) {
     driver:           String(r['assigned_driver']   || ''),
     last_driver:      String(r['last_known_driver'] || ''),
     agreement:        String(r['agreement_status']  || ''),
-    geotab:           String(r['geotab_status']     || ''),
+    geotab:           String(r['geotab_status'] || r['geotab status'] || r['geotab'] || ''),
     brand:            String(r['brand']             || ''),
     year:             String(r['year']              || ''),
     make:             String(r['make']              || ''),
@@ -1009,7 +1009,7 @@ function updateKPIs() {
   const tagExp   = allVehicles.filter(v => getTagStatus(v.tag_expiration) === 'expired').length;
   const tagWarn  = allVehicles.filter(v => getTagStatus(v.tag_expiration) === 'expiring').length;
   const unsigned = allVehicles.filter(v => v.agreement && v.agreement.toLowerCase() !== 'signed').length;
-  const geotab   = allVehicles.filter(v => v.geotab.toLowerCase() !== 'active').length;
+  const geotab   = allVehicles.filter(v => { const g = (v.geotab || '').toLowerCase(); return g !== 'active' && g !== 'ok'; }).length;
   const oilDue   = allVehicles.filter(v => v.oil_due && parseInt(v.oil_due) <= 500).length;
 
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
