@@ -584,6 +584,7 @@ function toggleDarkMode() {
       <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export</button>
       <button class="btn btn-navy btn-sm" onclick="openBulkInsurance()">🛡 Bulk Insurance Update</button>
       <a href="https://elitecrest.github.io/elite-hub/fleet_merge_tool.html" target="_blank" class="btn btn-outline btn-sm" style="text-decoration:none;">⚡ Merge Tool</a>
+      <button class="btn btn-outline btn-sm" onclick="recalcScores()" id="btnRecalc">🏆 Recalc Scores</button>
     </div>
   </div>
   <div class="kpi-grid">
@@ -595,6 +596,7 @@ function toggleDarkMode() {
     <div class="kpi-card warn-card"><div class="kpi-icon">🛢️</div><div class="kpi-label">Oil Due</div><div class="kpi-value" id="kpiOilDue">—</div><div class="kpi-sub">Needs oil change</div></div>
     <div class="kpi-card alert-card"><div class="kpi-icon">📋</div><div class="kpi-label">Unsigned</div><div class="kpi-value" id="kpiUnsigned">—</div><div class="kpi-sub">Agreement pending</div></div>
     <div class="kpi-card"><div class="kpi-icon">📡</div><div class="kpi-label">GeoTab Issues</div><div class="kpi-value" id="kpiGeotab">—</div><div class="kpi-sub">Connectivity issues</div></div>
+    <div class="kpi-card good-card"><div class="kpi-icon">🏆</div><div class="kpi-label">Avg Fleet Score</div><div class="kpi-value" id="kpiFleetScore">—</div><div class="kpi-sub">0–100 behavior score</div></div>
   </div>
 
   <!-- FILTER BAR -->
@@ -1011,6 +1013,9 @@ function normalizeVehicle(r) {
     firmware_version: String(r['firmware_version']  || ''),
     download_status:  String(r['download_status']   || ''),
     last_trip:        String(r['last_trip']         || ''),
+    fleet_score:      r['fleet_score'] !== undefined && r['fleet_score'] !== '' ? Number(r['fleet_score']) : null,
+    score_breakdown:  String(r['score_breakdown']  || ''),
+    score_calculated: String(r['score_calculated'] || ''),
   };
 }
 
@@ -1095,6 +1100,13 @@ function updateKPIs() {
   set('kpiGeotab',  geotab);
   set('kpiOilDue',  oilDue);
   set('hdrTotal',   total);
+  const scored = allVehicles.filter(v => v.fleet_score !== null);
+  const avgScore = scored.length ? Math.round(scored.reduce((s,v) => s + v.fleet_score, 0) / scored.length) : null;
+  const scoreEl = document.getElementById('kpiFleetScore');
+  if (scoreEl) {
+    scoreEl.textContent = avgScore !== null ? avgScore : '—';
+    scoreEl.style.color = avgScore === null ? '' : avgScore >= 80 ? 'var(--green)' : avgScore >= 60 ? 'var(--yellow)' : 'var(--red)';
+  }
 }
 
 function populateMakeFilter() {
@@ -1196,6 +1208,7 @@ function renderVehicles() {
             ${tagExpiryTag(v)}
             ${v.wrap === 'Yes' ? `<span class="tag tag-wrap">Wrapped</span>` : ''}
             ${v.download_status && v.download_status !== 'OK' ? `<span class="tag" style="background:var(--red-pale);color:var(--red);">⚠ Not Downloading</span>` : ''}
+            ${v.fleet_score !== null ? `<span class="tag" style="${v.fleet_score >= 80 ? 'background:var(--green-pale);color:var(--green);' : v.fleet_score >= 60 ? 'background:var(--yellow-pale);color:var(--yellow);' : 'background:var(--red-pale);color:var(--red);'}font-weight:700;">⬤ ${v.fleet_score}</span>` : ''}
             ${v.ownership ? `<span class="tag tag-gray">${v.ownership}</span>` : ''}
             ${v.fleet_type ? `<span class="tag ${v.fleet_type === 'Accuserve' ? 'tag-brand' : 'tag-signed'}">${v.fleet_type}</span>` : ''}
           </div>
@@ -1227,6 +1240,9 @@ function renderVehicles() {
           <div class="detail-item"><div class="di-label">GeoTab Device</div><div class="di-val ${!v.device_name?'missing':''}">${v.device_name||'—'}</div></div>
           <div class="detail-item"><div class="di-label">Serial #</div><div class="di-val ${!v.serial?'missing':''}">${v.serial||'—'}</div></div>
           <div class="detail-item"><div class="di-label">Last Communicated</div><div class="di-val ${!v.last_communicated?'missing':''}">${v.last_communicated||'—'}</div></div>
+          <div class="detail-item"><div class="di-label">Fleet Score</div><div class="di-val">${v.fleet_score !== null ? `<span style="${v.fleet_score >= 80 ? 'color:var(--green);' : v.fleet_score >= 60 ? 'color:var(--yellow);' : 'color:var(--red);'}font-size:18px;font-weight:700;">${v.fleet_score}</span><span style="color:var(--gray-400);font-size:11px;"> / 100</span>` : '<span class="missing">No data</span>'}</div></div>
+          <div class="detail-item" style="grid-column:1/-1"><div class="di-label">Score Breakdown</div><div class="di-val" style="font-size:11px;line-height:1.7;white-space:normal;">${v.score_breakdown || '<span class=\"missing\">—</span>'}</div></div>
+          <div class="detail-item"><div class="di-label">Score Calculated</div><div class="di-val ${!v.score_calculated?'missing':''}">${v.score_calculated || '—'}</div></div>
           <div class="detail-item"><div class="di-label">Download Status</div><div class="di-val">${v.download_status === 'OK' ? '<span style="color:var(--green);font-weight:700;">✓ OK</span>' : v.download_status ? '<span style="color:var(--red);font-weight:700;">' + v.download_status + '</span>' : '—'}</div></div>
           <div class="detail-item"><div class="di-label">Last Trip</div><div class="di-val ${!v.last_trip?'missing':''}">${v.last_trip ? formatDate(v.last_trip) : '—'}</div></div>
           <div class="detail-item"><div class="di-label">Engine Hours</div><div class="di-val ${!v.engine_hours?'missing':''}">${v.engine_hours || '—'}</div></div>
@@ -1523,6 +1539,24 @@ function setCache(key, data) {
 </div>
 
 <script>
+/* ══ RECALC SCORES ═══════════════════════════════════════════ */
+async function recalcScores() {
+  const btn = document.getElementById('btnRecalc');
+  if (btn) { btn.textContent = '⏳ Recalculating...'; btn.disabled = true; }
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'calculateFleetScores' })
+    });
+    showToast('Scores recalculated — syncing data...', 'info');
+    await syncData(false);
+  } catch(e) {
+    showToast('Could not reach backend to recalculate scores', 'error');
+  } finally {
+    if (btn) { btn.textContent = '🏆 Recalc Scores'; btn.disabled = false; }
+  }
+}
+
 /* ══ BULK INSURANCE ══════════════════════════════════════════ */
 function openBulkInsurance() {
   const states = [...new Set(allVehicles.map(v => v.tag_state).filter(Boolean))].sort();
