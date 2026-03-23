@@ -1,6 +1,5 @@
-const CACHE_NAME = 'elite-hub-v1';
+const CACHE_NAME = 'elite-hub-v2';
 const BASE = 'https://elitecrest.github.io/elite-hub';
-
 const PAGES = [
   '/',
   '/index.html',
@@ -46,12 +45,15 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch — serve from cache first, update in background
+// Fetch — never intercept external requests (GAS, APIs, CDNs)
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
+  // Let ALL external requests pass through untouched — no interception
+  if (url.origin !== 'https://elitecrest.github.io') return;
+
   // Only cache same-origin HTML pages
-  if (url.origin === 'https://elitecrest.github.io' && event.request.destination === 'document') {
+  if (event.request.destination === 'document') {
     event.respondWith(
       caches.open(CACHE_NAME).then(async cache => {
         const cached = await cache.match(event.request);
@@ -59,21 +61,13 @@ self.addEventListener('fetch', event => {
           if (response.ok) cache.put(event.request, response.clone());
           return response;
         }).catch(() => cached);
-
-        // Return cached immediately, update in background
         return cached || networkFetch;
       })
     );
     return;
   }
 
-  // For GAS backend calls — network only (always fresh)
-  if (url.hostname.includes('script.google.com')) {
-    event.respondWith(fetch(event.request));
-    return;
-  }
-
-  // Everything else — cache first
+  // Everything else same-origin — cache first
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request))
   );
