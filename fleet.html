@@ -1055,7 +1055,13 @@ function applyFilters() {
   const fleetType  = (document.getElementById('fleetTypeFilter')||{}).value || '';
 
   filtered = allVehicles.filter(v => {
-    if (statusFilter === 'active'     && (v.status||'').toLowerCase() !== 'active') return false;
+    if (statusFilter === 'active') {
+      const agreement = (v.agreement || '').toLowerCase();
+      const inShop    = (v.status || '').toLowerCase().includes('shop');
+      const tagOk     = getTagStatus(v.tag_expiration) !== 'expired';
+      const geotabOk  = (v.geotab || '').toLowerCase() === 'active';
+      if (!(agreement === 'signed' && !inShop && tagOk && geotabOk)) return false;
+    }
     if (statusFilter === 'shop'       && !(v.status||'').toLowerCase().includes('shop')) return false;
     if (statusFilter === 'unknown'    && (v.status||'').toLowerCase() !== 'unknown') return false;
     if (statusFilter === 'tag-expired'&& getTagStatus(v.tag_expiration) !== 'expired') return false;
