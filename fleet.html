@@ -683,14 +683,6 @@ function toggleDarkMode() {
         <div class="form-section-title">🚗 Vehicle Info</div>
         <div class="form-row">
           <div class="form-group"><label>EVID #</label><input type="text" id="fEVID" placeholder="e.g. 2074"></div>
-          <div class="form-group"><label>Status</label>
-            <select id="fStatus">
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-              <option value="In Shop">In Shop</option>
-              <option value="Unknown">Unknown</option>
-            </select>
-          </div>
         </div>
         <div class="form-row-3">
           <div class="form-group"><label>Year</label><input type="text" id="fYear" placeholder="2025"></div>
@@ -1207,7 +1199,7 @@ function clearForm() {
    'fPlate','fTagState','fToll','fOdometer','fOdomDate','fLastMaint','fMaintDue',
    'fOilDue','fInsExp','fNotes','fCabSize','fBedSize','fAccessory','fYear','fMake','fModel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  ['fStatus','fAgreement','fGeotab','fBrand','fWrap']
+  ['fAgreement','fGeotab','fBrand','fWrap']
     .forEach(id => { const el = document.getElementById(id); if (el) el.selectedIndex = 0; });
   document.getElementById('fTagExp') && (document.getElementById('fTagExp').value = '');
   document.getElementById('fInsExp') && (document.getElementById('fInsExp').value = '');
@@ -1216,7 +1208,6 @@ function clearForm() {
 function populateForm(v) {
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
   set('fEVID',          v.evid);
-  set('fStatus',        v.status);
   set('fYear',          v.year);
   set('fMake',          v.make);
   set('fModel',         v.model);
@@ -1254,7 +1245,6 @@ function getFormValues() {
   const g = id => (document.getElementById(id)||{}).value || '';
   return {
     evid:             g('fEVID'),
-    status:           g('fStatus'),
     year:             g('fYear'),
     make:             g('fMake'),
     model:            g('fModel'),
