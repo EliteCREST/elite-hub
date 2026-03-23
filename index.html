@@ -415,7 +415,7 @@
 ══════════════════════════════════════════════════════ */
 
 const BUILD_MODE  = true;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec'; // Paste GAS Web App URL here
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzV4710lvcYxAVsZ-0Lus7pCFt3fR0rbywQ238e6hzhGvk2sBB4rxOjVH8QV1HtuF2ueg/exec'; // Paste GAS Web App URL here
 
 /* ── REGION REGISTRY ─────────────────────────────────
    Add/remove regions here only. Everything else auto-builds.
@@ -674,23 +674,6 @@ function openRegion(key) {
    BACKEND SYNC
 ══════════════════════════════════════════════════════ */
 async function refreshData() {
-  // Show cached data instantly while fetching fresh
-  try {
-    const cached = localStorage.getItem('eliteHubScores');
-    if (cached) {
-      const { data: cachedRegions, ts } = JSON.parse(cached);
-      if (Date.now() - ts < 300000) { // 5 min cache
-        cachedRegions.forEach(r => {
-          const idx = regionData.findIndex(x => x.key === r.key);
-          if (idx >= 0) regionData[idx] = { ...regionData[idx], ...r };
-        });
-        buildLeaderboard();
-        buildRegionCards();
-        document.getElementById('syncLabel').textContent = 'Cached';
-      }
-    }
-  } catch(e) {}
-
   document.getElementById('syncLabel').textContent = 'Syncing…';
   document.getElementById('lastSync').textContent  = '…';
 
@@ -713,15 +696,11 @@ async function refreshData() {
       });
     }
 
-    // Cache scores for instant load next time
-    try { localStorage.setItem('eliteHubScores', JSON.stringify({ data: regionData, ts: Date.now() })); } catch(e) {}
     document.getElementById('syncLabel').textContent  = 'Live';
     document.getElementById('lastSync').textContent   = new Date().toLocaleTimeString();
     document.getElementById('lbTimestamp').textContent = 'Updated ' + new Date().toLocaleTimeString();
   } catch(err) {
-    console.error('[EliteHub] Sync error:', err);
     document.getElementById('syncLabel').textContent = 'Sync Error';
-    document.getElementById('lbTimestamp').textContent = 'Sync failed — check GAS deployment permissions';
   }
 
   buildLeaderboard();
@@ -754,7 +733,7 @@ function showToast(msg, type = 'info') {
 buildLeaderboard();
 buildRegionCards();
 refreshData();
-setInterval(refreshData, 120000); // auto-refresh every 2 min
+setInterval(refreshData, 300000); // auto-refresh every 5 min
 </script>
 </body>
 </html>
