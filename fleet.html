@@ -825,7 +825,7 @@ function toggleDarkMode() {
 /* ══════════════════════════════════════════════════════════════
    CONFIGURATION
 ══════════════════════════════════════════════════════════════ */
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxOyCP-evyhFdiDsOa49yy9L8cahKafyHz8ZaG95s56B4l-U6k6WP9XCeVQwa4FYsD3ew/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec';
 
 const REGION_MAP = {
   cleveland:    { city: 'Cleveland',    abbr: 'CLE', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_cleveland.html' },
@@ -1009,7 +1009,7 @@ function updateKPIs() {
   const tagExp   = allVehicles.filter(v => getTagStatus(v.tag_expiration) === 'expired').length;
   const tagWarn  = allVehicles.filter(v => getTagStatus(v.tag_expiration) === 'expiring').length;
   const unsigned = allVehicles.filter(v => v.agreement && v.agreement.toLowerCase() !== 'signed').length;
-  const geotab   = allVehicles.filter(v => v.geotab && v.geotab.toLowerCase() !== 'ok').length;
+  const geotab   = allVehicles.filter(v => v.geotab && (v.geotab.toLowerCase().includes('no comm') || v.geotab.toLowerCase().includes('disconnect') || v.geotab.toLowerCase().includes('error'))).length;
   const oilDue   = allVehicles.filter(v => v.oil_due && parseInt(v.oil_due) <= 500).length;
 
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
