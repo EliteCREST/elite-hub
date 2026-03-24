@@ -1202,12 +1202,12 @@ function clearForm() {
    'fWCPolicy','fWCExpiry','fWCInsCo','fWCInsContact','fWCInsPhone','fWCInsEmail','fWCCoverage',
    'fTravelDist']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  ['fStatus','fTrade1','fTrade2','fTrade3','fTrade4','fTravel'];
+  ['fStatus','fTrade1','fTrade2','fTrade3','fTrade4','fTravel']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.selectedIndex = 0; });
   document.getElementById('fSameAsGL').checked = false;
   document.getElementById('fExempt').checked = false;
   document.getElementById('wcFields').style.opacity = '1';
   document.getElementById('wcFields').style.pointerEvents = 'auto';
-    .forEach(id => { const el = document.getElementById(id); if (el) el.selectedIndex = 0; });
 }
 
 function populateForm(c) {
