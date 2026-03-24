@@ -1510,17 +1510,17 @@ function closeSafety() {
 }
 
 function safetyScoreColor(score) {
-  if (score >= 90) return '#16A34A';
-  if (score >= 75) return '#2563EB';
-  if (score >= 50) return '#F97316';
+  if (score >= 450) return '#16A34A';
+  if (score >= 375) return '#2563EB';
+  if (score >= 250) return '#F97316';
   return '#DC2626';
 }
 
 function safetyScoreClass(score) {
   if (score === null || score === undefined) return 'none';
-  if (score >= 90) return 'excellent';
-  if (score >= 75) return 'good';
-  if (score >= 50) return 'fair';
+  if (score >= 450) return 'excellent';
+  if (score >= 375) return 'good';
+  if (score >= 250) return 'fair';
   return 'poor';
 }
 
@@ -1554,7 +1554,7 @@ function renderSafety(data) {
   const score    = data.safety_score !== undefined ? data.safety_score : '—';
   const scoreNum = typeof score === 'number' ? score : null;
   const color    = scoreNum !== null ? safetyScoreColor(scoreNum) : '#94A3B8';
-  const barPct   = scoreNum !== null ? scoreNum : 0;
+  const barPct   = scoreNum !== null ? Math.round((scoreNum / 500) * 100) : 0;
   const metrics  = [
     { label: 'Major Collision',    val: data.major_collision },
     { label: 'Minor Collision',    val: data.minor_collision },
@@ -1575,7 +1575,7 @@ function renderSafety(data) {
     <div class="sp-score-wrap">
       <div class="sp-score-circle" style="border-color:${color};">
         <div class="sp-score-num" style="color:${color};">${score}</div>
-        <div class="sp-score-lbl">/ 100</div>
+        <div class="sp-score-lbl">/ 500</div>
       </div>
       <div class="sp-score-info">
         <div class="sp-score-title">Safety Score</div>
