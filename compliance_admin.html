@@ -891,6 +891,7 @@ async function syncData() {
     const res  = await fetch(`${BACKEND_URL}?action=complianceData`);
     const data = await res.json();
     allContractors = (data.data || []).map(normalizeContractor);
+    if (allContractors.length > 0) console.log('[Debug] First contractor raw:', JSON.stringify(data.data[0]));
     document.getElementById('hdrSync').textContent = new Date().toLocaleTimeString();
     renderAll();
   } catch(e) {
