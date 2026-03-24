@@ -644,7 +644,9 @@ function toggleDarkMode() {
             <th onclick="sortBy('gl_status')">GL Status ↕</th>
             <th onclick="sortBy('wc_status')">WC Status ↕</th>
             <th onclick="sortBy('gl_expiry')">GL Expiry ↕</th>
+            <th>GL Renewal</th>
             <th onclick="sortBy('wc_expiry')">WC Expiry ↕</th>
+            <th>WC Renewal</th>
             <th onclick="sortBy('contract_status')">Contract ↕</th>
             <th>Actions</th>
           </tr>
@@ -758,6 +760,10 @@ function toggleDarkMode() {
           <div class="form-group"><label>GL Expiry Date</label><input type="date" id="fGLExpiry"></div>
         </div>
         <div class="form-row">
+          <div class="form-group"><label>GL Renewal Date <span style="font-weight:400;color:var(--gray-400);font-size:10px;">(next policy start)</span></label><input type="date" id="fGLRenewal"></div>
+          <div class="form-group"></div>
+        </div>
+        <div class="form-row">
           <div class="form-group"><label>GL Insurance Co</label><input type="text" id="fGLInsCo" placeholder="Insurance company"></div>
           <div class="form-group"><label>GL Ins Contact</label><input type="text" id="fGLInsContact" placeholder="Agent name"></div>
         </div>
@@ -787,6 +793,10 @@ function toggleDarkMode() {
         <div class="form-row">
           <div class="form-group"><label>WC Policy #</label><input type="text" id="fWCPolicy" placeholder="Policy number"></div>
           <div class="form-group"><label>WC Expiry Date</label><input type="date" id="fWCExpiry"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>WC Renewal Date <span style="font-weight:400;color:var(--gray-400);font-size:10px;">(next policy start)</span></label><input type="date" id="fWCRenewal"></div>
+          <div class="form-group"></div>
         </div>
         <div class="form-row">
           <div class="form-group"><label>WC Insurance Co</label><input type="text" id="fWCInsCo" placeholder="Insurance company"></div>
@@ -933,6 +943,8 @@ function normalizeContractor(r) {
     exempt:          String(r['exempt']           || ''),
     wc_policy:       String(r['wc_policy']       || ''),
     wc_expiry:       String(r['wc_expiry']       || ''),
+    gl_renewal:      String(r['gl_renewal']      || ''),
+    wc_renewal:      String(r['wc_renewal']      || ''),
     wc_ins_co:       String(r['wc_ins_co']       || ''),
     wc_ins_contact:  String(r['wc_ins_contact']  || ''),
     wc_ins_phone:    String(r['wc_ins_phone']    || ''),
@@ -1149,7 +1161,9 @@ function renderTable() {
         <td>${statusBadge(glStatus)}</td>
         <td>${statusBadge(wcStatus)}</td>
         <td>${expiryCell(c.gl_expiry)}</td>
+        <td>${c.gl_renewal ? '<span style="font-size:11px;color:#16A34A;font-weight:600;">✓ ' + new Date(c.gl_renewal).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + '</span>' : '<span style="color:var(--gray-300);font-size:11px;">—</span>'}</td>
         <td>${expiryCell(c.wc_expiry)}</td>
+        <td>${c.wc_renewal ? '<span style="font-size:11px;color:#16A34A;font-weight:600;">✓ ' + new Date(c.wc_renewal).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + '</span>' : '<span style="color:var(--gray-300);font-size:11px;">—</span>'}</td>
         <td><span class="badge ${contractBadge}">${c.contract_status || '—'}</span></td>
         <td>
           <div class="row-actions">
@@ -1203,8 +1217,8 @@ function closeEditModal() {
 function clearForm() {
   ['fPayId','fFrom','fCompany','fLink','fContact','fContact2','fPhone','fEmail','fEmail2','fSupervisor',
    'fAddress','fCity','fState','fZip','fRegion',
-   'fGLPolicy','fGLExpiry','fGLInsCo','fGLInsContact','fGLInsPhone','fGLInsEmail','fGLCoverage',
-   'fWCPolicy','fWCExpiry','fWCInsCo','fWCInsContact','fWCInsPhone','fWCInsEmail','fWCCoverage',
+   'fGLPolicy','fGLExpiry','fGLRenewal','fGLInsCo','fGLInsContact','fGLInsPhone','fGLInsEmail','fGLCoverage',
+   'fWCPolicy','fWCExpiry','fWCRenewal','fWCInsCo','fWCInsContact','fWCInsPhone','fWCInsEmail','fWCCoverage',
    'fTravelDist']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   ['fStatus','fTrade1','fTrade2','fTrade3','fTrade4','fTravel']
@@ -1244,6 +1258,7 @@ function populateForm(c) {
   set('fTravelDist', c.travel_distance);
   set('fGLPolicy',     c.gl_policy);
   set('fGLExpiry',     c.gl_expiry);
+  set('fGLRenewal',    c.gl_renewal);
   set('fGLInsCo',      c.gl_ins_co);
   set('fGLInsContact', c.gl_ins_contact);
   set('fGLInsPhone',   c.gl_ins_phone);
@@ -1261,6 +1276,7 @@ function populateForm(c) {
   }
   set('fWCPolicy',     c.wc_policy);
   set('fWCExpiry',     c.wc_expiry);
+  set('fWCRenewal',    c.wc_renewal);
   set('fWCInsCo',      c.wc_ins_co);
   set('fWCInsContact', c.wc_ins_contact);
   set('fWCInsPhone',   c.wc_ins_phone);
@@ -1295,6 +1311,7 @@ function getFormValues() {
     travel_distance: g('fTravelDist'),
     gl_policy:       g('fGLPolicy'),
     gl_expiry:       g('fGLExpiry'),
+    gl_renewal:      g('fGLRenewal'),
     gl_ins_co:       g('fGLInsCo'),
     gl_ins_contact:  g('fGLInsContact'),
     gl_ins_phone:    g('fGLInsPhone'),
@@ -1304,6 +1321,7 @@ function getFormValues() {
     exempt:          document.getElementById('fExempt').checked   ? 'Yes' : '',
     wc_policy:       g('fWCPolicy'),
     wc_expiry:       g('fWCExpiry'),
+    wc_renewal:      g('fWCRenewal'),
     wc_ins_co:       g('fWCInsCo'),
     wc_ins_contact:  g('fWCInsContact'),
     wc_ins_phone:    g('fWCInsPhone'),
