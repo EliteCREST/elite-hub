@@ -500,11 +500,11 @@
 
 
   /* ══ SAFETY PANEL ════════════════════════════════════════════ */
-  .safety-overlay { position:fixed;inset:0;z-index:400;background:rgba(27,42,74,.5);backdrop-filter:blur(3px);display:none; }
+  .safety-overlay { position:fixed;inset:0;z-index:600;background:rgba(27,42,74,.5);backdrop-filter:blur(3px);display:none; }
   .safety-overlay.open { display:block; }
   .safety-panel {
     position:fixed;top:0;right:-540px;width:540px;height:100vh;
-    background:white;z-index:401;box-shadow:-8px 0 32px rgba(27,42,74,.2);
+    background:white;z-index:601;box-shadow:-8px 0 32px rgba(27,42,74,.2);
     display:flex;flex-direction:column;transition:right .3s ease;
   }
   .safety-panel.open { right:0; }
@@ -1196,7 +1196,7 @@ function renderVehicles() {
           <div class="vc-tags">
             ${v.plate ? `<span class="tag tag-plate">${v.plate}</span>` : ''}
             ${geotabTag(v)}
-              <span class="safety-badge none" id="safety-badge-${v.evid}" onclick="event.stopPropagation();openSafety('${v.evid}','${v.make} ${v.model}')">🛡 Safety</span>
+              <span class="safety-badge none" id="safety-badge-${v.evid}" onclick="event.stopPropagation();openSafety('${v.evid}','${v.make} ${v.model}')" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid currentColor;">🛡 Safety Score</span>
             ${v.brand ? `<span class="tag tag-brand">${v.brand}</span>` : ''}
             ${v.agreement === 'Signed' ? `<span class="tag tag-signed">Signed</span>` : v.agreement ? `<span class="tag tag-unsigned">${v.agreement}</span>` : ''}
             ${v.vehicle_location ? `<span class="tag tag-location">${v.vehicle_location}</span>` : ''}
