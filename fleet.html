@@ -956,6 +956,8 @@ async function syncData() {
     populateMakeFilter();
     renderAll();
     document.getElementById('hdrSync').textContent = new Date().toLocaleTimeString();
+    // Auto-load safety scores for all vehicles
+    loadAllSafetyScores();
   } catch(e) {
     document.getElementById('vehicleCount').textContent = 'Error loading — check backend';
     document.getElementById('hdrSync').textContent = 'Error';
@@ -1598,6 +1600,32 @@ function renderSafety(data) {
 }
 
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeSafety(); });
+
+
+async function loadAllSafetyScores() {
+  try {
+    const res  = await fetch(BACKEND_URL + '?action=allFleetScores');
+    const data = await res.json();
+    if (!data.scores) return;
+    // Match each vehicle's EVID to the scores
+    allVehicles.forEach(v => {
+      if (!v.evid) return;
+      // Try to find this vehicle in the scores by matching EVID in the name field
+      const regionScores = data.scores[regionKey];
+      if (!regionScores) return;
+      // allFleetScores returns region-level scores, not per-vehicle
+      // Use vehicleSafety per vehicle instead — batch fetch
+    });
+    // Fetch per-vehicle safety scores in parallel
+    const fetches = allVehicles.map(v =>
+      fetch(BACKEND_URL + '?action=vehicleSafety&evid=' + encodeURIComponent(v.evid))
+        .then(r => r.json())
+        .then(d => { if (d.found) { safetyCache[v.evid] = d; updateSafetyBadge(v.evid, d.safety_score); }})
+        .catch(() => {})
+    );
+    await Promise.all(fetches);
+  } catch(e) {}
+}
 
 </script>
 
