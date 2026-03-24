@@ -1196,7 +1196,6 @@ function renderVehicles() {
           <div class="vc-tags">
             ${v.plate ? `<span class="tag tag-plate">${v.plate}</span>` : ''}
             ${geotabTag(v)}
-              <span class="safety-badge none" id="safety-badge-${v.evid}" onclick="event.stopPropagation();openSafety('${v.evid}','${v.make} ${v.model}')" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid currentColor;">🛡 Safety Score</span>
             ${v.brand ? `<span class="tag tag-brand">${v.brand}</span>` : ''}
             ${v.agreement === 'Signed' ? `<span class="tag tag-signed">Signed</span>` : v.agreement ? `<span class="tag tag-unsigned">${v.agreement}</span>` : ''}
             ${v.vehicle_location ? `<span class="tag tag-location">${v.vehicle_location}</span>` : ''}
@@ -1206,11 +1205,16 @@ function renderVehicles() {
             ${v.fleet_type ? `<span class="tag ${v.fleet_type === 'Accuserve' ? 'tag-brand' : 'tag-signed'}">${v.fleet_type}</span>` : ''}
           </div>
         </div>
-        <div class="vc-status">
+        <div class="vc-status" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
           <div class="status-dot-label">
             <div class="sdot ${sl.dot}"></div>
             <span style="color:var(--gray-600);font-size:11px;font-weight:700;">${sl.label}</span>
           </div>
+          <span class="safety-badge none" id="safety-badge-${v.evid}"
+            onclick="event.stopPropagation();openSafety('${v.evid}','${v.make} ${v.model}')"
+            style="font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid currentColor;cursor:pointer;">
+            🛡 Safety Score
+          </span>
         </div>
       </div>
       <div class="vc-detail" id="detail-${v.id}">
@@ -1475,6 +1479,125 @@ function getCached(key) {
 function setCache(key, data) {
   try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch(e) {}
 }
+
+
+/* ══ SAFETY PANEL ══════════════════════════════════════════ */
+const safetyCache = {};
+
+async function openSafety(evid, vehicleName) {
+  document.getElementById('spTitle').textContent = vehicleName || 'Vehicle Safety';
+  document.getElementById('spSub').textContent   = 'EVID ' + evid + ' — GeoTab driving data';
+  document.getElementById('spBody').innerHTML    = '<div style="text-align:center;padding:48px;color:#94A3B8;">Loading…</div>';
+  document.getElementById('safetyOverlay').classList.add('open');
+  document.getElementById('safetyPanel').classList.add('open');
+  if (safetyCache[evid]) { renderSafety(safetyCache[evid]); return; }
+  try {
+    const res  = await fetch(BACKEND_URL + '?action=vehicleSafety&evid=' + encodeURIComponent(evid));
+    const data = await res.json();
+    safetyCache[evid] = data;
+    renderSafety(data);
+    updateSafetyBadge(evid, data.safety_score);
+  } catch(e) {
+    document.getElementById('spBody').innerHTML = '<div style="text-align:center;padding:48px;color:#94A3B8;">Could not load safety data.</div>';
+  }
+}
+
+function closeSafety() {
+  document.getElementById('safetyOverlay').classList.remove('open');
+  document.getElementById('safetyPanel').classList.remove('open');
+}
+
+function safetyScoreColor(score) {
+  if (score >= 90) return '#16A34A';
+  if (score >= 75) return '#2563EB';
+  if (score >= 50) return '#F97316';
+  return '#DC2626';
+}
+
+function safetyScoreClass(score) {
+  if (score === null || score === undefined) return 'none';
+  if (score >= 90) return 'excellent';
+  if (score >= 75) return 'good';
+  if (score >= 50) return 'fair';
+  return 'poor';
+}
+
+function updateSafetyBadge(evid, score) {
+  const badge = document.getElementById('safety-badge-' + evid);
+  if (!badge) return;
+  badge.className = 'safety-badge ' + safetyScoreClass(score);
+  badge.innerHTML = '🛡 ' + (score !== null && score !== undefined ? score : '—');
+}
+
+function metricClass(val) {
+  const n = parseInt(String(val).match(/^(\d+)/)?.[1] || '0');
+  if (n === 0) return 'ok';
+  if (n <= 2)  return 'warn';
+  return 'alert';
+}
+
+function metricColor(val) {
+  const n = parseInt(String(val).match(/^(\d+)/)?.[1] || '0');
+  if (n === 0) return 'green';
+  if (n <= 2)  return 'orange';
+  return 'red';
+}
+
+function renderSafety(data) {
+  const body = document.getElementById('spBody');
+  if (!data || (!data.found && data.evid)) {
+    body.innerHTML = '<div style="text-align:center;padding:48px;color:#94A3B8;"><div style="font-size:32px;margin-bottom:12px;">📡</div><div style="font-weight:700;color:#1B2A4A;margin-bottom:6px;">No GeoTab data found</div><div style="font-size:12px;">This vehicle was not matched in Fleet_Scoring tab.</div></div>';
+    return;
+  }
+  const score    = data.safety_score !== undefined ? data.safety_score : '—';
+  const scoreNum = typeof score === 'number' ? score : null;
+  const color    = scoreNum !== null ? safetyScoreColor(scoreNum) : '#94A3B8';
+  const barPct   = scoreNum !== null ? scoreNum : 0;
+  const metrics  = [
+    { label: 'Major Collision',    val: data.major_collision },
+    { label: 'Minor Collision',    val: data.minor_collision },
+    { label: 'Possible Collision', val: data.possible_collision },
+    { label: 'Seat Belt',          val: data.seat_belt },
+    { label: 'Excessive Speeding', val: data.excessive_speeding },
+    { label: 'Speeding',           val: data.speeding },
+    { label: 'Hard Acceleration',  val: data.hard_acceleration },
+    { label: 'Harsh Braking',      val: data.harsh_braking },
+    { label: 'Harsh Cornering',    val: data.harsh_cornering },
+    { label: 'Engine Abuse',       val: data.engine_abuse },
+    { label: 'Engine Light On',    val: data.engine_light },
+    { label: 'Low Tire Pressure',  val: data.low_tire },
+    { label: 'Battery Drain',      val: data.battery_drain },
+    { label: 'Device Removal',     val: data.device_removal },
+  ];
+  body.innerHTML = `
+    <div class="sp-score-wrap">
+      <div class="sp-score-circle" style="border-color:${color};">
+        <div class="sp-score-num" style="color:${color};">${score}</div>
+        <div class="sp-score-lbl">/ 100</div>
+      </div>
+      <div class="sp-score-info">
+        <div class="sp-score-title">Safety Score</div>
+        <div class="sp-score-sub">Based on GeoTab driving events weighted by scoring rules</div>
+        <div class="sp-stat-bar"><div class="sp-stat-fill" style="width:${barPct}%;background:${color};"></div></div>
+      </div>
+    </div>
+    <div class="sp-section">
+      <div class="sp-section-title">📍 Activity</div>
+      <div class="sp-trip-stats">
+        <div class="sp-trip-stat"><div class="sp-trip-val">${data.distance || '—'}</div><div class="sp-trip-lbl">Distance</div></div>
+        <div class="sp-trip-stat"><div class="sp-trip-val">${data.idling_time || '—'}</div><div class="sp-trip-lbl">Total Idling</div></div>
+        <div class="sp-trip-stat"><div class="sp-trip-val">${data.hours_trips || '—'}</div><div class="sp-trip-lbl">Trips</div></div>
+      </div>
+    </div>
+    <div class="sp-section">
+      <div class="sp-section-title">⚠️ Safety Events</div>
+      <div class="sp-metrics">
+        ${metrics.map(m => '<div class="sp-metric ' + metricClass(m.val) + '"><div class="sp-metric-val ' + metricColor(m.val) + '">' + (m.val || '0 times') + '</div><div class="sp-metric-lbl">' + m.label + '</div></div>').join('')}
+      </div>
+    </div>`;
+}
+
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeSafety(); });
 
 </script>
 
