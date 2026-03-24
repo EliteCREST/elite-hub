@@ -326,6 +326,22 @@
   }
   .dark-toggle:hover { border-color: rgba(255,255,255,.5); color: white; }
 
+
+  /* ══ THRESHOLD FIELDS ════════════════════════════════════════ */
+  .rule-threshold {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 6px; padding: 6px 10px;
+    background: var(--blue-pale); border: 1px solid #BFDBFE;
+    border-radius: var(--radius); font-size: 11px; color: var(--blue);
+  }
+  .rule-threshold label { font-weight: 700; white-space: nowrap; }
+  .threshold-input {
+    width: 60px; padding: 3px 6px; border: 1px solid #93C5FD;
+    border-radius: 4px; font-size: 11px; text-align: center;
+    background: white; color: var(--navy); font-family: Arial, sans-serif;
+  }
+  .threshold-unit { color: var(--blue); font-size: 10px; white-space: nowrap; }
+
 </style>
 </head>
 <body>
@@ -541,15 +557,39 @@ function toggleDarkMode() {
         <div class="rule-section">
           <div class="rule-section-title">🚗 Safety — Driving Behavior</div>
           <div class="rule-row">
-            <div><div class="rule-label">Excessive Speeding</div><div class="rule-desc">Per event</div></div>
+            <div>
+              <div class="rule-label">Excessive Speeding</div>
+              <div class="rule-desc">Per event exceeding threshold</div>
+              <div class="rule-threshold">
+                <label>Only count if ≥</label>
+                <input type="number" class="threshold-input" id="r-excessiveSpeedingThresholdMins" value="0" step="0.5" min="0" oninput="markChanged(this)" placeholder="0">
+                <span class="threshold-unit">mins duration per occurrence</span>
+              </div>
+            </div>
             <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-excessiveSpeeding" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
-            <div><div class="rule-label">Speeding</div><div class="rule-desc">Per event</div></div>
+            <div>
+              <div class="rule-label">Speeding</div>
+              <div class="rule-desc">Per event exceeding threshold</div>
+              <div class="rule-threshold">
+                <label>Only count if ≥</label>
+                <input type="number" class="threshold-input" id="r-speedingThresholdMins" value="1.5" step="0.5" min="0" oninput="markChanged(this)" placeholder="1.5">
+                <span class="threshold-unit">mins duration per occurrence</span>
+              </div>
+            </div>
             <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-speeding" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
-            <div><div class="rule-label">Hard Acceleration</div><div class="rule-desc">Per event</div></div>
+            <div>
+              <div class="rule-label">Hard Acceleration</div>
+              <div class="rule-desc">Per event exceeding threshold</div>
+              <div class="rule-threshold">
+                <label>Only count if ≥</label>
+                <input type="number" class="threshold-input" id="r-hardAccelerationThresholdMins" value="0" step="0.5" min="0" oninput="markChanged(this)" placeholder="0">
+                <span class="threshold-unit">mins duration per occurrence</span>
+              </div>
+            </div>
             <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-hardAcceleration" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
@@ -943,6 +983,9 @@ async function loadAllRules() {
       Object.entries(data.rules).forEach(([key, val]) => {
         const el = document.getElementById('r-' + key);
         if (el) el.value = val;
+        // Also check threshold inputs
+        const tel = document.getElementById('r-' + key + 'ThresholdMins');
+        if (tel) tel.value = val;
       });
       // Update all previews
       Object.keys(SECTIONS).forEach(updatePreview);
