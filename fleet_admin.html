@@ -567,6 +567,44 @@
   .safety-badge.poor      { background:#FEE2E2;color:#DC2626; }
   .safety-badge.none      { background:var(--gray-100);color:var(--gray-400); }
 
+/* ══ SAFETY SUMMARY STRIP ════════════════════════════════════ */
+  .safety-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .safety-strip-card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .15s;
+  }
+  .safety-strip-card:hover { box-shadow: var(--shadow-md); }
+  .safety-strip-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .safety-strip-card.ss-ok::before     { background: var(--green); }
+  .safety-strip-card.ss-warn::before   { background: var(--yellow); }
+  .safety-strip-card.ss-alert::before  { background: var(--red); }
+  .safety-strip-card.ss-neutral::before { background: var(--blue); }
+  .ss-icon  { font-size: 16px; margin-bottom: 4px; }
+  .ss-label { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-400); margin-bottom: 4px; }
+  .ss-value { font-size: 20px; font-weight: 700; color: var(--navy); line-height: 1; }
+  .ss-value.ok    { color: var(--green); }
+  .ss-value.warn  { color: var(--yellow); }
+  .ss-value.alert { color: var(--red); }
+  .ss-sub   { font-size: 10px; color: var(--gray-400); margin-top: 3px; }
+  .safety-strip-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--navy); padding-bottom: 7px; border-bottom: 2px solid var(--blue);
+    display: inline-block; margin-bottom: 14px;
+  }
+
 </style>
 </head>
 <body>
@@ -668,7 +706,20 @@ function toggleDarkMode() {
     <div class="kpi-card good-card"><div class="kpi-icon">🏆</div><div class="kpi-label">Avg Fleet Score</div><div class="kpi-value" id="kpiFleetScore">—</div><div class="kpi-sub">0–100 behavior score</div></div>
   </div>
 
-  <!-- FILTER BAR -->
+  <!-- SAFETY SUMMARY STRIP -->
+  <div class="safety-strip-title">🛡 Fleet Safety Summary</div>
+  <div class="safety-strip" id="safetySummaryStrip">
+    <div class="safety-strip-card ss-neutral"><div class="ss-icon">📍</div><div class="ss-label">Distance</div><div class="ss-value" id="ssDist">—</div><div class="ss-sub">Total miles</div></div>
+    <div class="safety-strip-card ss-neutral"><div class="ss-icon">⏱</div><div class="ss-label">Idling</div><div class="ss-value" id="ssIdle">—</div><div class="ss-sub">Total idle time</div></div>
+    <div class="safety-strip-card ss-ok"><div class="ss-icon">💥</div><div class="ss-label">Collisions</div><div class="ss-value ok" id="ssCollision">—</div><div class="ss-sub">Major + Minor + Possible</div></div>
+    <div class="safety-strip-card ss-ok"><div class="ss-icon">🚗</div><div class="ss-label">Speed Events</div><div class="ss-value ok" id="ssSpeed">—</div><div class="ss-sub">Speeding + Hard Accel</div></div>
+    <div class="safety-strip-card ss-ok"><div class="ss-icon">🪑</div><div class="ss-label">Seat Belt</div><div class="ss-value ok" id="ssSeat">—</div><div class="ss-sub">Violations</div></div>
+    <div class="safety-strip-card ss-ok"><div class="ss-icon">🔄</div><div class="ss-label">Harsh Driving</div><div class="ss-value ok" id="ssHarsh">—</div><div class="ss-sub">Braking + Cornering</div></div>
+    <div class="safety-strip-card ss-ok"><div class="ss-icon">📡</div><div class="ss-label">Device Removal</div><div class="ss-value ok" id="ssDevice">—</div><div class="ss-sub">Unauthorized</div></div>
+    <div class="safety-strip-card ss-ok"><div class="ss-icon">🔧</div><div class="ss-label">Vehicle Health</div><div class="ss-value ok" id="ssHealth">—</div><div class="ss-sub">Engine + Tire + Battery</div></div>
+  </div>
+
+<!-- FILTER BAR -->
   <div class="filter-bar">
     <div class="search-box">
       <span style="color:var(--gray-400);">🔍</span>
@@ -1825,6 +1876,56 @@ function renderSafety(data) {
     </div>`;
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSafety(); });
+
+
+
+function updateSafetySummary() {
+  if (!Object.keys(safetyCache).length) return;
+  function parseNum(val) {
+    if (!val) return 0;
+    const m = String(val).match(/^(\d+)/);
+    return m ? parseInt(m[1]) : 0;
+  }
+  function colorClass(n, warnAt, alertAt) {
+    if (n === 0) return 'ok'; if (n <= warnAt) return 'warn'; return 'alert';
+  }
+  function cardClass(n, warnAt, alertAt) {
+    if (n === 0) return 'ss-ok'; if (n <= warnAt) return 'ss-warn'; return 'ss-alert';
+  }
+  let collision=0, speed=0, seat=0, harsh=0, device=0, health=0, totalDist=0;
+  Object.values(safetyCache).forEach(d => {
+    if (!d.found) return;
+    collision += parseNum(d.major_collision) + parseNum(d.minor_collision) + parseNum(d.possible_collision);
+    speed     += parseNum(d.excessive_speeding) + parseNum(d.speeding) + parseNum(d.hard_acceleration);
+    seat      += parseNum(d.seat_belt);
+    harsh     += parseNum(d.harsh_braking) + parseNum(d.harsh_cornering);
+    device    += parseNum(d.device_removal);
+    health    += parseNum(d.engine_abuse) + parseNum(d.engine_light) + parseNum(d.low_tire) + parseNum(d.battery_drain);
+    const dm = String(d.distance||'').match(/([\d,]+)/);
+    if (dm) totalDist += parseInt(dm[1].replace(',',''));
+  });
+  const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  const setClass = (nth, valId, n, warnAt, alertAt) => {
+    const card = document.querySelectorAll('#safetySummaryStrip .safety-strip-card')[nth];
+    const val  = document.getElementById(valId);
+    if (card) card.className = 'safety-strip-card ' + cardClass(n, warnAt, alertAt);
+    if (val)  val.className  = 'ss-value ' + colorClass(n, warnAt, alertAt);
+  };
+  set('ssDist',      totalDist > 0 ? totalDist.toLocaleString() + ' mi' : '—');
+  set('ssCollision', collision);
+  set('ssSpeed',     speed);
+  set('ssSeat',      seat);
+  set('ssHarsh',     harsh);
+  set('ssDevice',    device);
+  set('ssHealth',    health);
+  setClass(2, 'ssCollision', collision, 2, 5);
+  setClass(3, 'ssSpeed',     speed,     5, 15);
+  setClass(4, 'ssSeat',      seat,      2, 5);
+  setClass(5, 'ssHarsh',     harsh,     5, 15);
+  setClass(6, 'ssDevice',    device,    1, 3);
+  setClass(7, 'ssHealth',    health,    5, 15);
+}
+
 </script>
 </body>
 </html>
