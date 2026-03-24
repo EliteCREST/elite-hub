@@ -376,7 +376,7 @@ function toggleDarkMode() {
 
 <main>
   <div class="callout">
-    <strong>Scoring Rules — Global Configuration.</strong> Each section starts at <strong>100 points</strong>. Deductions are applied per issue per active contractor or vehicle. Changes save immediately to Google Sheets and take effect on the next sync.
+    <strong>Scoring Rules — Global Configuration.</strong> Each section starts at <strong>100 points</strong> (Fleet Safety starts at <strong>500 points</strong>). Deductions are applied per issue per active contractor or vehicle. Changes save immediately to Google Sheets and take effect on the next sync.
   </div>
 
   <div class="section-row">
@@ -487,7 +487,7 @@ function toggleDarkMode() {
     <div class="sc-body" id="body-fleet">
       <div class="formula-box">
         <div class="f-title">Formula</div>
-        <div class="f-line">Score = 100</div>
+        <div class="f-line">Score = 500</div>
         <div class="f-line">Score -= (Tag Expired × <span id="preview-tagExpired">0</span>) + (Tag Missing × <span id="preview-tagMissing">0</span>)</div>
         <div class="f-line">Score -= (Ins Expired × <span id="preview-insExpired">0</span>) + (Unsigned Agreement × <span id="preview-unsigned">0</span>)</div>
         <div class="f-line">Score -= (GeoTab Issue × <span id="preview-geotabIssue">0</span>)</div>
@@ -498,42 +498,42 @@ function toggleDarkMode() {
           <div class="rule-section-title">📋 Registration & Admin</div>
           <div class="rule-row">
             <div><div class="rule-label">Tag Expired</div><div class="rule-desc">Registration past expiry</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-tagExpired" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-tagExpired" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
             <div><div class="rule-label">Tag Missing</div><div class="rule-desc">No expiry date on file</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-tagMissing" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-tagMissing" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
             <div><div class="rule-label">Insurance Expired</div><div class="rule-desc">Vehicle insurance past expiry</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-insExpired" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-insExpired" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
             <div><div class="rule-label">Unsigned Agreement</div><div class="rule-desc">Driver agreement not signed</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-unsigned" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-unsigned" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
             <div><div class="rule-label">GeoTab Issue</div><div class="rule-desc">No communication / disconnected</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-geotabIssue" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-geotabIssue" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
         </div>
         <div class="rule-section">
           <div class="rule-section-title">⚠️ Safety — Collisions</div>
           <div class="rule-row">
             <div><div class="rule-label">Major Collision</div><div class="rule-desc">Per event</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-majorCollision" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-majorCollision" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
             <div><div class="rule-label">Minor Collision</div><div class="rule-desc">Per event</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-minorCollision" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-minorCollision" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
             <div><div class="rule-label">Possible Collision</div><div class="rule-desc">Per event (legacy)</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-possibleCollision" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-possibleCollision" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
             <div><div class="rule-label">Seat Belt</div><div class="rule-desc">Per violation</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-seatbelt" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-seatbelt" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
         </div>
       </div>
@@ -542,50 +542,50 @@ function toggleDarkMode() {
           <div class="rule-section-title">🚗 Safety — Driving Behavior</div>
           <div class="rule-row">
             <div><div class="rule-label">Excessive Speeding</div><div class="rule-desc">Per event</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-excessiveSpeeding" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-excessiveSpeeding" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
             <div><div class="rule-label">Speeding</div><div class="rule-desc">Per event</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-speeding" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-speeding" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
             <div><div class="rule-label">Hard Acceleration</div><div class="rule-desc">Per event</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-hardAcceleration" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-hardAcceleration" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
             <div><div class="rule-label">Harsh Braking</div><div class="rule-desc">Per event</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-harshBraking" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-harshBraking" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
             <div><div class="rule-label">Harsh Cornering</div><div class="rule-desc">Per event</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-harshCornering" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-harshCornering" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
         </div>
         <div class="rule-section">
           <div class="rule-section-title">🔧 Safety — Vehicle Health</div>
           <div class="rule-row">
             <div><div class="rule-label">Engine Abuse</div><div class="rule-desc">Per event</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-engineAbuse" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-engineAbuse" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
             <div><div class="rule-label">Engine Light On</div><div class="rule-desc">Per event</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-engineLight" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-engineLight" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
             <div><div class="rule-label">Idling Over 5 Mins</div><div class="rule-desc">Per event</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-idlingOver5" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-idlingOver5" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
             <div><div class="rule-label">Critical Low Tire</div><div class="rule-desc">Per event</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-lowTire" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-lowTire" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
             <div><div class="rule-label">Battery Drain</div><div class="rule-desc">Per event</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-batteryDrain" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-batteryDrain" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
           <div class="rule-row">
             <div><div class="rule-label">Unauthorized Device Removal</div><div class="rule-desc">Per event</div></div>
-            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-deviceRemoval" value="0" step="0.5" min="0" max="100" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
+            <div class="rule-input-wrap"><input type="number" class="rule-input" id="r-deviceRemoval" value="0" step="0.5" min="0" max="500" oninput="markChanged(this);updatePreview('fleet')"><span class="rule-unit">pts each</span></div>
           </div>
         </div>
       </div>
@@ -902,7 +902,7 @@ function toggleDarkMode() {
 /* ══════════════════════════════════════════════════════════════
    CONFIGURATION
 ══════════════════════════════════════════════════════════════ */
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec';
 
 /* ══════════════════════════════════════════════════════════════
    SECTION DEFINITIONS
