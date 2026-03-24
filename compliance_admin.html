@@ -210,6 +210,7 @@
   .comp-table tr:last-child td { border-bottom: none; }
   .comp-table tr:hover td { background: var(--page-pale); }
   .comp-table tr.inactive-row td { opacity: .5; }
+  .comp-table tr.clickable-row:hover td { background: var(--blue-pale) !important; transition: background .1s; }
 
   .contractor-name  { font-weight: 700; color: var(--navy); font-size: 13px; }
   .contractor-trade { font-size: 11px; color: var(--gray-400); margin-top: 1px; }
@@ -1176,7 +1177,7 @@ function renderTable() {
     const regionParts = (c.region || '').split(/[\s,]+/).filter(Boolean);
 
     return `
-      <tr class="${isInactive ? 'inactive-row' : ''}">
+      <tr class="${isInactive ? 'inactive-row' : ''} clickable-row" onclick="openEditModal('${c.id}')" style="cursor:pointer;">
         <td>
           <div class="contractor-name">${c.name || '—'}</div>
           <div class="contractor-trade">${c.contact || ''}</div>
@@ -1194,12 +1195,12 @@ function renderTable() {
         <td><span class="badge ${contractBadge}">${c.contract_status || '—'}</span></td>
         <td>
           <div class="row-actions">
-            <button class="row-btn edit-btn" onclick="openEditModal('${c.id}')">✏ Edit</button>
+            <button class="row-btn edit-btn" onclick="event.stopPropagation();openEditModal('${c.id}')">✏ Edit</button>
             <button class="row-btn" style="background:#EAF1FB;color:#1F5FAD;border-color:#1F5FAD;" onclick="event.stopPropagation();openHistory(c)">🕐 History</button>
             ${c.link ? `<a class="row-btn" href="${c.link}" target="_blank" style="text-decoration:none;">↗ Blaze</a>` : ''}
             ${isInactive
-              ? `<button class="row-btn restore-btn" onclick="confirmRestore('${c.id}')">↩ Restore</button>`
-              : `<button class="row-btn delete-btn" onclick="confirmDeactivate('${c.id}')">✕ Deactivate</button>`
+              ? `<button class="row-btn restore-btn" onclick="event.stopPropagation();confirmRestore('${c.id}')">↩ Restore</button>`
+              : `<button class="row-btn delete-btn" onclick="event.stopPropagation();confirmDeactivate('${c.id}')">✕ Deactivate</button>`
             }
           </div>
         </td>
