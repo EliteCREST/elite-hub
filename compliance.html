@@ -124,9 +124,10 @@
     content:''; position:absolute; top:0; left:0; right:0; height:3px;
     background: var(--blue);
   }
-  .kpi-card.alert-card::before { background: var(--blue); }
-  .kpi-card.warn-card::before  { background: var(--blue); }
-  .kpi-card.good-card::before  { background: var(--blue); }
+  .kpi-card.alert-card::before { background: var(--red); }
+  .kpi-card.warn-card::before  { background: #F97316; }
+  .kpi-card.good-card::before  { background: var(--green); }
+  .kpi-card.missing-card::before { background: var(--red); }
   .kpi-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-400); margin-bottom: 8px; }
   .kpi-value { font-size: 28px; font-weight: 700; color: var(--navy); line-height: 1; }
   .kpi-value .unit { font-size: 12px; font-weight: 400; color: var(--gray-400); }
@@ -230,7 +231,7 @@
   .badge-compliant  { background: var(--green-pale);  color: var(--green); }
   .badge-expired    { background: var(--red-pale);    color: var(--red); }
   .badge-expiring30 { background: var(--red-pale);    color: var(--red); }
-  .badge-expiring60 { background: var(--yellow-pale); color: var(--yellow); }
+  .badge-expiring60 { background: #FFF7ED; color: #F97316; }
   .badge-missing    { background: var(--gray-200);    color: var(--gray-600); }
   .badge-active     { background: var(--green-pale);  color: var(--green); }
   .badge-inactive   { background: var(--gray-200);    color: var(--gray-600); }
@@ -241,7 +242,7 @@
   .expiry-date { font-size: 12px; font-weight: 600; }
   .expiry-date.expired    { color: var(--red); }
   .expiry-date.expiring30 { color: var(--red); }
-  .expiry-date.expiring60 { color: var(--yellow); }
+  .expiry-date.expiring60 { color: #F97316; }
   .expiry-date.ok         { color: var(--green); }
   .expiry-date.missing    { color: var(--gray-400); font-style: italic; }
 
@@ -637,7 +638,7 @@ function toggleDarkMode() {
 
 <main>
   <div class="callout" id="pageCallout">
-    <strong>Contractor Compliance</strong> — Track GL and WC insurance, licensing, contract status, and trades for all contractors in this region. Alerts fire at 60 days, 30 days, and on expiration. Upload insurance docs directly to each contractor record.
+    <strong>Contractor Compliance</strong> — Track GL and WC insurance, licensing, contract status, and trades for all contractors in this region. Alerts fire at 10 days, 5 days, and on expiration. Upload insurance docs directly to each contractor record.
   </div>
 
   <!-- ALERT BANNER -->
@@ -658,9 +659,9 @@ function toggleDarkMode() {
     <div class="kpi-card good-card"><div class="kpi-icon">✅</div><div class="kpi-label">Total Contractors</div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-sub">This region</div></div>
     <div class="kpi-card good-card"><div class="kpi-icon">🟢</div><div class="kpi-label">Fully Compliant</div><div class="kpi-value" id="kpiCompliant">—</div><div class="kpi-sub" id="kpiCompliantPct">—</div></div>
     <div class="kpi-card alert-card"><div class="kpi-icon">🔴</div><div class="kpi-label">Expired</div><div class="kpi-value" id="kpiExpired">—</div><div class="kpi-sub">GL or WC expired</div></div>
-    <div class="kpi-card alert-card"><div class="kpi-icon">⚠️</div><div class="kpi-label">Expiring 30 Days</div><div class="kpi-value" id="kpiExp30">—</div><div class="kpi-sub">Immediate action</div></div>
-    <div class="kpi-card warn-card"><div class="kpi-icon">🕐</div><div class="kpi-label">Expiring 60 Days</div><div class="kpi-value" id="kpiExp60">—</div><div class="kpi-sub">Monitor closely</div></div>
-    <div class="kpi-card"><div class="kpi-icon">📄</div><div class="kpi-label">Missing Docs</div><div class="kpi-value" id="kpiMissing">—</div><div class="kpi-sub">No GL or WC on file</div></div>
+    <div class="kpi-card alert-card"><div class="kpi-icon">⚠️</div><div class="kpi-label">Expiring 5 Days</div><div class="kpi-value" id="kpiExp30">—</div><div class="kpi-sub">Immediate action</div></div>
+    <div class="kpi-card warn-card"><div class="kpi-icon">🕐</div><div class="kpi-label">Expiring 10 Days</div><div class="kpi-value" id="kpiExp60">—</div><div class="kpi-sub">Monitor closely</div></div>
+    <div class="kpi-card missing-card"><div class="kpi-icon">📄</div><div class="kpi-label">Missing Docs</div><div class="kpi-value" id="kpiMissing">—</div><div class="kpi-sub">No GL or WC on file</div></div>
     <div class="kpi-card"><div class="kpi-icon">🏠</div><div class="kpi-label">Active Contracts</div><div class="kpi-value" id="kpiActive">—</div><div class="kpi-sub">Contract status active</div></div>
     <div class="kpi-card"><div class="kpi-icon">✈️</div><div class="kpi-label">Will Travel</div><div class="kpi-value" id="kpiTravel">—</div><div class="kpi-sub">Available for travel</div></div>
   </div>
@@ -674,8 +675,8 @@ function toggleDarkMode() {
     <div class="filter-divider"></div>
     <button class="filter-pill active" onclick="setStatusFilter('all',this)">All</button>
     <button class="filter-pill red-pill" onclick="setStatusFilter('expired',this)">Expired</button>
-    <button class="filter-pill red-pill" onclick="setStatusFilter('expiring30',this)">30 Days</button>
-    <button class="filter-pill yellow-pill" onclick="setStatusFilter('expiring60',this)">60 Days</button>
+    <button class="filter-pill red-pill" onclick="setStatusFilter('expiring30',this)">5 Days</button>
+    <button class="filter-pill yellow-pill" onclick="setStatusFilter('expiring60',this)">10 Days</button>
     <button class="filter-pill green-pill" onclick="setStatusFilter('compliant',this)">Compliant</button>
     <button class="filter-pill" onclick="setStatusFilter('missing',this)">Missing Docs</button>
     <div class="filter-divider"></div>
@@ -921,8 +922,8 @@ function getExpiryStatus(dateStr) {
   const now  = new Date();
   const days = Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
   if (days < 0)   return 'expired';
-  if (days <= 30) return 'expiring30';
-  if (days <= 60) return 'expiring60';
+  if (days <= 5)  return 'expiring30';
+  if (days <= 10) return 'expiring60';
   return 'ok';
 }
 
@@ -951,8 +952,8 @@ function statusBadge(status) {
   const map = {
     compliant:  ['badge-compliant',  '✓ Compliant'],
     expired:    ['badge-expired',    '✗ Expired'],
-    expiring30: ['badge-expiring30', '⚠ 30 Days'],
-    expiring60: ['badge-expiring60', '⏰ 60 Days'],
+    expiring30: ['badge-expiring30', '⚠ 5 Days'],
+    expiring60: ['badge-expiring60', '⏰ 10 Days'],
     missing:    ['badge-missing',    '— Missing'],
     ok:         ['badge-compliant',  '✓ OK'],
   };
