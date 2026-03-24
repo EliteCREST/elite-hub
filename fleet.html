@@ -1213,7 +1213,7 @@ function renderVehicles() {
           <span class="safety-badge none" id="safety-badge-${v.evid}"
             onclick="event.stopPropagation();openSafety('${v.evid}','${v.make} ${v.model}')"
             style="font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid currentColor;cursor:pointer;">
-            🛡 Safety Score
+            🛡 Safety Score —
           </span>
         </div>
       </div>
@@ -1526,7 +1526,7 @@ function updateSafetyBadge(evid, score) {
   const badge = document.getElementById('safety-badge-' + evid);
   if (!badge) return;
   badge.className = 'safety-badge ' + safetyScoreClass(score);
-  badge.innerHTML = '🛡 ' + (score !== null && score !== undefined ? score : '—');
+  badge.innerHTML = '🛡 Safety Score ' + (score !== null && score !== undefined ? score : '—');
 }
 
 function metricClass(val) {
