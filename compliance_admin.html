@@ -569,6 +569,10 @@ function toggleDarkMode() {
       <button class="btn btn-outline btn-sm" onclick="syncData()">↻ Sync</button>
       <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export</button>
       <button class="btn btn-outline btn-sm" onclick="openScoringModal()">⚙ Scoring Rules</button>
+      <button class="btn btn-sm" id="historyToggleBtn" onclick="toggleHistoryTracking()"
+        style="background:#F3F4F6;color:#6B7280;border:1.5px solid #D1D5DB;min-width:160px;">
+        ⏸ History: OFF
+      </button>
     </div>
   </div>
   <div class="kpi-grid">
@@ -878,6 +882,7 @@ document.addEventListener('keydown', e => {
 });
 
 syncData();
+loadHistorySetting();
 setInterval(syncData, 120000); // auto-refresh every 2 min
 
 /* ══════════════════════════════════════════════════════════════
@@ -1583,6 +1588,50 @@ async function saveScoringRules() {
 
 // Load rules on startup
 loadScoringRules();
+
+/* ══ HISTORY TRACKING TOGGLE ════════════════════════════════ */
+let historyTracking = false;
+
+async function loadHistorySetting() {
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=getHistorySetting`);
+    const data = await res.json();
+    historyTracking = data.tracking === true;
+    updateHistoryBtn();
+  } catch(e) {}
+}
+
+function updateHistoryBtn() {
+  const btn = document.getElementById('historyToggleBtn');
+  if (!btn) return;
+  if (historyTracking) {
+    btn.textContent = '⏺ History: ON';
+    btn.style.background = '#DCFCE7';
+    btn.style.color = '#16A34A';
+    btn.style.borderColor = '#16A34A';
+  } else {
+    btn.textContent = '⏸ History: OFF';
+    btn.style.background = '#F3F4F6';
+    btn.style.color = '#6B7280';
+    btn.style.borderColor = '#D1D5DB';
+  }
+}
+
+async function toggleHistoryTracking() {
+  const newVal = !historyTracking;
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=setHistorySetting&value=${newVal}`);
+    const data = await res.json();
+    if (data.success) {
+      historyTracking = newVal;
+      updateHistoryBtn();
+      showToast(`History tracking ${newVal ? 'enabled' : 'disabled'}.`, 'info');
+    }
+  } catch(e) {
+    showToast('Could not update history setting.', 'error');
+  }
+}
+
 </script>
 </body>
 </html>
