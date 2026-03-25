@@ -564,6 +564,10 @@
   .he-val.expired { color: var(--red); }
   .he-val.ok      { color: var(--green); }
 
+
+  .badge-ok   { background:#DCFCE7;color:#16A34A;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap; }
+  .badge-attn { background:#FEE2E2;color:#DC2626;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap; }
+
 </style>
 </head>
 <body>
@@ -719,6 +723,8 @@ function toggleDarkMode() {
             <th class="sortable" onclick="sortBy('gl_expiry')">GL Expiry ↕</th>
             <th class="sortable" onclick="sortBy('wc_expiry')">WC Expiry ↕</th>
             <th>Contract</th>
+            <th>Paylocity</th>
+            <th>Blaze</th>
             <th>Travel</th>
             <th>Actions</th>
           </tr>
@@ -1194,6 +1200,8 @@ function renderTable() {
         <td>${expiryCell(c.gl_expiry)}</td>
         <td>${expiryCell(c.wc_expiry)}</td>
         <td><span class="badge ${contractBadge}">${c.contract_status || '—'}</span></td>
+        <td>${c.pay_id ? '<span class="badge-ok">✓ OK</span>' : '<span class="badge-attn">✕ Attn</span>'}</td>
+        <td>${c.link ? '<span class="badge-ok">✓ OK</span>' : '<span class="badge-attn">✕ Attn</span>'}</td>
         <td style="font-size:11px;color:var(--gray-600);">${travelStr}</td>
         <td onclick="event.stopPropagation()">
           <div class="row-actions">

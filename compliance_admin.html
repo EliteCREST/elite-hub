@@ -514,6 +514,10 @@
   .he-val.expired { color:#DC2626; }
   .he-val.ok      { color:#16A34A; }
 
+
+  .badge-ok   { background:#DCFCE7;color:#16A34A;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap; }
+  .badge-attn { background:#FEE2E2;color:#DC2626;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap; }
+
 </style>
 </head>
 <body>
@@ -676,6 +680,8 @@ function toggleDarkMode() {
             <th onclick="sortBy('wc_expiry')">WC Expiry ↕</th>
             <th>WC Renewal</th>
             <th onclick="sortBy('contract_status')">Contract ↕</th>
+            <th>Paylocity</th>
+            <th>Blaze</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -1193,6 +1199,8 @@ function renderTable() {
         <td>${expiryCell(c.wc_expiry)}</td>
         <td>${c.wc_renewal ? '<span style="font-size:11px;color:#16A34A;font-weight:600;">✓ ' + new Date(c.wc_renewal).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + '</span>' : '<span style="color:var(--gray-300);font-size:11px;">—</span>'}</td>
         <td><span class="badge ${contractBadge}">${c.contract_status || '—'}</span></td>
+        <td>${c.pay_id ? '<span class="badge-ok">✓ OK</span>' : '<span class="badge-attn">✕ Attn</span>'}</td>
+        <td>${c.link ? '<span class="badge-ok">✓ OK</span>' : '<span class="badge-attn">✕ Attn</span>'}</td>
         <td>
           <div class="row-actions">
             <button class="row-btn edit-btn" onclick="event.stopPropagation();openEditModal('${c.id}')">✏ Edit</button>
