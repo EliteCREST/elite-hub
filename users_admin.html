@@ -62,6 +62,7 @@
   }
   .uc-name   { font-size:14px;font-weight:700;color:var(--navy); }
   .uc-user   { font-size:11px;color:var(--gray-400);margin-top:2px; }
+  .uc-region { font-size:11px;color:var(--gray-400);margin-top:2px; }
   .uc-role   { display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:3px 8px;border-radius:20px;background:var(--blue-pale);color:var(--blue);margin-top:4px; }
   .uc-pages  { font-size:11px;color:var(--gray-400);margin-top:8px; }
   .uc-status { position:absolute;top:14px;right:16px;width:8px;height:8px;border-radius:50%; }
@@ -211,6 +212,22 @@
             <input type="text" id="fRole" placeholder="e.g. Regional Manager, Admin">
           </div>
           <div class="form-group">
+            <label>Region Access</label>
+            <select id="fRegion" onchange="applyRegionAccess(this.value)">
+              <option value="">— Manual (set pages below) —</option>
+              <option value="cleveland">Cleveland</option>
+              <option value="phoenix">Phoenix</option>
+              <option value="chicago">Chicago</option>
+              <option value="stlouis">St. Louis</option>
+              <option value="minneapolis">Minneapolis</option>
+              <option value="milwaukee">Milwaukee</option>
+              <option value="indianapolis">Indianapolis</option>
+              <option value="pittsburgh">Pittsburgh</option>
+              <option value="albuquerque">Albuquerque</option>
+              <option value="all">All Regions</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label>Password</label>
             <input type="password" id="fPassword" placeholder="Enter password">
             <div class="pw-hint" id="pwHint">Leave blank to keep existing password</div>
@@ -343,6 +360,7 @@ function renderUsers() {
         <div>
           <div class="uc-name">${u['name']||u['username']}</div>
           <div class="uc-user">@${u['username']} · ${u['email']||'—'}</div>
+          ${u['region'] ? '<div class="uc-region">📍 ' + u['region'].charAt(0).toUpperCase() + u['region'].slice(1) + '</div>' : ''}
           <div class="uc-role">${u['role']||'User'}</div>
         </div>
       </div>
@@ -366,6 +384,7 @@ function openAddModal() {
   document.getElementById('fRole').value = '';
   document.getElementById('fPassword').value = '';
   document.getElementById('fActive').value = 'true';
+  document.getElementById('fRegion').value = '';
   document.getElementById('fUsername').disabled = false;
   buildPageToggles({});
   document.getElementById('modalOverlay').classList.add('open');
@@ -384,6 +403,7 @@ function openEditModal(username) {
   document.getElementById('fRole').value     = user['role']     || '';
   document.getElementById('fPassword').value = '';
   document.getElementById('fActive').value   = String(user['active']||'true').toLowerCase();
+  document.getElementById('fRegion').value   = user['region'] || '';
   document.getElementById('fUsername').disabled = true;
   buildPageToggles(user);
   document.getElementById('modalOverlay').classList.add('open');
@@ -404,7 +424,8 @@ async function saveUser() {
   if (!username) { showToast('Username is required'); return; }
   if (!editingUsername && !password) { showToast('Password is required for new users'); return; }
 
-  const userData = { username, name, email, role, active };
+  const region   = document.getElementById('fRegion').value;
+  const userData = { username, name, email, role, active, region };
   if (password) userData.password = password;
   PAGE_DEFS.forEach(p => {
     userData[p.key] = document.getElementById('pg-' + p.key).checked ? 'true' : 'false';
@@ -419,6 +440,7 @@ async function saveUser() {
     params.set('email',        userData.email        || '');
     params.set('role',         userData.role         || '');
     params.set('active',       userData.active       || 'true');
+    params.set('region',       userData.region       || '');
     params.set('default_page', userData.default_page || 'index');
     if (userData.password) params.set('password', userData.password);
     PAGE_DEFS.forEach(p => params.set('pg_' + p.key, userData[p.key] || 'false'));
@@ -464,6 +486,37 @@ document.getElementById('modalOverlay').addEventListener('click', e => {
 });
 
 loadUsers();
+
+const REGION_PAGES = {
+  cleveland:    ['index','hub_cleveland',    'fleet','compliance','legal','reviews','documents'],
+  phoenix:      ['index','hub_phoenix',      'fleet','compliance','legal','reviews','documents'],
+  chicago:      ['index','hub_chicago',      'fleet','compliance','legal','reviews','documents'],
+  stlouis:      ['index','hub_stlouis',      'fleet','compliance','legal','reviews','documents'],
+  minneapolis:  ['index','hub_minneapolis',  'fleet','compliance','legal','reviews','documents'],
+  milwaukee:    ['index','hub_milwaukee',    'fleet','compliance','legal','reviews','documents'],
+  indianapolis: ['index','hub_indianapolis', 'fleet','compliance','legal','reviews','documents'],
+  pittsburgh:   ['index','hub_pittsburgh',   'fleet','compliance','legal','reviews','documents'],
+  albuquerque:  ['index','hub_albuquerque',  'fleet','compliance','legal','reviews','documents'],
+  all:          ['index','fleet','compliance','legal','reviews','documents',
+                 'hub_phoenix','hub_cleveland','hub_chicago','hub_stlouis',
+                 'hub_minneapolis','hub_milwaukee','hub_indianapolis','hub_pittsburgh','hub_albuquerque'],
+};
+
+function applyRegionAccess(region) {
+  if (!region) return; // manual — don't change anything
+  // First revoke all
+  PAGE_DEFS.forEach(p => {
+    document.getElementById('pg-' + p.key).checked = false;
+    updateToggle(p.key, false);
+  });
+  // Grant region pages
+  const pages = REGION_PAGES[region] || [];
+  pages.forEach(key => {
+    const el = document.getElementById('pg-' + key);
+    if (el) { el.checked = true; updateToggle(key, true); }
+  });
+}
+
 </script>
 </body>
 </html>
