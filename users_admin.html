@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Users & Access — Elite Hub</title>
+<style>
+  :root {
+    --navy:#1B2A4A; --blue:#1F5FAD; --blue-pale:#EAF1FB;
+    --accent:#C8A84B; --green:#16A34A; --red:#DC2626;
+    --gray-100:#F4F6FA; --gray-200:#E2E8F0; --gray-300:#CBD5E1;
+    --gray-400:#94A3B8; --gray-600:#64748B;
+    --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+    --shadow-md:0 4px 12px rgba(0,0,0,.12);
+    --radius:8px; --radius-xl:14px;
+  }
+  * { box-sizing:border-box;margin:0;padding:0; }
+  body { font-family:Arial,sans-serif;background:var(--gray-100);color:var(--navy);min-height:100vh; }
+
+  header {
+    background:var(--navy);padding:0 28px;height:60px;
+    display:flex;align-items:center;justify-content:space-between;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);position:sticky;top:0;z-index:100;
+  }
+  .hdr-left  { display:flex;align-items:center;gap:12px; }
+  .hdr-badge { background:var(--accent);color:var(--navy);font-size:10px;font-weight:800;padding:3px 8px;border-radius:4px;letter-spacing:.5px; }
+  .hdr-title { color:white;font-size:15px;font-weight:700; }
+  .hdr-sub   { color:rgba(255,255,255,.4);font-size:11px;margin-top:1px; }
+  .hdr-right { display:flex;align-items:center;gap:12px; }
+  .btn { padding:8px 16px;border-radius:var(--radius);font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .15s; }
+  .btn-primary { background:var(--blue);color:white; }
+  .btn-primary:hover { background:#1a4f94; }
+  .btn-outline { background:transparent;color:rgba(255,255,255,.7);border:1.5px solid rgba(255,255,255,.2); }
+  .btn-outline:hover { color:white;border-color:rgba(255,255,255,.5); }
+
+  main { max-width:1200px;margin:0 auto;padding:28px 20px; }
+
+  .callout {
+    background:white;border-left:4px solid var(--blue);
+    border-radius:0 var(--radius) var(--radius) 0;
+    padding:14px 18px;margin-bottom:28px;
+    font-size:13px;line-height:1.6;
+    box-shadow:var(--shadow-sm);
+  }
+
+  /* USER CARDS GRID */
+  .users-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:32px; }
+  .user-card {
+    background:white;border:1px solid var(--gray-200);border-radius:var(--radius-xl);
+    padding:18px 20px;box-shadow:var(--shadow-sm);transition:box-shadow .15s;cursor:pointer;
+    position:relative;overflow:hidden;
+  }
+  .user-card:hover { box-shadow:var(--shadow-md); }
+  .user-card::before { content:'';position:absolute;top:0;left:0;right:0;height:3px; }
+  .user-card.active::before   { background:var(--green); }
+  .user-card.inactive::before { background:var(--gray-300); }
+  .uc-top    { display:flex;align-items:center;gap:12px;margin-bottom:12px; }
+  .uc-avatar {
+    width:40px;height:40px;border-radius:50%;
+    background:var(--navy);color:white;font-size:15px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .uc-name   { font-size:14px;font-weight:700;color:var(--navy); }
+  .uc-user   { font-size:11px;color:var(--gray-400);margin-top:2px; }
+  .uc-role   { display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:3px 8px;border-radius:20px;background:var(--blue-pale);color:var(--blue);margin-top:4px; }
+  .uc-pages  { font-size:11px;color:var(--gray-400);margin-top:8px; }
+  .uc-status { position:absolute;top:14px;right:16px;width:8px;height:8px;border-radius:50%; }
+  .uc-status.on  { background:var(--green); }
+  .uc-status.off { background:var(--gray-300); }
+
+  /* MODAL */
+  .modal-overlay {
+    position:fixed;inset:0;background:rgba(27,42,74,.6);
+    backdrop-filter:blur(4px);z-index:500;display:none;
+    align-items:center;justify-content:center;padding:20px;
+  }
+  .modal-overlay.open { display:flex; }
+  .modal {
+    background:white;border-radius:var(--radius-xl);
+    width:100%;max-width:700px;max-height:90vh;
+    overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.3);
+  }
+  .modal-header {
+    background:var(--navy);padding:20px 24px;
+    display:flex;align-items:center;justify-content:space-between;
+    border-radius:var(--radius-xl) var(--radius-xl) 0 0;
+    position:sticky;top:0;z-index:10;
+  }
+  .modal-title { color:white;font-size:16px;font-weight:700; }
+  .modal-close { background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;line-height:1; }
+  .modal-close:hover { color:white; }
+  .modal-body  { padding:24px; }
+  .modal-footer {
+    padding:16px 24px;border-top:1px solid var(--gray-200);
+    display:flex;justify-content:space-between;align-items:center;
+    background:var(--gray-100);border-radius:0 0 var(--radius-xl) var(--radius-xl);
+  }
+
+  /* FORM */
+  .form-section { margin-bottom:24px; }
+  .form-section-title {
+    font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+    color:var(--gray-400);margin-bottom:12px;padding-bottom:6px;
+    border-bottom:2px solid var(--gray-200);
+  }
+  .form-grid { display:grid;grid-template-columns:1fr 1fr;gap:14px; }
+  .form-group { display:flex;flex-direction:column;gap:5px; }
+  .form-group.full { grid-column:1/-1; }
+  label { font-size:11px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--navy); }
+  input[type=text],input[type=password],input[type=email],select {
+    padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius);
+    font-size:13px;color:var(--navy);font-family:Arial,sans-serif;
+    background:white;outline:none;transition:border-color .15s;
+  }
+  input:focus,select:focus { border-color:var(--blue); }
+
+  /* PAGES GRID */
+  .pages-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-top:12px; }
+  .page-toggle {
+    display:flex;align-items:center;gap:8px;
+    padding:8px 10px;border:1.5px solid var(--gray-200);
+    border-radius:var(--radius);cursor:pointer;transition:all .15s;
+    font-size:12px;user-select:none;
+  }
+  .page-toggle:hover { border-color:var(--blue);background:var(--blue-pale); }
+  .page-toggle.checked { border-color:var(--green);background:#F0FDF4;color:var(--green);font-weight:700; }
+  .page-toggle input { display:none; }
+  .pt-check {
+    width:16px;height:16px;border-radius:4px;border:2px solid var(--gray-300);
+    flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    transition:all .15s;font-size:10px;
+  }
+  .page-toggle.checked .pt-check { background:var(--green);border-color:var(--green);color:white; }
+
+  .toggle-all-row { display:flex;gap:8px;margin-bottom:10px; }
+  .toggle-all-btn { font-size:11px;font-weight:700;padding:4px 12px;border-radius:6px;cursor:pointer;border:1.5px solid var(--gray-200);background:white;color:var(--gray-600); }
+  .toggle-all-btn:hover { border-color:var(--blue);color:var(--blue); }
+
+  /* BUTTONS */
+  .btn-save   { background:var(--navy);color:white;padding:10px 24px;border-radius:var(--radius);font-size:13px;font-weight:700;cursor:pointer;border:none; }
+  .btn-save:hover { background:var(--blue); }
+  .btn-delete { background:#FEF2F2;color:var(--red);border:1.5px solid #FECACA;padding:10px 20px;border-radius:var(--radius);font-size:13px;font-weight:700;cursor:pointer; }
+  .btn-delete:hover { background:var(--red);color:white; }
+  .btn-add { background:var(--blue);color:white;padding:10px 20px;border-radius:var(--radius);font-size:13px;font-weight:700;cursor:pointer;border:none;display:flex;align-items:center;gap:6px; }
+  .btn-add:hover { background:#1a4f94; }
+
+  .section-title { font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--navy);margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--blue);display:inline-block; }
+
+  .empty { text-align:center;padding:48px;color:var(--gray-400);font-size:13px; }
+
+  .toast { position:fixed;bottom:24px;right:24px;background:var(--navy);color:white;padding:12px 20px;border-radius:var(--radius);font-size:12px;font-weight:700;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none; }
+  .toast.show { opacity:1; }
+
+  .pw-hint { font-size:10px;color:var(--gray-400);margin-top:3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-left">
+    <div class="hdr-badge">ADMIN</div>
+    <div>
+      <div class="hdr-title">Users & Access</div>
+      <div class="hdr-sub">Elite Hub › Admin › User Management</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <button class="btn btn-outline" onclick="window.location.href='admin.html'">← Admin</button>
+    <button class="btn btn-primary" onclick="openAddModal()">+ Add User</button>
+  </div>
+</header>
+
+<main>
+  <div class="callout">
+    <strong>Users & Access.</strong> Manage user accounts and control exactly which pages each user can access. Passwords are stored in the <strong>USERS</strong> tab of your Google Sheet. Users log in at <strong>login.html</strong>.
+  </div>
+
+  <div class="section-title">All Users</div>
+  <div class="users-grid" id="usersGrid">
+    <div class="empty">Loading users…</div>
+  </div>
+</main>
+
+<!-- EDIT/ADD MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Add User</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- ACCOUNT INFO -->
+      <div class="form-section">
+        <div class="form-section-title">👤 Account Info</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="fName" placeholder="e.g. Angel Smith">
+          </div>
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="fUsername" placeholder="e.g. angel.smith">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="fEmail" placeholder="email@company.com">
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <input type="text" id="fRole" placeholder="e.g. Regional Manager, Admin">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="fPassword" placeholder="Enter password">
+            <div class="pw-hint" id="pwHint">Leave blank to keep existing password</div>
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="fActive">
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE ACCESS -->
+      <div class="form-section">
+        <div class="form-section-title">🔐 Page Access</div>
+        <div class="toggle-all-row">
+          <button class="toggle-all-btn" onclick="toggleAll(true)">✓ Grant All</button>
+          <button class="toggle-all-btn" onclick="toggleAll(false)">✕ Revoke All</button>
+        </div>
+        <div class="pages-grid" id="pagesGrid"></div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-delete" id="deleteBtn" onclick="deleteUser()" style="display:none">✕ Delete User</button>
+      <div style="display:flex;gap:10px;margin-left:auto;">
+        <button class="btn btn-outline" style="color:var(--gray-600);border-color:var(--gray-200);" onclick="closeModal()">Cancel</button>
+        <button class="btn-save" onclick="saveUser()">Save User</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec';
+
+const PAGE_DEFS = [
+  { key:'index',            label:'Main Hub' },
+  { key:'fleet',            label:'Fleet' },
+  { key:'fleet_admin',      label:'Fleet Admin' },
+  { key:'compliance',       label:'Compliance' },
+  { key:'compliance_admin', label:'Compliance Admin' },
+  { key:'legal',            label:'Legal' },
+  { key:'legal_admin',      label:'Legal Admin' },
+  { key:'reviews',          label:'Reviews' },
+  { key:'documents',        label:'Documents' },
+  { key:'scoring_rules',    label:'Scoring Rules' },
+  { key:'admin',            label:'Admin Center' },
+  { key:'hub_phoenix',      label:'Hub: Phoenix' },
+  { key:'hub_cleveland',    label:'Hub: Cleveland' },
+  { key:'hub_chicago',      label:'Hub: Chicago' },
+  { key:'hub_stlouis',      label:'Hub: St. Louis' },
+  { key:'hub_minneapolis',  label:'Hub: Minneapolis' },
+  { key:'hub_milwaukee',    label:'Hub: Milwaukee' },
+  { key:'hub_indianapolis', label:'Hub: Indianapolis' },
+  { key:'hub_pittsburgh',   label:'Hub: Pittsburgh' },
+  { key:'hub_albuquerque',  label:'Hub: Albuquerque' },
+  { key:'angel',            label:'Dashboard: Angel' },
+  { key:'sara',             label:'Dashboard: Sara' },
+  { key:'emma',             label:'Dashboard: Emma' },
+  { key:'carlynn',          label:'Dashboard: Carlynn' },
+  { key:'jaida',            label:'Dashboard: Jaida' },
+];
+
+let allUsers = [];
+let editingUsername = null;
+
+// Build page toggles
+function buildPageToggles(userPages) {
+  const grid = document.getElementById('pagesGrid');
+  grid.innerHTML = PAGE_DEFS.map(p => {
+    const checked = userPages ? String(userPages[p.key]||'false').toLowerCase() === 'true' : false;
+    return `<label class="page-toggle ${checked?'checked':''}" id="pt-${p.key}">
+      <input type="checkbox" id="pg-${p.key}" ${checked?'checked':''} onchange="updateToggle('${p.key}',this.checked)">
+      <div class="pt-check">${checked?'✓':''}</div>
+      <span>${p.label}</span>
+    </label>`;
+  }).join('');
+}
+
+function updateToggle(key, checked) {
+  const label = document.getElementById('pt-' + key);
+  const check = label.querySelector('.pt-check');
+  if (checked) { label.classList.add('checked'); check.textContent = '✓'; }
+  else         { label.classList.remove('checked'); check.textContent = ''; }
+}
+
+function toggleAll(val) {
+  PAGE_DEFS.forEach(p => {
+    document.getElementById('pg-' + p.key).checked = val;
+    updateToggle(p.key, val);
+  });
+}
+
+async function loadUsers() {
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=getUsers`);
+    const data = await res.json();
+    allUsers   = data.users || [];
+    renderUsers();
+  } catch(e) {
+    document.getElementById('usersGrid').innerHTML = '<div class="empty">Could not load users.</div>';
+  }
+}
+
+function getInitials(name) {
+  return (name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+}
+
+function getAvatarColor(name) {
+  const colors = ['#1F5FAD','#7C3AED','#DB2777','#0891B2','#16A34A','#D97706','#DC2626'];
+  let hash = 0;
+  for (const c of (name||'')) hash = (hash * 31 + c.charCodeAt(0)) & 0xFFFFFF;
+  return colors[Math.abs(hash) % colors.length];
+}
+
+function renderUsers() {
+  const grid = document.getElementById('usersGrid');
+  if (!allUsers.length) {
+    grid.innerHTML = '<div class="empty">No users yet. Click "+ Add User" to create one.</div>';
+    return;
+  }
+  grid.innerHTML = allUsers.map(u => {
+    const active   = String(u['active']||'true').toLowerCase() === 'true';
+    const pages    = PAGE_DEFS.filter(p => String(u[p.key]||'false').toLowerCase() === 'true');
+    const color    = getAvatarColor(u['name']||u['username']);
+    return `<div class="user-card ${active?'active':'inactive'}" onclick="openEditModal('${u['username']}')">
+      <div class="uc-status ${active?'on':'off'}"></div>
+      <div class="uc-top">
+        <div class="uc-avatar" style="background:${color}">${getInitials(u['name']||u['username'])}</div>
+        <div>
+          <div class="uc-name">${u['name']||u['username']}</div>
+          <div class="uc-user">@${u['username']} · ${u['email']||'—'}</div>
+          <div class="uc-role">${u['role']||'User'}</div>
+        </div>
+      </div>
+      <div class="uc-pages">
+        ${pages.length} page${pages.length!==1?'s':''} accessible
+        <span style="color:var(--gray-300)">·</span>
+        ${active ? '<span style="color:var(--green);font-weight:700;">Active</span>' : '<span style="color:var(--gray-400);">Inactive</span>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openAddModal() {
+  editingUsername = null;
+  document.getElementById('modalTitle').textContent = 'Add User';
+  document.getElementById('deleteBtn').style.display = 'none';
+  document.getElementById('pwHint').style.display = 'none';
+  document.getElementById('fName').value = '';
+  document.getElementById('fUsername').value = '';
+  document.getElementById('fEmail').value = '';
+  document.getElementById('fRole').value = '';
+  document.getElementById('fPassword').value = '';
+  document.getElementById('fActive').value = 'true';
+  document.getElementById('fUsername').disabled = false;
+  buildPageToggles({});
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function openEditModal(username) {
+  const user = allUsers.find(u => u['username'] === username);
+  if (!user) return;
+  editingUsername = username;
+  document.getElementById('modalTitle').textContent = 'Edit User — ' + (user['name']||username);
+  document.getElementById('deleteBtn').style.display = 'block';
+  document.getElementById('pwHint').style.display = 'block';
+  document.getElementById('fName').value     = user['name']     || '';
+  document.getElementById('fUsername').value = user['username'] || '';
+  document.getElementById('fEmail').value    = user['email']    || '';
+  document.getElementById('fRole').value     = user['role']     || '';
+  document.getElementById('fPassword').value = '';
+  document.getElementById('fActive').value   = String(user['active']||'true').toLowerCase();
+  document.getElementById('fUsername').disabled = true;
+  buildPageToggles(user);
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+async function saveUser() {
+  const name     = document.getElementById('fName').value.trim();
+  const username = editingUsername || document.getElementById('fUsername').value.trim();
+  const email    = document.getElementById('fEmail').value.trim();
+  const role     = document.getElementById('fRole').value.trim();
+  const password = document.getElementById('fPassword').value;
+  const active   = document.getElementById('fActive').value;
+
+  if (!username) { showToast('Username is required'); return; }
+  if (!editingUsername && !password) { showToast('Password is required for new users'); return; }
+
+  const userData = { username, name, email, role, active };
+  if (password) userData.password = password;
+  PAGE_DEFS.forEach(p => {
+    userData[p.key] = document.getElementById('pg-' + p.key).checked ? 'true' : 'false';
+  });
+
+  try {
+    const res  = await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action:'saveUser', user: userData })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeModal();
+      await loadUsers();
+      showToast(editingUsername ? 'User updated ✓' : 'User created ✓');
+    } else {
+      showToast('Error: ' + (data.error || 'Unknown error'));
+    }
+  } catch(e) {
+    showToast('Connection error');
+  }
+}
+
+async function deleteUser() {
+  if (!editingUsername) return;
+  if (!confirm(`Delete user "${editingUsername}"? This cannot be undone.`)) return;
+  try {
+    const res  = await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action:'deleteUser', username: editingUsername })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeModal();
+      await loadUsers();
+      showToast('User deleted');
+    } else {
+      showToast('Error: ' + (data.error||'Unknown'));
+    }
+  } catch(e) { showToast('Connection error'); }
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+});
+
+loadUsers();
+</script>
+</body>
+</html>
