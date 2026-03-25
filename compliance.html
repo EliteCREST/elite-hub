@@ -1910,12 +1910,18 @@ async function openDocsPanel(contractorId, contractorName) {
   document.getElementById('docsPanel').classList.add('open');
 
   try {
-    const res  = await fetch(`${BACKEND_URL}?action=listFiles&region=${regionKey}&folder=contractor_${contractorId}`);
+    const url  = `${BACKEND_URL}?action=listFiles&region=${regionKey}&folder=contractor_${contractorId}`;
+    const res  = await fetch(url);
     const data = await res.json();
     const files = data.files || [];
 
+    if (data.error) {
+      document.getElementById('dpBody').innerHTML = `<div class="dp-empty"><div class="dp-empty-icon">⚠️</div>Error: ${data.error}</div>`;
+      return;
+    }
+
     if (!files.length) {
-      document.getElementById('dpBody').innerHTML = '<div class="dp-empty"><div class="dp-empty-icon">📭</div>No documents uploaded yet.</div>';
+      document.getElementById('dpBody').innerHTML = `<div class="dp-empty"><div class="dp-empty-icon">📭</div>No documents found.<br><span style="font-size:10px;color:var(--gray-300);">Folder: contractor_${contractorId}</span></div>`;
       return;
     }
 
@@ -1931,7 +1937,7 @@ async function openDocsPanel(contractorId, contractorName) {
         </div>`).join('')}
     </div>`;
   } catch(e) {
-    document.getElementById('dpBody').innerHTML = '<div class="dp-empty"><div class="dp-empty-icon">⚠️</div>Could not load documents.</div>';
+    document.getElementById('dpBody').innerHTML = '<div class="dp-empty"><div class="dp-empty-icon">⚠️</div>Could not load documents.<br><span style="font-size:10px;">' + e.message + '</span></div>';
   }
 }
 
