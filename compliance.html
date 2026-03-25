@@ -568,6 +568,55 @@
   .badge-ok   { background:#DCFCE7;color:#16A34A;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap; }
   .badge-attn { background:#FEE2E2;color:#DC2626;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap; }
 
+
+  /* ══ CREW PANEL ══════════════════════════════════════════════ */
+  .crew-overlay { position:fixed;inset:0;z-index:400;background:rgba(27,42,74,.5);backdrop-filter:blur(3px);display:none; }
+  .crew-overlay.open { display:block; }
+  .crew-panel {
+    position:fixed;top:0;right:-480px;width:480px;height:100vh;
+    background:white;z-index:401;box-shadow:-8px 0 32px rgba(27,42,74,.2);
+    display:flex;flex-direction:column;transition:right .3s ease;
+  }
+  .crew-panel.open { right:0; }
+  .cp-header { background:var(--navy);padding:18px 22px;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0; }
+  .cp-title  { color:white;font-size:15px;font-weight:700; }
+  .cp-sub    { color:rgba(255,255,255,.5);font-size:11px;margin-top:3px; }
+  .cp-close  { background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;padding:0; }
+  .cp-close:hover { color:white; }
+  .cp-body   { flex:1;overflow-y:auto;padding:20px; }
+  .cp-add-form {
+    background:var(--gray-100);border:1px solid var(--gray-200);
+    border-radius:10px;padding:16px;margin-bottom:20px;
+  }
+  .cp-add-title { font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--navy);margin-bottom:12px; }
+  .cp-field  { margin-bottom:10px; }
+  .cp-field label { display:block;font-size:10px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--gray-400);margin-bottom:4px; }
+  .cp-field input { width:100%;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:6px;font-size:12px;color:var(--navy);font-family:Arial,sans-serif;outline:none; }
+  .cp-field input:focus { border-color:var(--blue); }
+  .cp-add-btn { width:100%;padding:9px;background:var(--navy);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-top:4px; }
+  .cp-add-btn:hover { background:var(--blue); }
+  .crew-list { display:flex;flex-direction:column;gap:10px; }
+  .crew-item {
+    background:white;border:1px solid var(--gray-200);border-radius:10px;
+    padding:14px 16px;display:flex;align-items:flex-start;gap:12px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);
+  }
+  .crew-icon  { font-size:22px;flex-shrink:0;margin-top:2px; }
+  .crew-info  { flex:1;min-width:0; }
+  .crew-name  { font-size:13px;font-weight:700;color:var(--navy); }
+  .crew-meta  { font-size:11px;color:var(--gray-400);margin-top:3px;line-height:1.6; }
+  .crew-del   { background:none;border:none;color:var(--gray-300);cursor:pointer;font-size:16px;padding:0;line-height:1;flex-shrink:0; }
+  .crew-del:hover { color:var(--red); }
+  .cp-empty   { text-align:center;padding:32px;color:var(--gray-400);font-size:13px; }
+  .crew-count-btn {
+    background:var(--blue-pale);color:var(--blue);
+    border:1.5px solid var(--blue);border-radius:6px;
+    font-size:11px;font-weight:700;padding:3px 8px;
+    cursor:pointer;white-space:nowrap;
+  }
+  .crew-count-btn:hover { background:var(--blue);color:white; }
+  .crew-count-btn.zero { background:var(--gray-100);color:var(--gray-400);border-color:var(--gray-200); }
+
 </style>
 </head>
 <body>
@@ -717,7 +766,7 @@ function toggleDarkMode() {
           <tr>
             <th class="sortable" onclick="sortBy('name')">Contractor ↕</th>
             <th class="sortable" onclick="sortBy('trade')">Trade ↕</th>
-            <th class="sortable" onclick="sortBy('market')">Market / Brand</th>
+            <th>Crews</th>
             <th class="sortable" onclick="sortBy('gl_status')">GL Status ↕</th>
             <th class="sortable" onclick="sortBy('wc_status')">WC Status ↕</th>
             <th class="sortable" onclick="sortBy('gl_expiry')">GL Expiry ↕</th>
@@ -1194,7 +1243,7 @@ function renderTable() {
           <div class="contractor-trade">${c.contact || ''}</div>
         </td>
         <td><span class="badge badge-blue">${c.trade || '—'}</span></td>
-        <td style="font-size:12px;color:var(--gray-600);">${c.market || '—'}</td>
+        <td><button class="crew-count-btn zero" data-crew-contractor="${c.name}" onclick="event.stopPropagation();openCrewPanel('${c.name}')">👷 Crews</button></td>
         <td>${statusBadge(glStatus)}</td>
         <td>${statusBadge(wcStatus)}</td>
         <td>${expiryCell(c.gl_expiry)}</td>
@@ -1477,6 +1526,117 @@ function setCache(key, data) {
   try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch(e) {}
 }
 
+
+/* ══ CREW PANEL ═══════════════════════════════════════════════ */
+let currentCrewContractor = null;
+let crewCache = {};
+
+async function openCrewPanel(contractorName) {
+  currentCrewContractor = contractorName;
+  document.getElementById('cpTitle').textContent = contractorName;
+  document.getElementById('cpSub').textContent   = 'Crews assigned to this contractor';
+  document.getElementById('cpCrewName').value    = '';
+  document.getElementById('cpCrewPhone').value   = '';
+  document.getElementById('cpCrewLocation').value= '';
+  document.getElementById('crewOverlay').classList.add('open');
+  document.getElementById('crewPanel').classList.add('open');
+  await loadCrews(contractorName);
+}
+
+function closeCrewPanel() {
+  document.getElementById('crewOverlay').classList.remove('open');
+  document.getElementById('crewPanel').classList.remove('open');
+}
+
+async function loadCrews(contractorName) {
+  document.getElementById('crewList').innerHTML = '<div class="cp-empty">Loading…</div>';
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=getCrews&contractor=${encodeURIComponent(contractorName)}`);
+    const data = await res.json();
+    crewCache[contractorName] = data.crews || [];
+    renderCrews(contractorName);
+    updateCrewCount(contractorName, crewCache[contractorName].length);
+  } catch(e) {
+    document.getElementById('crewList').innerHTML = '<div class="cp-empty">Could not load crews.</div>';
+  }
+}
+
+function renderCrews(contractorName) {
+  const list  = document.getElementById('crewList');
+  const crews = crewCache[contractorName] || [];
+  if (!crews.length) {
+    list.innerHTML = '<div class="cp-empty">No crews yet.<br><span style="font-size:11px;">Use the form above to add the first crew.</span></div>';
+    return;
+  }
+  list.innerHTML = crews.map(c => `
+    <div class="crew-item" id="crew-${c['id']}">
+      <div class="crew-icon">👷</div>
+      <div class="crew-info">
+        <div class="crew-name">${c['crew_name']||'—'}</div>
+        <div class="crew-meta">
+          ${c['phone'] ? '📞 ' + c['phone'] + '<br>' : ''}
+          ${c['location'] ? '📍 ' + c['location'] : ''}
+        </div>
+      </div>
+      <button class="crew-del" onclick="deleteCrew('${c['id']}','${contractorName}')" title="Delete crew">✕</button>
+    </div>`).join('');
+}
+
+async function addCrew() {
+  const name     = document.getElementById('cpCrewName').value.trim();
+  const phone    = document.getElementById('cpCrewPhone').value.trim();
+  const location = document.getElementById('cpCrewLocation').value.trim();
+  if (!name) { alert('Crew name is required.'); return; }
+  const btn = document.querySelector('.cp-add-btn');
+  btn.textContent = 'Adding…'; btn.disabled = true;
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=addCrew&contractor=${encodeURIComponent(currentCrewContractor)}&crew_name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&location=${encodeURIComponent(location)}`);
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('cpCrewName').value = '';
+      document.getElementById('cpCrewPhone').value = '';
+      document.getElementById('cpCrewLocation').value = '';
+      await loadCrews(currentCrewContractor);
+    }
+  } catch(e) {}
+  btn.textContent = '+ Add Crew'; btn.disabled = false;
+}
+
+async function deleteCrew(id, contractorName) {
+  if (!confirm('Delete this crew?')) return;
+  await fetch(`${BACKEND_URL}?action=deleteCrew&id=${encodeURIComponent(id)}`);
+  crewCache[contractorName] = (crewCache[contractorName]||[]).filter(c => c['id'] !== id);
+  renderCrews(contractorName);
+  updateCrewCount(contractorName, crewCache[contractorName].length);
+}
+
+function updateCrewCount(contractorName, count) {
+  // Update all crew count buttons for this contractor
+  document.querySelectorAll('[data-crew-contractor]').forEach(el => {
+    if (el.dataset.crewContractor === contractorName) {
+      el.textContent  = count > 0 ? `👷 ${count} Crew${count!==1?'s':''}` : '👷 Crews';
+      el.className    = 'crew-count-btn' + (count === 0 ? ' zero' : '');
+    }
+  });
+}
+
+async function loadAllCrewCounts() {
+  // Batch load crew counts for visible contractors
+  const btns = document.querySelectorAll('[data-crew-contractor]');
+  const names = [...new Set([...btns].map(b => b.dataset.crewContractor))];
+  await Promise.all(names.map(async name => {
+    try {
+      const res  = await fetch(`${BACKEND_URL}?action=getCrews&contractor=${encodeURIComponent(name)}`);
+      const data = await res.json();
+      const count = (data.crews||[]).length;
+      crewCache[name] = data.crews||[];
+      updateCrewCount(name, count);
+    } catch(e) {}
+  }));
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCrewPanel(); });
+
 </script>
 
 <!-- HISTORY OVERLAY -->
@@ -1493,6 +1653,30 @@ function setCache(key, data) {
   </div>
   <div class="hp-body" id="hpBody">
     <div class="hp-empty">Select a contractor to view history</div>
+  </div>
+</div>
+
+
+<div class="crew-overlay" id="crewOverlay" onclick="closeCrewPanel()"></div>
+<div class="crew-panel" id="crewPanel">
+  <div class="cp-header">
+    <div>
+      <div class="cp-title" id="cpTitle">Crews</div>
+      <div class="cp-sub"  id="cpSub">Crews for this contractor</div>
+    </div>
+    <button class="cp-close" onclick="closeCrewPanel()">✕</button>
+  </div>
+  <div class="cp-body">
+    <div class="cp-add-form">
+      <div class="cp-add-title">➕ Add New Crew</div>
+      <div class="cp-field"><label>Crew Name</label><input type="text" id="cpCrewName" placeholder="e.g. Crew A"></div>
+      <div class="cp-field"><label>Phone</label><input type="tel" id="cpCrewPhone" placeholder="(555) 000-0000"></div>
+      <div class="cp-field"><label>Location</label><input type="text" id="cpCrewLocation" placeholder="City, State"></div>
+      <button class="cp-add-btn" onclick="addCrew()">+ Add Crew</button>
+    </div>
+    <div class="crew-list" id="crewList">
+      <div class="cp-empty">Loading…</div>
+    </div>
   </div>
 </div>
 
