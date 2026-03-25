@@ -324,12 +324,7 @@ function getInitials(name) {
   return (name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
 }
 
-function getAvatarColor(name) {
-  const colors = ['#1F5FAD','#7C3AED','#DB2777','#0891B2','#16A34A','#D97706','#DC2626'];
-  let hash = 0;
-  for (const c of (name||'')) hash = (hash * 31 + c.charCodeAt(0)) & 0xFFFFFF;
-  return colors[Math.abs(hash) % colors.length];
-}
+function getAvatarColor(name) { return '#1B2A4A'; }
 
 function renderUsers() {
   const grid = document.getElementById('usersGrid');
