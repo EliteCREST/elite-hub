@@ -362,7 +362,7 @@ function getInitials(name) {
 function getAvatarColor(name) { return '#1B2A4A'; }
 
 const REGION_LABELS = {
-  '':             { icon: '⭐', label: 'Administrators & All-Access' },
+  'unassigned':   { icon: '⭐', label: 'Administrators & All-Access' },
   'all':          { icon: '🌐', label: 'All Regions' },
   'cleveland':    { icon: '📍', label: 'Cleveland' },
   'phoenix':      { icon: '📍', label: 'Phoenix' },
@@ -374,6 +374,25 @@ const REGION_LABELS = {
   'pittsburgh':   { icon: '📍', label: 'Pittsburgh' },
   'albuquerque':  { icon: '📍', label: 'Albuquerque' },
 };
+
+// Normalize region from sheet abbreviations to frontend keys
+function normalizeRegion(val) {
+  const map = {
+    'cle':'cleveland','phx':'phoenix','chi':'chicago',
+    'stl':'stlouis','msp':'minneapolis','mke':'milwaukee',
+    'ind':'indianapolis','pit':'pittsburgh','abq':'albuquerque',
+    'aqe':'albuquerque','all':'all',
+  };
+  if (!val) return 'unassigned';
+  const v = String(val).trim().toLowerCase();
+  // Multi-region — return the raw normalized string as group key
+  const parts = v.split(/[,;\s]+/).filter(Boolean);
+  if (parts.length > 1) {
+    // normalize each part and join sorted
+    return parts.map(p => map[p] || p).sort().join(',');
+  }
+  return map[v] || v;
+}
 
 function makeUserCard(u) {
   const active = String(u['active']||'true').toLowerCase() === 'true';
@@ -411,13 +430,13 @@ function renderUsers() {
   // Group users by region
   const groups = {};
   allUsers.forEach(u => {
-    const region = (u['region'] || '').toLowerCase().trim();
+    const region = normalizeRegion(u['region'] || '');
     if (!groups[region]) groups[region] = [];
     groups[region].push(u);
   });
 
   // Sort groups: empty (admins) first, then alphabetical
-  const regionOrder = ['','all','cleveland','phoenix','chicago','stlouis','minneapolis','milwaukee','indianapolis','pittsburgh','albuquerque'];
+  const regionOrder = ['all','cleveland','phoenix','chicago','stlouis','minneapolis','milwaukee','indianapolis','pittsburgh','albuquerque','unassigned'];
   const sortedKeys = Object.keys(groups).sort((a,b) => {
     const ai = regionOrder.indexOf(a); const bi = regionOrder.indexOf(b);
     if (ai>=0 && bi>=0) return ai-bi;
@@ -427,7 +446,19 @@ function renderUsers() {
 
   grid.innerHTML = sortedKeys.map(regionKey => {
     const users = groups[regionKey];
-    const info  = REGION_LABELS[regionKey] || { icon: '📍', label: regionKey.charAt(0).toUpperCase()+regionKey.slice(1) };
+    // Build label — handle multi-region keys like 'cleveland,indianapolis,pittsburgh'
+    let info;
+    if (REGION_LABELS[regionKey]) {
+      info = REGION_LABELS[regionKey];
+    } else if (regionKey.includes(',')) {
+      const parts = regionKey.split(',').map(r => {
+        const rl = REGION_LABELS[r.trim()];
+        return rl ? rl.label : r.charAt(0).toUpperCase()+r.slice(1);
+      });
+      info = { icon: '📍', label: parts.join(' · ') };
+    } else {
+      info = { icon: '📍', label: regionKey.charAt(0).toUpperCase()+regionKey.slice(1) };
+    }
     return `<div class="region-group" id="group-${regionKey}">
       <div class="region-header" onclick="toggleGroup('${regionKey}')">
         <span class="region-header-icon">${info.icon}</span>
