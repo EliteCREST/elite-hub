@@ -703,6 +703,38 @@
     content: ' 🔒'; font-size: 10px; opacity: .5;
   }
 
+
+  /* ══ DOCS PANEL ══════════════════════════════════════════════ */
+  .docs-overlay { position:fixed;inset:0;z-index:400;background:rgba(27,42,74,.5);backdrop-filter:blur(3px);display:none; }
+  .docs-overlay.open { display:block; }
+  .docs-panel {
+    position:fixed;top:0;right:-500px;width:500px;height:100vh;
+    background:white;z-index:401;box-shadow:-8px 0 32px rgba(27,42,74,.2);
+    display:flex;flex-direction:column;transition:right .3s ease;
+  }
+  .docs-panel.open { right:0; }
+  .dp-header { background:var(--navy);padding:18px 22px;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0; }
+  .dp-title  { color:white;font-size:15px;font-weight:700; }
+  .dp-sub    { color:rgba(255,255,255,.5);font-size:11px;margin-top:3px; }
+  .dp-close  { background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;padding:0; }
+  .dp-close:hover { color:white; }
+  .dp-body   { flex:1;overflow-y:auto;padding:20px; }
+  .dp-file-list { display:flex;flex-direction:column;gap:10px; }
+  .dp-file-item {
+    background:white;border:1px solid var(--gray-200);border-radius:10px;
+    padding:14px 16px;display:flex;align-items:center;gap:12px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);transition:box-shadow .15s;
+  }
+  .dp-file-item:hover { box-shadow:0 4px 12px rgba(0,0,0,.1); }
+  .dp-file-icon { font-size:24px;flex-shrink:0; }
+  .dp-file-info { flex:1;min-width:0; }
+  .dp-file-name { font-size:13px;font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+  .dp-file-date { font-size:11px;color:var(--gray-400);margin-top:2px; }
+  .dp-file-btn  { font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;background:var(--blue-pale);color:var(--blue);border:1.5px solid var(--blue);text-decoration:none;white-space:nowrap;flex-shrink:0; }
+  .dp-file-btn:hover { background:var(--blue);color:white; }
+  .dp-empty  { text-align:center;padding:48px 20px;color:var(--gray-400);font-size:13px; }
+  .dp-empty-icon { font-size:40px;margin-bottom:12px; }
+
 </style>
 </head>
 <body>
@@ -1364,8 +1396,8 @@ function renderTable() {
         <td style="font-size:11px;color:var(--gray-600);">${travelStr}</td>
         <td onclick="event.stopPropagation()">
           <div class="row-actions">
-            <button class="row-btn" onclick="openDetail(${JSON.stringify(c).replace(/"/g,'&quot;')})">View</button>
-            <button class="row-btn upload-btn-sm" onclick="openDetailUpload(${JSON.stringify(c).replace(/"/g,'&quot;')})">📎 Docs</button>
+            <button class="row-btn upload-btn-sm" onclick="openDetailUpload(${JSON.stringify(c).replace(/"/g,'&quot;')})">⬆ Upload</button>
+            <button class="row-btn" style="background:var(--blue-pale);color:var(--blue);border-color:var(--blue);" onclick="event.stopPropagation();openDocsPanel('${c.id}','${c.name.replace(/'/g,\'\'')}')">📄 View Docs</button>
           </div>
         </td>
       </tr>`;
@@ -1868,6 +1900,48 @@ function applyEditPermissions() {
   }
 }
 
+
+/* ══ VIEW DOCS PANEL ═════════════════════════════════════════ */
+async function openDocsPanel(contractorId, contractorName) {
+  document.getElementById('dpTitle').textContent = contractorName || 'Documents';
+  document.getElementById('dpSub').textContent   = 'Insurance & compliance documents';
+  document.getElementById('dpBody').innerHTML    = '<div class="dp-empty"><div class="dp-empty-icon">⏳</div>Loading documents…</div>';
+  document.getElementById('docsOverlay').classList.add('open');
+  document.getElementById('docsPanel').classList.add('open');
+
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=listFiles&region=${regionKey}&folder=contractor_${contractorId}`);
+    const data = await res.json();
+    const files = data.files || [];
+
+    if (!files.length) {
+      document.getElementById('dpBody').innerHTML = '<div class="dp-empty"><div class="dp-empty-icon">📭</div>No documents uploaded yet.</div>';
+      return;
+    }
+
+    document.getElementById('dpBody').innerHTML = `<div class="dp-file-list">
+      ${files.map(f => `
+        <div class="dp-file-item">
+          <div class="dp-file-icon">${docIcon(f.name)}</div>
+          <div class="dp-file-info">
+            <div class="dp-file-name">${f.name}</div>
+            <div class="dp-file-date">${f.uploaded ? formatDate(f.uploaded) : ''}</div>
+          </div>
+          <a class="dp-file-btn" href="${f.viewUrl}" target="_blank">View ↗</a>
+        </div>`).join('')}
+    </div>`;
+  } catch(e) {
+    document.getElementById('dpBody').innerHTML = '<div class="dp-empty"><div class="dp-empty-icon">⚠️</div>Could not load documents.</div>';
+  }
+}
+
+function closeDocsPanel() {
+  document.getElementById('docsOverlay').classList.remove('open');
+  document.getElementById('docsPanel').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDocsPanel(); } });
+
 </script>
 
 <!-- HISTORY OVERLAY -->
@@ -1908,6 +1982,21 @@ function applyEditPermissions() {
     <div class="crew-list" id="crewList">
       <div class="cp-empty">Loading…</div>
     </div>
+  </div>
+</div>
+
+
+<div class="docs-overlay" id="docsOverlay" onclick="closeDocsPanel()"></div>
+<div class="docs-panel" id="docsPanel">
+  <div class="dp-header">
+    <div>
+      <div class="dp-title" id="dpTitle">Documents</div>
+      <div class="dp-sub"  id="dpSub">Insurance & compliance documents</div>
+    </div>
+    <button class="dp-close" onclick="closeDocsPanel()">✕</button>
+  </div>
+  <div class="dp-body" id="dpBody">
+    <div class="dp-empty"><div class="dp-empty-icon">📄</div>Loading…</div>
   </div>
 </div>
 
