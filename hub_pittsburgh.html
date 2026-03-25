@@ -481,6 +481,7 @@ function toggleDarkMode() {
       <div class="score-meta" style="margin-top:18px;">
         <div class="score-meta-item"><div class="sm-val" id="smCompliance">—</div><div class="sm-lbl">Compliance %</div></div>
         <div class="score-meta-item"><div class="sm-val" id="smFleet">—</div><div class="sm-lbl">Fleet Active</div></div>
+        <div class="score-meta-item"><div class="sm-val" id="smSafety">—</div><div class="sm-lbl">Safety Score</div></div>
         <div class="score-meta-item"><div class="sm-val" id="smReviews">—</div><div class="sm-lbl">Avg Review</div></div>
         <div class="score-meta-item"><div class="sm-val" id="smLitigation">—</div><div class="sm-lbl">Open Litigation</div></div>
         <div class="score-meta-item"><div class="sm-val" id="smNational">—</div><div class="sm-lbl">National Rank</div></div>
@@ -499,6 +500,7 @@ function toggleDarkMode() {
     <div class="kpi-card"><div class="kpi-icon">📊</div><div class="kpi-label">Comp. Score</div><div class="kpi-value" id="kpiCompScore">—</div></div>
     <div class="kpi-card"><div class="kpi-icon">⚠️</div><div class="kpi-label">Alerts</div><div class="kpi-value" id="kpiAlerts">—</div></div>
     <div class="kpi-card"><div class="kpi-icon">🚗</div><div class="kpi-label">Fleet</div><div class="kpi-value" id="kpiFleet">—</div></div>
+    <div class="kpi-card"><div class="kpi-icon">🛡️</div><div class="kpi-label">Safety Score</div><div class="kpi-value" id="kpiSafety">—</div></div>
     <div class="kpi-card"><div class="kpi-icon">⭐</div><div class="kpi-label">Reviews</div><div class="kpi-value" id="kpiReviews">—<span class="unit">/5</span></div></div>
     <div class="kpi-card"><div class="kpi-icon">📊</div><div class="kpi-label">Open CFB</div><div class="kpi-value" id="kpiCFB">—</div></div>
     <div class="kpi-card"><div class="kpi-icon">⚖️</div><div class="kpi-label">Licenses</div><div class="kpi-value" id="kpiLicenses">—</div></div>
@@ -541,7 +543,7 @@ const REGION = {
 };
 
 const MAIN_HUB_URL = 'https://elitecrest.github.io/elite-hub/index.html'; // ← Paste permanent Main Hub GAS URL
-const BACKEND_URL  = 'https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec'; // ← Paste shared GAS backend URL
+const BACKEND_URL  = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec'; // ← Paste shared GAS backend URL
 
 /* ── PAGE REGISTRY FOR THIS REGION ──────────────────
    Add sub-pages here. url: '' = not yet deployed.
@@ -774,6 +776,20 @@ async function syncData() {
           set('kpiFleet', fleetD.total);
           set('smFleet',  fleetD.total + ' vehicles');
         }
+        // Load fleet safety scores
+        try {
+          const safetyRes  = await fetch(`${BACKEND_URL}?action=allFleetScores`);
+          const safetyData = await safetyRes.json();
+          if (safetyData.scores && safetyData.scores[REGION.key]) {
+            const fs = safetyData.scores[REGION.key];
+            if (fs && fs.fleetScore !== undefined) {
+              set('kpiSafety', fs.fleetScore + '/500');
+              set('smSafety',  fs.fleetScore + '/500');
+              // Store fleet score for hub push
+              window._fleetSafetyScore = fs.fleetScore;
+            }
+          }
+        } catch(e) {}
       } catch(e) {}
       if (compData && !compData.error) {
         const total     = compData.total     || 0;
@@ -835,7 +851,7 @@ async function pushToHub(data) {
         data: {
           score:      data.score,
           compliance: data.compliancePct,
-          fleet:      data.fleet,
+          fleet:      window._fleetSafetyScore || data.fleet,
           reviews:    data.reviews,
           trend:      data.trend || 0,
           status:     data.status || 'Active',

@@ -415,7 +415,7 @@
 ══════════════════════════════════════════════════════ */
 
 const BUILD_MODE  = true;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec'; // Paste GAS Web App URL here
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec'; // Paste GAS Web App URL here
 
 /* ── REGION REGISTRY ─────────────────────────────────
    Add/remove regions here only. Everything else auto-builds.
@@ -585,7 +585,7 @@ function buildPodium() {
           </div>
           <div class="pc-stats">
             <div class="pc-stat"><div class="ps-val">${r.compliance !== null ? r.compliance + '%' : '—'}</div><div class="ps-lbl">Compliance</div></div>
-            <div class="pc-stat"><div class="ps-val">${r.fleet !== null ? r.fleet : '—'}</div><div class="ps-lbl">Fleet</div></div>
+            <div class="pc-stat"><div class="ps-val">${r.fleet !== null ? r.fleet + '/500' : '—'}</div><div class="ps-lbl">Fleet Score</div>
             <div class="pc-stat"><div class="ps-val">${r.reviews !== null ? r.reviews : '—'}</div><div class="ps-lbl">Reviews</div></div>
           </div>
         </div>
@@ -629,8 +629,8 @@ function buildRegionCards() {
             <div class="rs-lbl">Compliance</div>
           </div>
           <div class="rc-stat">
-            <div class="rs-val">${d.fleet !== null ? d.fleet : '—'}</div>
-            <div class="rs-lbl">Fleet</div>
+            <div class="rs-val">${d.fleet !== null ? d.fleet + '/500' : '—'}</div>
+            <div class="rs-lbl">Fleet Score
           </div>
           <div class="rc-stat">
             <div class="rs-val">${d.reviews !== null ? d.reviews : '—'}</div>
