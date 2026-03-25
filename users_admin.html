@@ -416,10 +416,19 @@ async function saveUser() {
   });
 
   try {
-    const res  = await fetch(BACKEND_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action:'saveUser', user: userData })
-    });
+    // Build GET params to avoid CORS issues with POST
+    const params = new URLSearchParams();
+    params.set('action', 'saveUserGet');
+    params.set('username',     userData.username);
+    params.set('name',         userData.name         || '');
+    params.set('email',        userData.email        || '');
+    params.set('role',         userData.role         || '');
+    params.set('active',       userData.active       || 'true');
+    params.set('default_page', userData.default_page || 'index');
+    if (userData.password) params.set('password', userData.password);
+    PAGE_DEFS.forEach(p => params.set('pg_' + p.key, userData[p.key] || 'false'));
+
+    const res  = await fetch(`${BACKEND_URL}?${params.toString()}`);
     const data = await res.json();
     if (data.success) {
       closeModal();
@@ -429,7 +438,7 @@ async function saveUser() {
       showToast('Error: ' + (data.error || 'Unknown error'));
     }
   } catch(e) {
-    showToast('Connection error');
+    showToast('Connection error: ' + e.message);
   }
 }
 
@@ -437,10 +446,7 @@ async function deleteUser() {
   if (!editingUsername) return;
   if (!confirm(`Delete user "${editingUsername}"? This cannot be undone.`)) return;
   try {
-    const res  = await fetch(BACKEND_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action:'deleteUser', username: editingUsername })
-    });
+    const res  = await fetch(`${BACKEND_URL}?action=deleteUserGet&username=${encodeURIComponent(editingUsername)}`);
     const data = await res.json();
     if (data.success) {
       closeModal();
@@ -449,7 +455,7 @@ async function deleteUser() {
     } else {
       showToast('Error: ' + (data.error||'Unknown'));
     }
-  } catch(e) { showToast('Connection error'); }
+  } catch(e) { showToast('Connection error: ' + e.message); }
 }
 
 function showToast(msg) {
