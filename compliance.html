@@ -669,6 +669,40 @@
     text-transform: uppercase;
   }
 
+
+  /* ══ INLINE EDIT FIELDS ══════════════════════════════════════ */
+  .di-input {
+    width: 100%; padding: 5px 8px;
+    border: 1.5px solid var(--gray-200); border-radius: 6px;
+    font-size: 13px; font-weight: 600; color: var(--navy);
+    font-family: Arial, sans-serif; background: white;
+    outline: none; transition: border-color .15s;
+    margin-top: 2px;
+  }
+  .di-input:focus { border-color: var(--blue); }
+  .di-input:disabled { background: var(--gray-100); color: var(--gray-400); cursor: not-allowed; border-color: var(--gray-200); }
+  .detail-save-bar {
+    position: sticky; bottom: 0; background: white;
+    border-top: 1px solid var(--gray-200); padding: 12px 20px;
+    display: flex; justify-content: flex-end; gap: 10px;
+    box-shadow: 0 -4px 12px rgba(0,0,0,.08);
+  }
+  .btn-save-detail {
+    background: var(--navy); color: white; border: none;
+    padding: 10px 24px; border-radius: var(--radius);
+    font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .btn-save-detail:hover { background: var(--blue); }
+  .btn-cancel-detail {
+    background: white; color: var(--gray-600);
+    border: 1.5px solid var(--gray-200);
+    padding: 10px 20px; border-radius: var(--radius);
+    font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .di-readonly-label::after {
+    content: ' 🔒'; font-size: 10px; opacity: .5;
+  }
+
 </style>
 </head>
 <body>
@@ -863,14 +897,17 @@ function toggleDarkMode() {
       <div class="detail-section">
         <div class="detail-section-title">Contact Information</div>
         <div class="detail-grid">
-          <div class="detail-item"><div class="di-label">Full Name</div><div class="di-val" id="dContact">—</div></div>
-          <div class="detail-item"><div class="di-label">Full Name 2</div><div class="di-val" id="dContact2">—</div></div>
-          <div class="detail-item"><div class="di-label">Phone</div><div class="di-val" id="dPhone">—</div></div>
-          <div class="detail-item"><div class="di-label">Email</div><div class="di-val" id="dEmail">—</div></div>
-          <div class="detail-item"><div class="di-label">Invoice Email</div><div class="di-val" id="dEmail2">—</div></div>
-          <div class="detail-item"><div class="di-label">Supervisor</div><div class="di-val" id="dSupervisor">—</div></div>
-          <div class="detail-item"><div class="di-label">Region</div><div class="di-val" id="dRegion">—</div></div>
-          <div class="detail-item"><div class="di-label">Address</div><div class="di-val" id="dAddress">—</div></div>
+          <div class="detail-item"><div class="di-label">Full Name</div><input class="di-input" id="dContact" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Full Name 2</div><input class="di-input" id="dContact2" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Phone</div><input class="di-input" id="dPhone" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Email</div><input class="di-input" type="email" id="dEmail" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Invoice Email</div><input class="di-input" type="email" id="dEmail2" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Supervisor</div><input class="di-input" id="dSupervisor" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label di-readonly-label">Region</div><div class="di-val" id="dRegion">—</div></div>
+          <div class="detail-item"><div class="di-label">Address</div><input class="di-input" id="dAddress" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">City</div><input class="di-input" id="dCity" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">State</div><input class="di-input" id="dState" placeholder="—" style="max-width:80px;"></div>
+          <div class="detail-item"><div class="di-label">Zip</div><input class="di-input" id="dZip" placeholder="—" style="max-width:100px;"></div>
         </div>
       </div>
       <!-- GL Insurance -->
@@ -905,13 +942,25 @@ function toggleDarkMode() {
       <div class="detail-section">
         <div class="detail-section-title">Trades & Contract</div>
         <div class="detail-grid">
-          <div class="detail-item"><div class="di-label">Trade 1</div><div class="di-val" id="dTrade1">—</div></div>
-          <div class="detail-item"><div class="di-label">Trade 2</div><div class="di-val" id="dTrade2">—</div></div>
-          <div class="detail-item"><div class="di-label">Trade 3</div><div class="di-val" id="dTrade3">—</div></div>
-          <div class="detail-item"><div class="di-label">Trade 4</div><div class="di-val" id="dTrade4">—</div></div>
-          <div class="detail-item"><div class="di-label">Contract Status</div><div class="di-val" id="dContractStatus">—</div></div>
-          <div class="detail-item"><div class="di-label">Will Travel</div><div class="di-val" id="dTravel">—</div></div>
-          <div class="detail-item"><div class="di-label">Travel Distance</div><div class="di-val" id="dTravelDist">—</div></div>
+          <div class="detail-item"><div class="di-label">Trade 1</div><input class="di-input" id="dTrade1" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Trade 2</div><input class="di-input" id="dTrade2" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Trade 3</div><input class="di-input" id="dTrade3" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Trade 4</div><input class="di-input" id="dTrade4" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Contract Status</div>
+            <select class="di-input" id="dContractStatus">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
+          <div class="detail-item"><div class="di-label">Will Travel</div>
+            <select class="di-input" id="dTravel">
+              <option value="">—</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div class="detail-item"><div class="di-label">Travel Distance (miles)</div><input class="di-input" id="dTravelDist" placeholder="—" type="number"></div>
         </div>
       </div>
       <!-- Document Upload -->
@@ -933,6 +982,10 @@ function toggleDarkMode() {
         </div>
         <div id="uploadStatus" style="margin-top:8px;font-size:12px;color:var(--gray-400);"></div>
       </div>
+    </div>
+    <div class="detail-save-bar">
+      <button class="btn-cancel-detail" onclick="closeDetailModal()">Cancel</button>
+      <button class="btn-save-detail" onclick="saveDetailChanges()">💾 Save Changes</button>
     </div>
   </div>
 </div>
@@ -1327,11 +1380,16 @@ function openDetail(c) {
   document.getElementById('detailName').textContent = c.name;
   document.getElementById('detailSub').textContent  = `${c.trade || '—'} · ${c.region || '—'} · ${region.city}`;
 
+  // Helper to set input or div value
   const set = (id, val) => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.textContent   = val || '—';
-    el.className     = 'di-val' + (val ? '' : ' missing');
+    if (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') {
+      el.value = val || '';
+    } else {
+      el.textContent = val || '—';
+      el.className   = 'di-val' + (val ? '' : ' missing');
+    }
   };
 
   set('dPhone',          c.phone);
@@ -1341,7 +1399,10 @@ function openDetail(c) {
   set('dContact2',       c.contact2);
   set('dSupervisor',     c.supervisor);
   set('dRegion',         c.region);
-  set('dAddress',        [c.address, c.city, c.state, c.zip].filter(Boolean).join(', '));
+  set('dAddress',        c.address);
+  set('dCity',           c.city);
+  set('dState',          c.state);
+  set('dZip',            c.zip);
   set('dGLPolicy',       c.gl_policy);
   set('dGLExpiry',       c.gl_expiry ? formatDate(c.gl_expiry) : '');
   set('dGLInsCo',        c.gl_ins_co);
@@ -1360,9 +1421,9 @@ function openDetail(c) {
   set('dTrade2',         c.trade2);
   set('dTrade3',         c.trade3);
   set('dTrade4',         c.trade4);
-  set('dContractStatus', c.contract_status);
+  set('dContractStatus', c.contract_status || 'Active');
   set('dTravel',         c.will_travel);
-  set('dTravelDist',     c.travel_distance ? c.travel_distance + ' miles' : '');
+  set('dTravelDist',     c.travel_distance);
 
   // GL/WC status display
   document.getElementById('dGLStatus').innerHTML = statusBadge(getExpiryStatus(c.gl_expiry));
@@ -1380,6 +1441,56 @@ function openDetailUpload(c) {
   setTimeout(() => {
     document.getElementById('uploadZone').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, 300);
+}
+
+async function saveDetailChanges() {
+  if (!currentContractor) return;
+  const btn = document.querySelector('.btn-save-detail');
+  btn.textContent = 'Saving…'; btn.disabled = true;
+
+  const g = id => { const el = document.getElementById(id); return el ? el.value || el.textContent || '' : ''; };
+
+  const updates = {
+    name:            currentContractor.name,
+    contact:         g('dContact'),
+    contact2:        g('dContact2'),
+    phone:           g('dPhone'),
+    email:           g('dEmail'),
+    email2:          g('dEmail2'),
+    supervisor:      g('dSupervisor'),
+    address:         g('dAddress'),
+    city:            g('dCity'),
+    state:           g('dState'),
+    zip:             g('dZip'),
+    trade1:          g('dTrade1'),
+    trade2:          g('dTrade2'),
+    trade3:          g('dTrade3'),
+    trade4:          g('dTrade4'),
+    contract_status: g('dContractStatus'),
+    will_travel:     g('dTravel'),
+    travel_distance: g('dTravelDist'),
+  };
+
+  try {
+    const res  = await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'updateContractor', id: currentContractor.id, contractor: updates })
+    });
+    const data = await res.json();
+    if (data.success) {
+      // Update local data
+      const idx = allContractors.findIndex(c => c.id === currentContractor.id);
+      if (idx >= 0) Object.assign(allContractors[idx], updates);
+      showToast('Saved ✓', 'info');
+      closeDetailModal();
+      applyFilters();
+    } else {
+      showToast('Error: ' + (data.error || 'Unknown'), 'error');
+    }
+  } catch(e) {
+    showToast('Connection error', 'error');
+  }
+  btn.textContent = '💾 Save Changes'; btn.disabled = false;
 }
 
 function closeDetailModal() {
