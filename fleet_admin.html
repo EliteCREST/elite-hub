@@ -1077,6 +1077,7 @@ async function syncData(useCache = false) {
     populateMakeFilter();
     renderAll();
     document.getElementById('hdrSync').textContent = new Date().toLocaleTimeString();
+    loadAllSafetyScores();
   } catch(e) {
     document.getElementById('vehicleCount').textContent = 'Error loading — check backend';
     document.getElementById('hdrSync').textContent = 'Error';
@@ -1321,7 +1322,7 @@ function renderVehicles() {
           <div class="vc-tags">
             ${v.plate ? `<span class="tag tag-plate">${v.plate}</span>` : ''}
             ${geotabTag(v)}
-              <span class="safety-badge none" id="safety-badge-${v.evid}" onclick="event.stopPropagation();openSafety('${v.evid}','${v.make} ${v.model}')">🛡 Safety</span>
+              <span class="safety-badge none" id="safety-badge-${v.evid}" onclick="event.stopPropagation();openSafety('${v.evid}','${v.make} ${v.model}')" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid currentColor;">🛡 Safety Score —</span>
             ${v.brand ? `<span class="tag tag-brand">${v.brand}</span>` : ''}
             ${v.agreement === 'Signed' ? `<span class="tag tag-signed">Signed</span>` : v.agreement ? `<span class="tag tag-unsigned">${v.agreement}</span>` : ''}
             ${v.region ? `<span class="tag tag-gray">${v.region}</span>` : ''}
@@ -1924,6 +1925,23 @@ function updateSafetySummary() {
   setClass(5, 'ssHarsh',     harsh,     5, 15);
   setClass(6, 'ssDevice',    device,    1, 3);
   setClass(7, 'ssHealth',    health,    5, 15);
+}
+
+
+async function loadAllSafetyScores() {
+  const fetches = allVehicles.map(v =>
+    fetch(BACKEND_URL + '?action=vehicleSafety&evid=' + encodeURIComponent(v.evid))
+      .then(r => r.json())
+      .then(d => {
+        if (d.found) {
+          safetyCache[v.evid] = d;
+          updateSafetyBadge(v.evid, d.safety_score);
+        }
+      })
+      .catch(() => {})
+  );
+  await Promise.all(fetches);
+  updateSafetySummary();
 }
 
 </script>
