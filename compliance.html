@@ -636,6 +636,39 @@
   .upload-note-box textarea:focus { border-color: var(--blue); }
   .upload-note-box .note-hint { font-size: 10px; color: var(--gray-400); margin-top: 4px; }
 
+
+  /* ══ READONLY FIELDS ════════════════════════════════════════ */
+  .field-readonly input,
+  .field-readonly select,
+  .field-readonly textarea {
+    background: var(--gray-100) !important;
+    color: var(--gray-400) !important;
+    cursor: not-allowed !important;
+    border-color: var(--gray-200) !important;
+    pointer-events: none;
+  }
+  .field-readonly label::after {
+    content: ' (view only)';
+    font-size: 9px;
+    color: var(--gray-400);
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .section-locked {
+    opacity: .7;
+    position: relative;
+  }
+  .section-locked::after {
+    content: '🔒 View Only';
+    position: absolute;
+    top: 12px; right: 14px;
+    font-size: 10px; font-weight: 700;
+    color: var(--gray-400);
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+
 </style>
 </head>
 <body>
@@ -1337,6 +1370,7 @@ function openDetail(c) {
 
   loadContractorDocs(c.id);
   document.getElementById('detailModal').classList.add('open');
+  applyEditPermissions();
 }
 
 function openDetailUpload(c) {
@@ -1456,7 +1490,8 @@ function docIcon(name) {
 }
 
 /* ══ ADD CONTRACTOR ══════════════════════════════════════════ */
-function openAddModal()  { document.getElementById('addModal').classList.add('open'); }
+function openAddModal()  { document.getElementById('addModal').classList.add('open');
+  applyEditPermissions(); }
 function closeAddModal() { document.getElementById('addModal').classList.remove('open'); }
 
 async function saveContractor() {
@@ -1678,6 +1713,49 @@ async function loadAllCrewCounts() {
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCrewPanel(); });
+
+
+/* ══ SESSION & PERMISSIONS ══════════════════════════════════ */
+function getSession() {
+  try { return JSON.parse(localStorage.getItem('elite_session') || 'null'); } catch { return null; }
+}
+function isAdmin() {
+  const s = getSession();
+  if (!s || !s.user) return true; // if no session, don't restrict
+  const role = String(s.user.role || '').toLowerCase();
+  return role === 'admin' || role === 'administration' || role === 'sr director' || role === 'sr general manager';
+}
+function applyEditPermissions() {
+  if (isAdmin()) return; // admins see everything editable
+  // Lock GL section
+  document.querySelectorAll('.fs-gl').forEach(el => {
+    el.classList.add('section-locked');
+    el.querySelectorAll('input,select,textarea').forEach(f => {
+      f.disabled = true; f.style.pointerEvents = 'none';
+    });
+  });
+  // Lock WC section
+  document.querySelectorAll('.fs-wc').forEach(el => {
+    el.classList.add('section-locked');
+    el.querySelectorAll('input,select,textarea').forEach(f => {
+      f.disabled = true; f.style.pointerEvents = 'none';
+    });
+  });
+  // Lock Region field
+  const fRegion = document.getElementById('fRegion');
+  if (fRegion) {
+    fRegion.disabled = true;
+    fRegion.style.pointerEvents = 'none';
+    fRegion.closest('.form-group')?.classList.add('field-readonly');
+  }
+  // Lock Pay ID field
+  const fPayId = document.getElementById('fPayId');
+  if (fPayId) {
+    fPayId.disabled = true;
+    fPayId.style.pointerEvents = 'none';
+    fPayId.closest('.form-group')?.classList.add('field-readonly');
+  }
+}
 
 </script>
 
