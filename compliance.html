@@ -1397,7 +1397,7 @@ function renderTable() {
         <td onclick="event.stopPropagation()">
           <div class="row-actions">
             <button class="row-btn upload-btn-sm" onclick="openDetailUpload(${JSON.stringify(c).replace(/"/g,'&quot;')})">⬆ Upload</button>
-            <button class="row-btn" style="background:var(--blue-pale);color:var(--blue);border-color:var(--blue);" onclick="event.stopPropagation();openDocsPanel('${c.id}','${c.name.replace(/'/g,\'\'')}')">📄 View Docs</button>
+            <button class="row-btn" style="background:var(--blue-pale);color:var(--blue);border-color:var(--blue);" data-name="${c.name}" data-id="${c.id}" onclick="event.stopPropagation();openDocsPanel(this.dataset.id,this.dataset.name)">📄 View Docs</button>
           </div>
         </td>
       </tr>`;
