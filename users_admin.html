@@ -44,7 +44,7 @@
   }
 
   /* USER CARDS GRID */
-  .users-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:32px; }
+  #usersGrid { margin-bottom:32px; }
   .user-card {
     background:white;border:1px solid var(--gray-200);border-radius:var(--radius-xl);
     padding:18px 20px;box-shadow:var(--shadow-sm);transition:box-shadow .15s;cursor:pointer;
@@ -147,6 +147,24 @@
 
   .section-title { font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--navy);margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--blue);display:inline-block; }
 
+
+  .region-group { margin-bottom: 20px; }
+  .region-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; background: var(--navy);
+    border-radius: var(--radius-xl); cursor: pointer;
+    user-select: none; transition: background .15s;
+    margin-bottom: 12px;
+  }
+  .region-header:hover { background: #243554; }
+  .region-header-icon  { font-size: 16px; }
+  .region-header-name  { color: white; font-size: 13px; font-weight: 700; flex: 1; }
+  .region-header-count { color: rgba(255,255,255,.5); font-size: 11px; font-weight: 600; }
+  .region-header-chevron { color: rgba(255,255,255,.5); font-size: 12px; transition: transform .2s; }
+  .region-group.collapsed .region-header-chevron { transform: rotate(-90deg); }
+  .region-group.collapsed .region-group-body { display: none; }
+  .region-group-body { display: grid; grid-template-columns: repeat(auto-fill,minmax(320px,1fr)); gap: 12px; padding: 0 4px; }
+
   .empty { text-align:center;padding:48px;color:var(--gray-400);font-size:13px; }
 
   .toast { position:fixed;bottom:24px;right:24px;background:var(--navy);color:white;padding:12px 20px;border-radius:var(--radius);font-size:12px;font-weight:700;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none; }
@@ -177,7 +195,7 @@
   </div>
 
   <div class="section-title">All Users</div>
-  <div class="users-grid" id="usersGrid">
+  <div id="usersGrid">
     <div class="empty">Loading users…</div>
   </div>
 </main>
@@ -343,31 +361,82 @@ function getInitials(name) {
 
 function getAvatarColor(name) { return '#1B2A4A'; }
 
+const REGION_LABELS = {
+  '':             { icon: '⭐', label: 'Administrators & All-Access' },
+  'all':          { icon: '🌐', label: 'All Regions' },
+  'cleveland':    { icon: '📍', label: 'Cleveland' },
+  'phoenix':      { icon: '📍', label: 'Phoenix' },
+  'chicago':      { icon: '📍', label: 'Chicago' },
+  'stlouis':      { icon: '📍', label: 'St. Louis' },
+  'minneapolis':  { icon: '📍', label: 'Minneapolis' },
+  'milwaukee':    { icon: '📍', label: 'Milwaukee' },
+  'indianapolis': { icon: '📍', label: 'Indianapolis' },
+  'pittsburgh':   { icon: '📍', label: 'Pittsburgh' },
+  'albuquerque':  { icon: '📍', label: 'Albuquerque' },
+};
+
+function makeUserCard(u) {
+  const active = String(u['active']||'true').toLowerCase() === 'true';
+  const pages  = PAGE_DEFS.filter(p => String(u[p.key]||'false').toLowerCase() === 'true');
+  return `<div class="user-card ${active?'active':'inactive'}" onclick="openEditModal('${u['username']}')">
+    <div class="uc-status ${active?'on':'off'}"></div>
+    <div class="uc-top">
+      <div class="uc-avatar">${getInitials(u['name']||u['username'])}</div>
+      <div>
+        <div class="uc-name">${u['name']||u['username']}</div>
+        <div class="uc-user">@${u['username']} · ${u['email']||'—'}</div>
+        <div class="uc-role">${u['role']||'User'}</div>
+      </div>
+    </div>
+    <div class="uc-pages">
+      ${pages.length} page${pages.length!==1?'s':''} accessible
+      <span style="color:var(--gray-300)">·</span>
+      ${active ? '<span style="color:var(--green);font-weight:700;">Active</span>' : '<span style="color:var(--gray-400);">Inactive</span>'}
+    </div>
+  </div>`;
+}
+
+function toggleGroup(regionKey) {
+  const el = document.getElementById('group-' + regionKey);
+  if (el) el.classList.toggle('collapsed');
+}
+
 function renderUsers() {
   const grid = document.getElementById('usersGrid');
   if (!allUsers.length) {
     grid.innerHTML = '<div class="empty">No users yet. Click "+ Add User" to create one.</div>';
     return;
   }
-  grid.innerHTML = allUsers.map(u => {
-    const active   = String(u['active']||'true').toLowerCase() === 'true';
-    const pages    = PAGE_DEFS.filter(p => String(u[p.key]||'false').toLowerCase() === 'true');
-    const color    = getAvatarColor(u['name']||u['username']);
-    return `<div class="user-card ${active?'active':'inactive'}" onclick="openEditModal('${u['username']}')">
-      <div class="uc-status ${active?'on':'off'}"></div>
-      <div class="uc-top">
-        <div class="uc-avatar" style="background:${color}">${getInitials(u['name']||u['username'])}</div>
-        <div>
-          <div class="uc-name">${u['name']||u['username']}</div>
-          <div class="uc-user">@${u['username']} · ${u['email']||'—'}</div>
-          ${u['region'] ? '<div class="uc-region">📍 ' + u['region'].charAt(0).toUpperCase() + u['region'].slice(1) + '</div>' : ''}
-          <div class="uc-role">${u['role']||'User'}</div>
-        </div>
+
+  // Group users by region
+  const groups = {};
+  allUsers.forEach(u => {
+    const region = (u['region'] || '').toLowerCase().trim();
+    if (!groups[region]) groups[region] = [];
+    groups[region].push(u);
+  });
+
+  // Sort groups: empty (admins) first, then alphabetical
+  const regionOrder = ['','all','cleveland','phoenix','chicago','stlouis','minneapolis','milwaukee','indianapolis','pittsburgh','albuquerque'];
+  const sortedKeys = Object.keys(groups).sort((a,b) => {
+    const ai = regionOrder.indexOf(a); const bi = regionOrder.indexOf(b);
+    if (ai>=0 && bi>=0) return ai-bi;
+    if (ai>=0) return -1; if (bi>=0) return 1;
+    return a.localeCompare(b);
+  });
+
+  grid.innerHTML = sortedKeys.map(regionKey => {
+    const users = groups[regionKey];
+    const info  = REGION_LABELS[regionKey] || { icon: '📍', label: regionKey.charAt(0).toUpperCase()+regionKey.slice(1) };
+    return `<div class="region-group" id="group-${regionKey}">
+      <div class="region-header" onclick="toggleGroup('${regionKey}')">
+        <span class="region-header-icon">${info.icon}</span>
+        <span class="region-header-name">${info.label}</span>
+        <span class="region-header-count">${users.length} user${users.length!==1?'s':''}</span>
+        <span class="region-header-chevron">▼</span>
       </div>
-      <div class="uc-pages">
-        ${pages.length} page${pages.length!==1?'s':''} accessible
-        <span style="color:var(--gray-300)">·</span>
-        ${active ? '<span style="color:var(--green);font-weight:700;">Active</span>' : '<span style="color:var(--gray-400);">Inactive</span>'}
+      <div class="region-group-body">
+        ${users.map(makeUserCard).join('')}
       </div>
     </div>`;
   }).join('');
