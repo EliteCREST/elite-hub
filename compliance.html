@@ -617,6 +617,25 @@
   .crew-count-btn:hover { background:var(--blue);color:white; }
   .crew-count-btn.zero { background:var(--gray-100);color:var(--gray-400);border-color:var(--gray-200); }
 
+
+  .upload-note-box {
+    margin-bottom: 10px;
+  }
+  .upload-note-box label {
+    display: block; font-size: 10px; font-weight: 700;
+    letter-spacing: .5px; text-transform: uppercase;
+    color: var(--gray-400); margin-bottom: 5px;
+  }
+  .upload-note-box textarea {
+    width: 100%; padding: 8px 10px;
+    border: 1.5px solid var(--gray-200); border-radius: 8px;
+    font-size: 12px; color: var(--navy); font-family: Arial, sans-serif;
+    resize: vertical; min-height: 60px; outline: none;
+    transition: border-color .15s;
+  }
+  .upload-note-box textarea:focus { border-color: var(--blue); }
+  .upload-note-box .note-hint { font-size: 10px; color: var(--gray-400); margin-top: 4px; }
+
 </style>
 </head>
 <body>
@@ -866,6 +885,11 @@ function toggleDarkMode() {
       <div class="detail-section">
         <div class="detail-section-title">Insurance Documents</div>
         <div class="doc-list" id="docList"></div>
+        <div class="upload-note-box">
+          <label>📝 Note (optional)</label>
+          <textarea id="uploadNote" placeholder="Add a note about this document (e.g. 'Updated GL policy for 2026', 'Renewal certificate')..."></textarea>
+          <div class="note-hint">Note will be saved to Admin Notes for this contractor</div>
+        </div>
         <div class="upload-zone" id="uploadZone"
              ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)"
              onclick="document.getElementById('docFileInput').click()">
@@ -1362,10 +1386,12 @@ function handleDrop(e)      { e.preventDefault(); document.getElementById('uploa
 
 async function uploadDocs(files) {
   if (!currentContractor) return;
-  const status = document.getElementById('uploadStatus');
+  const status   = document.getElementById('uploadStatus');
+  const noteText = (document.getElementById('uploadNote')?.value || '').trim();
 
   for (const file of Array.from(files)) {
     status.textContent = `Uploading ${file.name}...`;
+    status.style.color = 'var(--gray-400)';
     try {
       const b64 = await fileToBase64(file);
       const res = await fetch(BACKEND_URL, {
@@ -1383,6 +1409,22 @@ async function uploadDocs(files) {
       if (result.success) {
         status.textContent = `✓ ${file.name} uploaded`;
         status.style.color = 'var(--green)';
+
+        // Save note to admin notes — custom or standard
+        const timestamp  = new Date().toLocaleString();
+        const regionName = region ? region.city : regionKey;
+        const noteEntry  = noteText
+          ? `[${timestamp}] 📎 ${currentContractor.name} — ${file.name}: ${noteText}`
+          : `[${timestamp}] 📎 ${regionName} uploaded document to ${currentContractor.name}`;
+        await fetch(BACKEND_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'saveAdminNote',
+            region: regionKey,
+            note:   noteEntry,
+          })
+        }).catch(() => {});
+        if (noteText) document.getElementById('uploadNote').value = '';
       } else {
         status.textContent = `✗ Failed: ${result.error}`;
         status.style.color = 'var(--red)';
