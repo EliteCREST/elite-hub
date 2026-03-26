@@ -1,86 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-// ── AUTH GUARD ───────────────────────────────────────────────
-(function() {
-  function getSession() {
-    try { return JSON.parse(localStorage.getItem('elite_session') || 'null'); } catch { return null; }
-  }
-
-  const REGION_ABBR = {
-    cleveland:'CLE', phoenix:'PHX', chicago:'CHI', stlouis:'STL',
-    minneapolis:'MSP', milwaukee:'MKE', indianapolis:'IND',
-    pittsburgh:'PIT', albuquerque:'ABQ'
-  };
-
-  const HUB_PAGE_REGIONS = {
-    'hub_cleveland':'cleveland','hub_phoenix':'phoenix','hub_chicago':'chicago',
-    'hub_stlouis':'stlouis','hub_minneapolis':'minneapolis','hub_milwaukee':'milwaukee',
-    'hub_indianapolis':'indianapolis','hub_pittsburgh':'pittsburgh','hub_albuquerque':'albuquerque'
-  };
-
-  const session = getSession();
-  const page    = window.location.pathname.split('/').pop().replace('.html','').replace(/[^a-z0-9_]/gi,'_').toLowerCase();
-
-  // Not logged in → go to login
-  if (!session || !session.user) {
-    window.location.href = 'login.html';
-    return;
-  }
-
-  const role     = String(session.user.role || '').toLowerCase();
-  // Only Angel has unrestricted access to everything
-  const username = String(session.user.username || '').toLowerCase();
-  if (username === 'angel') return;
-
-  // Normalize region — handles both 'cleveland' and 'CLE'
-  const NAME_TO_ABBR = {
-    cleveland:'CLE', phoenix:'PHX', chicago:'CHI', stlouis:'STL',
-    minneapolis:'MSP', milwaukee:'MKE', indianapolis:'IND',
-    pittsburgh:'PIT', albuquerque:'ABQ'
-  };
-  const rawRegion  = String(session.user.region || session.user.regions || '');
-  const parts      = rawRegion.split(/[,\s]+/).filter(Boolean);
-  // Convert each part to an abbreviation
-  const userAbbrs  = parts.map(p => {
-    const upper = p.trim().toUpperCase();
-    const lower = p.trim().toLowerCase();
-    return NAME_TO_ABBR[lower] || upper; // if it's already an abbr like CLE, keep it
-  });
-  const hasAllRegions = userAbbrs.includes('ALL') || userAbbrs.length === 0;
-
-  // Check hub page region access
-  const hubRegion = HUB_PAGE_REGIONS[page];
-  if (hubRegion && !hasAllRegions) {
-    const required = REGION_ABBR[hubRegion];
-    if (!userAbbrs.includes(required)) {
-      window.location.href = 'index.html';
-      return;
-    }
-    // Hub region passed — no further checks needed
-  } else {
-    // Check region-specific pages (compliance, fleet, etc.) via URL param
-    const urlRegion = new URLSearchParams(window.location.search).get('region');
-    if (urlRegion && !hasAllRegions) {
-      const required = REGION_ABBR[urlRegion.toLowerCase()];
-      if (required && !userAbbrs.includes(required)) {
-        window.location.href = 'index.html';
-        return;
-      }
-      // URL region passed — no further checks needed for regional pages
-    } else {
-      // Non-regional page — check explicit page access flag
-      const pageVal = String(session.user[page] || 'true').toLowerCase();
-      if (pageVal === 'false') {
-        window.location.href = 'index.html';
-        return;
-      }
-    }
-  }
-})();
-</script>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fleet Admin — All Regions — Elite Hub</title>
@@ -578,113 +498,6 @@
   }
   .dark-toggle:hover { border-color: rgba(255,255,255,.75); color: white; }
 
-/* ══ SAFETY PANEL ════════════════════════════════════════════ */
-  .safety-overlay { position:fixed;inset:0;z-index:400;background:rgba(27,42,74,.5);backdrop-filter:blur(3px);display:none; }
-  .safety-overlay.open { display:block; }
-  .safety-panel {
-    position:fixed;top:0;right:-540px;width:540px;height:100vh;
-    background:white;z-index:401;box-shadow:-8px 0 32px rgba(27,42,74,.2);
-    display:flex;flex-direction:column;transition:right .3s ease;
-  }
-  .safety-panel.open { right:0; }
-  .sp-header { background:var(--navy);padding:18px 22px;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0; }
-  .sp-title  { color:white;font-size:15px;font-weight:700; }
-  .sp-sub    { color:rgba(255,255,255,.5);font-size:11px;margin-top:3px; }
-  .sp-close  { background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;padding:0; }
-  .sp-close:hover { color:white; }
-  .sp-body   { flex:1;overflow-y:auto;padding:20px; }
-  .sp-score-wrap {
-    background:var(--navy);border-radius:12px;padding:20px;margin-bottom:20px;
-    display:flex;align-items:center;gap:20px;
-  }
-  .sp-score-circle {
-    width:80px;height:80px;border-radius:50%;flex-shrink:0;
-    display:flex;align-items:center;justify-content:center;
-    flex-direction:column;border:4px solid rgba(255,255,255,.2);
-  }
-  .sp-score-num  { font-size:26px;font-weight:700;color:white;line-height:1; }
-  .sp-score-lbl  { font-size:9px;color:rgba(255,255,255,.5);letter-spacing:.5px;text-transform:uppercase;margin-top:2px; }
-  .sp-score-info { flex:1; }
-  .sp-score-title { color:white;font-size:14px;font-weight:700;margin-bottom:4px; }
-  .sp-score-sub   { color:rgba(255,255,255,.5);font-size:11px;line-height:1.5; }
-  .sp-stat-bar { height:6px;background:rgba(255,255,255,.15);border-radius:3px;margin-top:8px;overflow:hidden; }
-  .sp-stat-fill { height:100%;border-radius:3px;transition:width .7s ease; }
-
-  .sp-section { margin-bottom:18px; }
-  .sp-section-title {
-    font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
-    color:var(--gray-400);margin-bottom:10px;padding-bottom:6px;
-    border-bottom:2px solid var(--gray-200);
-  }
-  .sp-metrics { display:grid;grid-template-columns:1fr 1fr;gap:8px; }
-  .sp-metric {
-    background:var(--gray-50);border:1px solid var(--gray-200);
-    border-radius:8px;padding:10px 12px;
-  }
-  .sp-metric.alert { background:#FEF2F2;border-color:#FECACA; }
-  .sp-metric.warn  { background:#FFF7ED;border-color:#FED7AA; }
-  .sp-metric.ok    { background:#F0FDF4;border-color:#BBF7D0; }
-  .sp-metric-val  { font-size:16px;font-weight:700;color:var(--navy); }
-  .sp-metric-val.red    { color:#DC2626; }
-  .sp-metric-val.orange { color:#F97316; }
-  .sp-metric-val.green  { color:#16A34A; }
-  .sp-metric-lbl  { font-size:10px;color:var(--gray-400);margin-top:2px;letter-spacing:.3px; }
-  .sp-trip-stats  { display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px; }
-  .sp-trip-stat   { text-align:center;background:var(--blue-pale);border-radius:8px;padding:10px; }
-  .sp-trip-val    { font-size:15px;font-weight:700;color:var(--navy); }
-  .sp-trip-lbl    { font-size:10px;color:var(--gray-400);margin-top:2px; }
-
-  /* Safety badge on vehicle card */
-  .safety-badge {
-    display:inline-flex;align-items:center;gap:4px;
-    font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;
-    cursor:pointer;transition:opacity .15s;
-  }
-  .safety-badge:hover { opacity:.8; }
-  .safety-badge.excellent { background:#DCFCE7;color:#16A34A; }
-  .safety-badge.good      { background:#DBEAFE;color:#2563EB; }
-  .safety-badge.fair      { background:#FFF7ED;color:#F97316; }
-  .safety-badge.poor      { background:#FEE2E2;color:#DC2626; }
-  .safety-badge.none      { background:var(--gray-100);color:var(--gray-400); }
-
-/* ══ SAFETY SUMMARY STRIP ════════════════════════════════════ */
-  .safety-strip {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 10px;
-    margin-bottom: 24px;
-  }
-  .safety-strip-card {
-    background: white;
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius);
-    padding: 12px 14px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-    transition: box-shadow .15s;
-  }
-  .safety-strip-card:hover { box-shadow: var(--shadow-md); }
-  .safety-strip-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  }
-  .safety-strip-card.ss-ok::before     { background: var(--green); }
-  .safety-strip-card.ss-warn::before   { background: var(--yellow); }
-  .safety-strip-card.ss-alert::before  { background: var(--red); }
-  .safety-strip-card.ss-neutral::before { background: var(--blue); }
-  .ss-icon  { font-size: 16px; margin-bottom: 4px; }
-  .ss-label { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-400); margin-bottom: 4px; }
-  .ss-value { font-size: 20px; font-weight: 700; color: var(--navy); line-height: 1; }
-  .ss-value.ok    { color: var(--green); }
-  .ss-value.warn  { color: var(--yellow); }
-  .ss-value.alert { color: var(--red); }
-  .ss-sub   { font-size: 10px; color: var(--gray-400); margin-top: 3px; }
-  .safety-strip-title {
-    font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-    color: var(--navy); padding-bottom: 7px; border-bottom: 2px solid var(--blue);
-    display: inline-block; margin-bottom: 14px;
-  }
-
 </style>
 </head>
 <body>
@@ -786,20 +599,7 @@ function toggleDarkMode() {
     <div class="kpi-card good-card"><div class="kpi-icon">🏆</div><div class="kpi-label">Avg Fleet Score</div><div class="kpi-value" id="kpiFleetScore">—</div><div class="kpi-sub">0–100 behavior score</div></div>
   </div>
 
-  <!-- SAFETY SUMMARY STRIP -->
-  <div class="safety-strip-title">🛡 Fleet Safety Summary</div>
-  <div class="safety-strip" id="safetySummaryStrip">
-    <div class="safety-strip-card ss-neutral"><div class="ss-icon">📍</div><div class="ss-label">Distance</div><div class="ss-value" id="ssDist">—</div><div class="ss-sub">Total miles</div></div>
-    <div class="safety-strip-card ss-neutral"><div class="ss-icon">⏱</div><div class="ss-label">Idling</div><div class="ss-value" id="ssIdle">—</div><div class="ss-sub">Total idle time</div></div>
-    <div class="safety-strip-card ss-ok"><div class="ss-icon">💥</div><div class="ss-label">Collisions</div><div class="ss-value ok" id="ssCollision">—</div><div class="ss-sub">Major + Minor + Possible</div></div>
-    <div class="safety-strip-card ss-ok"><div class="ss-icon">🚗</div><div class="ss-label">Speed Events</div><div class="ss-value ok" id="ssSpeed">—</div><div class="ss-sub">Speeding + Hard Accel</div></div>
-    <div class="safety-strip-card ss-ok"><div class="ss-icon">🪑</div><div class="ss-label">Seat Belt</div><div class="ss-value ok" id="ssSeat">—</div><div class="ss-sub">Violations</div></div>
-    <div class="safety-strip-card ss-ok"><div class="ss-icon">🔄</div><div class="ss-label">Harsh Driving</div><div class="ss-value ok" id="ssHarsh">—</div><div class="ss-sub">Braking + Cornering</div></div>
-    <div class="safety-strip-card ss-ok"><div class="ss-icon">📡</div><div class="ss-label">Device Removal</div><div class="ss-value ok" id="ssDevice">—</div><div class="ss-sub">Unauthorized</div></div>
-    <div class="safety-strip-card ss-ok"><div class="ss-icon">🔧</div><div class="ss-label">Vehicle Health</div><div class="ss-value ok" id="ssHealth">—</div><div class="ss-sub">Engine + Tire + Battery</div></div>
-  </div>
-
-<!-- FILTER BAR -->
+  <!-- FILTER BAR -->
   <div class="filter-bar">
     <div class="search-box">
       <span style="color:var(--gray-400);">🔍</span>
@@ -1082,7 +882,7 @@ function toggleDarkMode() {
 /* ══════════════════════════════════════════════════════════════
    CONFIGURATION
 ══════════════════════════════════════════════════════════════ */
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec';
 
 const REGION_MAP = {
   cleveland:    { city: 'Cleveland',    abbr: 'CLE', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_cleveland.html' },
@@ -1157,7 +957,6 @@ async function syncData(useCache = false) {
     populateMakeFilter();
     renderAll();
     document.getElementById('hdrSync').textContent = new Date().toLocaleTimeString();
-    loadAllSafetyScores();
   } catch(e) {
     document.getElementById('vehicleCount').textContent = 'Error loading — check backend';
     document.getElementById('hdrSync').textContent = 'Error';
@@ -1402,7 +1201,6 @@ function renderVehicles() {
           <div class="vc-tags">
             ${v.plate ? `<span class="tag tag-plate">${v.plate}</span>` : ''}
             ${geotabTag(v)}
-              <span class="safety-badge none" id="safety-badge-${v.evid}" onclick="event.stopPropagation();openSafety('${v.evid}','${v.make} ${v.model}')" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid currentColor;">🛡 Safety Score —</span>
             ${v.brand ? `<span class="tag tag-brand">${v.brand}</span>` : ''}
             ${v.agreement === 'Signed' ? `<span class="tag tag-signed">Signed</span>` : v.agreement ? `<span class="tag tag-unsigned">${v.agreement}</span>` : ''}
             ${v.region ? `<span class="tag tag-gray">${v.region}</span>` : ''}
@@ -1834,202 +1632,5 @@ async function saveBulkInsurance() {
 }
 </script>
 
-<div class="safety-overlay" id="safetyOverlay" onclick="closeSafety()"></div>
-<div class="safety-panel" id="safetyPanel">
-  <div class="sp-header">
-    <div>
-      <div class="sp-title" id="spTitle">Vehicle Safety Report</div>
-      <div class="sp-sub"  id="spSub">GeoTab driving data</div>
-    </div>
-    <button class="sp-close" onclick="closeSafety()">✕</button>
-  </div>
-  <div class="sp-body" id="spBody">
-    <div style="text-align:center;padding:48px 20px;color:var(--gray-400);">Loading safety data…</div>
-  </div>
-</div>
-<script>
-/* ══ SAFETY PANEL ══════════════════════════════════════════ */
-const safetyCache = {};
-
-async function openSafety(evid, vehicleName) {
-  document.getElementById('spTitle').textContent = vehicleName || 'Vehicle Safety';
-  document.getElementById('spSub').textContent   = 'EVID ' + evid + ' — GeoTab driving data';
-  document.getElementById('spBody').innerHTML    = '<div style="text-align:center;padding:48px;color:#94A3B8;">Loading…</div>';
-  document.getElementById('safetyOverlay').classList.add('open');
-  document.getElementById('safetyPanel').classList.add('open');
-  if (safetyCache[evid]) { renderSafety(safetyCache[evid]); return; }
-  try {
-    const res  = await fetch(`${BACKEND_URL}?action=vehicleSafety&evid=${encodeURIComponent(evid)}`);
-    const data = await res.json();
-    safetyCache[evid] = data;
-    renderSafety(data);
-    updateSafetyBadge(evid, data.safety_score);
-  } catch(e) {
-    document.getElementById('spBody').innerHTML = '<div style="text-align:center;padding:48px;color:#94A3B8;">Could not load safety data.</div>';
-  }
-}
-
-function closeSafety() {
-  document.getElementById('safetyOverlay').classList.remove('open');
-  document.getElementById('safetyPanel').classList.remove('open');
-}
-
-function safetyScoreColor(score) {
-  if (score >= 450) return '#16A34A';
-  if (score >= 375) return '#2563EB';
-  if (score >= 250) return '#F97316';
-  return '#DC2626';
-}
-
-function safetyScoreClass(score) {
-  if (score === null || score === undefined) return 'none';
-  if (score >= 450) return 'excellent';
-  if (score >= 375) return 'good';
-  if (score >= 250) return 'fair';
-  return 'poor';
-}
-
-function updateSafetyBadge(evid, score) {
-  const badge = document.getElementById('safety-badge-' + evid);
-  if (!badge) return;
-  badge.className = 'safety-badge ' + safetyScoreClass(score);
-  badge.innerHTML = '🛡 ' + (score !== null && score !== undefined ? score : '—');
-}
-
-function metricClass(val) {
-  const n = parseInt(String(val).match(/^(\d+)/)?.[1] || '0');
-  if (n === 0) return 'ok'; if (n <= 2) return 'warn'; return 'alert';
-}
-function metricColor(val) {
-  const n = parseInt(String(val).match(/^(\d+)/)?.[1] || '0');
-  if (n === 0) return 'green'; if (n <= 2) return 'orange'; return 'red';
-}
-
-function renderSafety(data) {
-  const body = document.getElementById('spBody');
-  if (!data.found && data.evid) {
-    body.innerHTML = `<div style="text-align:center;padding:48px;color:#94A3B8;"><div style="font-size:32px;margin-bottom:12px;">📡</div><div style="font-weight:700;margin-bottom:6px;">No GeoTab data found</div><div style="font-size:12px;">EVID ${data.evid} not matched in Fleet_Scoring.</div></div>`;
-    return;
-  }
-  const score    = data.safety_score !== undefined ? data.safety_score : '—';
-  const scoreNum = typeof score === 'number' ? score : null;
-  const color    = scoreNum !== null ? safetyScoreColor(scoreNum) : '#94A3B8';
-  const barPct   = scoreNum !== null ? Math.round((scoreNum / 500) * 100) : 0;
-  const metrics  = [
-    { label:'Major Collision',    val:data.major_collision },
-    { label:'Minor Collision',    val:data.minor_collision },
-    { label:'Possible Collision', val:data.possible_collision },
-    { label:'Seat Belt',          val:data.seat_belt },
-    { label:'Excessive Speeding', val:data.excessive_speeding },
-    { label:'Speeding',           val:data.speeding },
-    { label:'Hard Acceleration',  val:data.hard_acceleration },
-    { label:'Harsh Braking',      val:data.harsh_braking },
-    { label:'Harsh Cornering',    val:data.harsh_cornering },
-    { label:'Engine Abuse',       val:data.engine_abuse },
-    { label:'Engine Light On',    val:data.engine_light },
-    { label:'Low Tire Pressure',  val:data.low_tire },
-    { label:'Battery Drain',      val:data.battery_drain },
-    { label:'Device Removal',     val:data.device_removal },
-  ];
-  body.innerHTML = `
-    <div class="sp-score-wrap">
-      <div class="sp-score-circle" style="border-color:${color};">
-        <div class="sp-score-num" style="color:${color};">${score}</div>
-        <div class="sp-score-lbl">/ 500</div>
-      </div>
-      <div class="sp-score-info">
-        <div class="sp-score-title">Safety Score</div>
-        <div class="sp-score-sub">Based on GeoTab driving events weighted by scoring rules</div>
-        <div class="sp-stat-bar"><div class="sp-stat-fill" style="width:${barPct}%;background:${color};"></div></div>
-      </div>
-    </div>
-    <div class="sp-section">
-      <div class="sp-section-title">📍 Activity</div>
-      <div class="sp-trip-stats">
-        <div class="sp-trip-stat"><div class="sp-trip-val">${data.distance||'—'}</div><div class="sp-trip-lbl">Distance</div></div>
-        <div class="sp-trip-stat"><div class="sp-trip-val">${data.idling_time||'—'}</div><div class="sp-trip-lbl">Total Idling</div></div>
-        <div class="sp-trip-stat"><div class="sp-trip-val">${data.hours_trips||'—'}</div><div class="sp-trip-lbl">Trips</div></div>
-      </div>
-    </div>
-    <div class="sp-section">
-      <div class="sp-section-title">⚠️ Safety Events</div>
-      <div class="sp-metrics">${metrics.map(m=>`<div class="sp-metric ${metricClass(m.val)}"><div class="sp-metric-val ${metricColor(m.val)}">${m.val||'0 times'}</div><div class="sp-metric-lbl">${m.label}</div></div>`).join('')}</div>
-    </div>`;
-}
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSafety(); });
-
-
-
-function updateSafetySummary() {
-  if (!Object.keys(safetyCache).length) return;
-  function parseNum(val) {
-    if (!val) return 0;
-    const m = String(val).match(/^(\d+)/);
-    return m ? parseInt(m[1]) : 0;
-  }
-  function colorClass(n, warnAt, alertAt) {
-    if (n === 0) return 'ok'; if (n <= warnAt) return 'warn'; return 'alert';
-  }
-  function cardClass(n, warnAt, alertAt) {
-    if (n === 0) return 'ss-ok'; if (n <= warnAt) return 'ss-warn'; return 'ss-alert';
-  }
-  let collision=0, speed=0, seat=0, harsh=0, device=0, health=0, totalDist=0;
-  Object.values(safetyCache).forEach(d => {
-    if (!d.found) return;
-    collision += parseNum(d.major_collision) + parseNum(d.minor_collision) + parseNum(d.possible_collision);
-    speed     += parseNum(d.excessive_speeding) + parseNum(d.speeding) + parseNum(d.hard_acceleration);
-    seat      += parseNum(d.seat_belt);
-    harsh     += parseNum(d.harsh_braking) + parseNum(d.harsh_cornering);
-    device    += parseNum(d.device_removal);
-    health    += parseNum(d.engine_abuse) + parseNum(d.engine_light) + parseNum(d.low_tire) + parseNum(d.battery_drain);
-    const dm = String(d.distance||'').match(/([\d,]+)/);
-    if (dm) totalDist += parseInt(dm[1].replace(',',''));
-  });
-  const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
-  const setClass = (nth, valId, n, warnAt, alertAt) => {
-    const card = document.querySelectorAll('#safetySummaryStrip .safety-strip-card')[nth];
-    const val  = document.getElementById(valId);
-    if (card) card.className = 'safety-strip-card ' + cardClass(n, warnAt, alertAt);
-    if (val)  val.className  = 'ss-value ' + colorClass(n, warnAt, alertAt);
-  };
-  set('ssDist',      totalDist > 0 ? totalDist.toLocaleString() + ' mi' : '—');
-  set('ssCollision', collision);
-  set('ssSpeed',     speed);
-  set('ssSeat',      seat);
-  set('ssHarsh',     harsh);
-  set('ssDevice',    device);
-  set('ssHealth',    health);
-  setClass(2, 'ssCollision', collision, 2, 5);
-  setClass(3, 'ssSpeed',     speed,     5, 15);
-  setClass(4, 'ssSeat',      seat,      2, 5);
-  setClass(5, 'ssHarsh',     harsh,     5, 15);
-  setClass(6, 'ssDevice',    device,    1, 3);
-  setClass(7, 'ssHealth',    health,    5, 15);
-}
-
-
-async function loadAllSafetyScores() {
-  const fetches = allVehicles.map(v =>
-    fetch(BACKEND_URL + '?action=vehicleSafety&evid=' + encodeURIComponent(v.evid))
-      .then(r => r.json())
-      .then(d => {
-        if (d.found) {
-          safetyCache[v.evid] = d;
-          updateSafetyBadge(v.evid, d.safety_score);
-        }
-      })
-      .catch(() => {})
-  );
-  await Promise.all(fetches);
-  updateSafetySummary();
-}
-
-
-function logout() {
-  localStorage.removeItem('elite_session');
-  window.location.href = 'login.html';
-}
-
-</script>
 </body>
 </html>
