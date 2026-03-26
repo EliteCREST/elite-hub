@@ -369,7 +369,7 @@
     <div class="hdr-divider"></div>
     <div class="meta-item">
       <div class="meta-label">User</div>
-      <div class="meta-val" id="userDisplay">Admin</div>
+      <div class="meta-val" id="userDisplay">—</div>
     </div>
     <div class="hdr-divider"></div>
     <a class="admin-btn" href="https://elitecrest.github.io/elite-hub/admin.html">⚙ Admin</a>
@@ -771,5 +771,15 @@ function logout() {
 }
 
 </script>
+
+// Show logged-in username in header
+(function() {
+  try {
+    const s = JSON.parse(localStorage.getItem('elite_session') || 'null');
+    const el = document.getElementById('userDisplay');
+    if (el && s && s.user) el.textContent = s.user.username || s.user.name || '?';
+  } catch(e) {}
+})();
+
 </body>
 </html>
