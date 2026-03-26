@@ -51,7 +51,8 @@
   const hasAllRegions = userAbbrs.includes('ALL') || userAbbrs.length === 0;
 
   // Check explicit page access flag
-  if (session.user[page] === 'false') {
+  const pageVal = String(session.user[page] || 'true').toLowerCase();
+  if (pageVal === 'false') {
     window.location.href = 'index.html';
     return;
   }
