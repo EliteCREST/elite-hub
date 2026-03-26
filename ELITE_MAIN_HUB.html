@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Elite Hub — Main Command Center</title>
@@ -279,7 +277,7 @@
   .footer-links a:hover { color: rgba(255,255,255,.75); }
 
   /* ══ BUILD BANNER ══════════════════════════════════ */
-  .build-banner { display: none !important; /* disabled */
+  .build-banner {
     background: linear-gradient(90deg, #92400E 0%, #B45309 100%);
     color: white; font-size: 11px; font-weight: 700;
     letter-spacing: 1.2px; text-transform: uppercase;
@@ -321,22 +319,131 @@
     .lb-row > *:nth-child(n+5) { display: none; }
   }
 
-  .region-card.locked {
-    opacity: .35;
-    cursor: not-allowed;
+  /* ══ DARK MODE ════════════════════════════════════════════ */
+  body.dark { background: #111827; color: #F1F5F9; }
+  body.dark main { background: #111827; }
+
+  /* Cards */
+  body.dark .kpi-card,
+  body.dark .vehicle-card,
+  body.dark .scoring-card,
+  body.dark .admin-card,
+  body.dark .modal,
+  body.dark .file-browser,
+  body.dark .folder-card,
+  body.dark .rule-row,
+  body.dark .filter-bar,
+  body.dark .podium-card { background: #1F2937 !important; border-color: #374151 !important; }
+
+  /* Region cards — blue border */
+  body.dark .region-card { background: #1F2937 !important; border: 1.5px solid #1F5FAD !important; }
+
+  /* Text colors — primary */
+  body.dark .pc-city, body.dark .pc-score-num, body.dark .kpi-value,
+  body.dark .rc-name, body.dark .rc-city, body.dark .rc-region-name,
+  body.dark .vc-vehicle, body.dark .ac-name,
+  body.dark .di-val, body.dark .sh, body.dark .page-name,
+  body.dark .rule-label, body.dark .sc-title, body.dark .mh-title { color: #F1F5F9 !important; }
+  /* Force all text in region cards to be visible */
+  body.dark .region-card, body.dark .region-card span,
+  body.dark .region-card div, body.dark .region-card p,
+  body.dark .region-card h1, body.dark .region-card h2,
+  body.dark .region-card h3,
+  body.dark .rc-city, body.dark .rc-state,
+  body.dark .rc-brands span { color: #F1F5F9 !important; }
+  body.dark .brand-chip { background: #1E3A5F !important; color: #93C5FD !important; }
+  body.dark .rc-state { color: #9CA3AF !important; }
+  body.dark .region-card .kpi-sub,
+  body.dark .region-card .rc-meta { color: #9CA3AF !important; }
+
+  /* Text colors — secondary */
+  body.dark .pc-state, body.dark .kpi-label, body.dark .kpi-sub,
+  body.dark .ps-lbl, body.dark .rc-meta, body.dark .vc-driver,
+  body.dark .ac-desc, body.dark .di-label, body.dark .rule-desc,
+  body.dark .breadcrumb, body.dark .sort-label, body.dark .meta-label,
+  body.dark .footer-brand, body.dark .sc-subtitle { color: #9CA3AF !important; }
+
+  /* Section headings */
+  body.dark .sh { border-color: #3B82F6 !important; }
+
+  /* Callout */
+  body.dark .callout { background: #1E3A5F !important; border-color: #3B82F6 !important; color: #F1F5F9 !important; }
+
+  /* Back nav */
+  body.dark .back-nav { background: #0F172A !important; border-color: #1F2937 !important; }
+  body.dark .back-nav a { color: #9CA3AF !important; }
+  body.dark .back-nav a:hover { color: #F1F5F9 !important; }
+
+  /* Tables */
+  body.dark .comp-table th { background: #0F172A !important; color: #9CA3AF !important; border-color: #374151 !important; }
+  body.dark .comp-table td { color: #F1F5F9 !important; border-color: #374151 !important; }
+  body.dark .comp-table tr:hover td { background: #1E3A5F !important; }
+
+  /* Inputs */
+  body.dark input, body.dark select, body.dark textarea {
+    background: #111827 !important; color: #F1F5F9 !important; border-color: #374151 !important;
   }
-  .region-card.locked .rc-arrow { display: none; }
-  .podium-card.locked {
-    opacity: .35;
-    cursor: not-allowed;
+
+  /* Filter pills & sort buttons */
+  body.dark .filter-pill, body.dark .sort-btn, body.dark .filter-select {
+    background: #1F2937 !important; color: #D1D5DB !important; border-color: #374151 !important;
   }
+  body.dark .filter-pill.active { background: #1D4ED8 !important; color: white !important; border-color: #1D4ED8 !important; }
+  body.dark .sort-btn.active { background: #1F5FAD !important; color: white !important; border-color: #1F5FAD !important; }
+
+  /* Form sections */
+  body.dark .form-section { background: #1F2937 !important; }
+  body.dark .form-group label { color: #9CA3AF !important; }
+
+  /* Status/score badges */
+  body.dark .tag-geotab-ok, body.dark .tag-expiry-ok, body.dark .badge-green { background: #064E3B !important; color: #6EE7B7 !important; }
+  body.dark .tag-geotab-bad, body.dark .tag-expiry-exp, body.dark .badge-red { background: #7F1D1D !important; color: #FCA5A5 !important; }
+  body.dark .tag-expiry-warn, body.dark .badge-yellow { background: #78350F !important; color: #FCD34D !important; }
+  body.dark .tag-brand, body.dark .tag-plate, body.dark .badge-blue { background: #1E3A5F !important; color: #93C5FD !important; }
+  body.dark .tag-location, body.dark .tag-gray { background: #374151 !important; color: #D1D5DB !important; }
+
+  /* rc-footer */
+  body.dark .rc-footer { background: #111827 !important; border-color: #374151 !important; }
+
+  /* Header stays dark */
+  body.dark .elite-header { background: #0F172A !important; }
+
+
+  .dark-toggle {
+    background: none; border: 1.5px solid rgba(255,255,255,.2);
+    border-radius: 20px; color: rgba(255,255,255,.7);
+    font-size: 14px; cursor: pointer; padding: 4px 8px;
+    transition: all .2s; line-height: 1;
+  }
+  .dark-toggle:hover { border-color: rgba(255,255,255,.5); color: white; }
 
 </style>
 </head>
 <body>
 
+<script>
+/* ══ DARK MODE ════════════════════════════════════════════ */
+(function() {
+  const saved = localStorage.getItem('eliteDarkMode');
+  if (saved === 'dark') document.body.classList.add('dark');
+  // Update button icon after DOM loads
+  window.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('darkToggle');
+    if (btn) btn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+  });
+})();
+function toggleDarkMode() {
+  document.body.classList.toggle('dark');
+  const isDark = document.body.classList.contains('dark');
+  localStorage.setItem('eliteDarkMode', isDark ? 'dark' : 'light');
+  const btn = document.getElementById('darkToggle');
+  if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+}
+</script>
+
+
 <!-- BUILD MODE BANNER -->
-<div class="build-banner" id="buildBanner" style="display:none;">
+<div class="build-banner" id="buildBanner">
   <div class="build-dot"></div>
   BUILD MODE — Access control disabled &nbsp;·&nbsp; All regions unlocked
   <button onclick="this.closest('.build-banner').style.display='none'">✕</button>
@@ -369,12 +476,12 @@
     <div class="hdr-divider"></div>
     <div class="meta-item">
       <div class="meta-label">User</div>
-      <div class="meta-val" id="userDisplay">—</div>
+      <div class="meta-val" id="userDisplay">Admin</div>
     </div>
     <div class="hdr-divider"></div>
-    <a class="admin-btn" id="adminBtn" href="https://elitecrest.github.io/elite-hub/admin.html" style="display:none;">⚙ Admin</a>
-    <button onclick="logout()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);padding:6px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.5px;" onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">Sign Out</button>
-</div>
+    <a class="admin-btn" href="https://elitecrest.github.io/elite-hub/admin.html">⚙ Admin</a>
+    <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle light/dark mode">🌙</button>
+  </div>
 </header>
 <div class="sub-bar"></div>
 
@@ -428,8 +535,8 @@
    ELITE HUB — CONFIGURATION
 ══════════════════════════════════════════════════════ */
 
-const BUILD_MODE  = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec'; // Paste GAS Web App URL here
+const BUILD_MODE  = true;
+const BACKEND_URL = ''; // Paste GAS Web App URL here
 
 /* ── REGION REGISTRY ─────────────────────────────────
    Add/remove regions here only. Everything else auto-builds.
@@ -565,7 +672,7 @@ function buildLeaderboard() {
 
 function getSortedRegions() {
   const scored   = [...regionData].filter(r => r.score !== null)
-                    .sort((a, b) => sortDir * (b[sortField] - a[sortField]));
+                    .sort((a, b) => b[sortField] - a[sortField]); // highest score first
   const unscored = regionData.filter(r => r.score === null);
   return [...scored, ...unscored];
 }
@@ -599,7 +706,7 @@ function buildPodium() {
           </div>
           <div class="pc-stats">
             <div class="pc-stat"><div class="ps-val">${r.compliance !== null ? r.compliance + '%' : '—'}</div><div class="ps-lbl">Compliance</div></div>
-            <div class="pc-stat"><div class="ps-val">${r.fleet !== null ? r.fleet + '/500' : '—'}</div><div class="ps-lbl">Fleet Score</div></div>
+            <div class="pc-stat"><div class="ps-val">${r.fleet !== null ? r.fleet : '—'}</div><div class="ps-lbl">Fleet</div></div>
             <div class="pc-stat"><div class="ps-val">${r.reviews !== null ? r.reviews : '—'}</div><div class="ps-lbl">Reviews</div></div>
           </div>
         </div>
@@ -617,7 +724,7 @@ function buildRegionCards() {
     const dotCls = sc === 'excellent' || sc === 'good' ? 'dot-green' : sc === 'fair' ? 'dot-yellow' : d.score === null ? 'dot-yellow' : 'dot-red';
 
     return `
-      <div class="region-card" data-key="${r.key}" onclick="openRegion('${r.key}')">
+      <div class="region-card" onclick="openRegion('${r.key}')">
         <div class="rc-top">
           <div class="rc-icon">${r.icon}</div>
           <div class="rc-identity">
@@ -643,8 +750,8 @@ function buildRegionCards() {
             <div class="rs-lbl">Compliance</div>
           </div>
           <div class="rc-stat">
-            <div class="rs-val">${d.fleet !== null ? d.fleet + '/500' : '—'}</div>
-            <div class="rs-lbl">Fleet Score</div>
+            <div class="rs-val">${d.fleet !== null ? d.fleet : '—'}</div>
+            <div class="rs-lbl">Fleet</div>
           </div>
           <div class="rc-stat">
             <div class="rs-val">${d.reviews !== null ? d.reviews : '—'}</div>
@@ -664,65 +771,23 @@ function buildRegionCards() {
 /* ══════════════════════════════════════════════════════
    NAVIGATION
 ══════════════════════════════════════════════════════ */
-// Maps both directions: key→abbr and name→abbr
-const REGION_ABBR_MAP = {
-  cleveland:'CLE', phoenix:'PHX', chicago:'CHI', stlouis:'STL',
-  minneapolis:'MSP', milwaukee:'MKE', indianapolis:'IND',
-  pittsburgh:'PIT', albuquerque:'ABQ'
-};
-
-function getUserRegions() {
-  try {
-    const s = JSON.parse(localStorage.getItem('elite_session') || 'null');
-    if (!s || !s.user) return { all: false, keys: [] };
-    const username = String(s.user.username || '').toLowerCase();
-    if (username === 'angel') return { all: true, keys: [] };
-    // Region may be normalized name like 'cleveland' or abbr like 'CLE'
-    const raw = String(s.user.region || s.user.regions || '').toLowerCase().trim();
-    if (!raw || raw === 'all') return { all: raw === 'all', keys: [] };
-    // Split on comma/space
-    const parts = raw.split(/[,\s]+/).filter(Boolean);
-    // Convert everything to region keys (matching REGIONS array keys like 'cleveland')
-    const NAME_TO_KEY = {
-      'cle':'cleveland','phx':'phoenix','chi':'chicago','stl':'stlouis',
-      'msp':'minneapolis','mke':'milwaukee','ind':'indianapolis',
-      'pit':'pittsburgh','abq':'albuquerque','aqe':'albuquerque',
-      'cleveland':'cleveland','phoenix':'phoenix','chicago':'chicago',
-      'stlouis':'stlouis','minneapolis':'minneapolis','milwaukee':'milwaukee',
-      'indianapolis':'indianapolis','pittsburgh':'pittsburgh','albuquerque':'albuquerque'
-    };
-    const keys = parts.map(p => NAME_TO_KEY[p]).filter(Boolean);
-    return { all: false, keys };
-  } catch(e) { return { all: false, keys: [] }; }
-}
-
-function canAccessRegion(key) {
-  const { all, keys } = getUserRegions();
-  if (all) return true;
-  return keys.includes(key);
-}
-
-function applyRegionLocks() {
-  document.querySelectorAll('.region-card[data-key], .podium-card[data-key]').forEach(card => {
-    const key = card.getAttribute('data-key');
-    if (!key) return;
-    if (canAccessRegion(key)) {
-      card.classList.remove('locked');
-      card.style.opacity = '1';
-    } else {
-      card.classList.add('locked');
-      card.style.opacity = '0.35';
-    }
-  });
-}
-
 function openRegion(key) {
   const region = REGIONS.find(r => r.key === key);
   if (!region) return;
+
+  if (!BUILD_MODE) {
+    const userRegion = localStorage.getItem('eliteUserRegion');
+    const userRole   = localStorage.getItem('eliteUserRole');
+    if (userRole !== 'admin' && userRegion !== key) {
+      showToast(`Access restricted — you are assigned to ${userRegion || 'no region'}.`, 'error');
+      return;
+    }
+  }
+
   if (region.url) {
     window.location.href = region.url;
   } else {
-    showToast(region.city + ' Hub not yet deployed.', 'warn');
+    showToast(`${region.city} Hub not yet deployed. Paste its GAS URL into REGIONS['${key}'].url`, 'warn');
   }
 }
 
@@ -730,6 +795,23 @@ function openRegion(key) {
    BACKEND SYNC
 ══════════════════════════════════════════════════════ */
 async function refreshData() {
+  // Show cached data instantly while fetching fresh
+  try {
+    const cached = localStorage.getItem('eliteHubScores');
+    if (cached) {
+      const { data: cachedRegions, ts } = JSON.parse(cached);
+      if (Date.now() - ts < 300000) { // 5 min cache
+        cachedRegions.forEach(r => {
+          const idx = regionData.findIndex(x => x.key === r.key);
+          if (idx >= 0) regionData[idx] = { ...regionData[idx], ...r };
+        });
+        buildLeaderboard();
+        buildRegionCards();
+        document.getElementById('syncLabel').textContent = 'Cached';
+      }
+    }
+  } catch(e) {}
+
   document.getElementById('syncLabel').textContent = 'Syncing…';
   document.getElementById('lastSync').textContent  = '…';
 
@@ -742,9 +824,9 @@ async function refreshData() {
   }
 
   try {
+    // First load HUB_SUMMARY for any manually pushed scores
     const res  = await fetch(`${BACKEND_URL}?action=allRegionSummaries`);
     const data = await res.json();
-
     if (data.regions) {
       data.regions.forEach(r => {
         const idx = regionData.findIndex(x => x.key === r.key);
@@ -752,6 +834,58 @@ async function refreshData() {
       });
     }
 
+    // Load weights + all compliance scores in parallel — single round trip each
+    let weights = { compliance: 0.40, fleet: 0.25, reviews: 0.25, licensing: 0.10 };
+    try {
+      const [wRes, scoresRes, fleetRes, reviewsRes, legalRes] = await Promise.all([
+        fetch(`${BACKEND_URL}?action=getScoringRules`),
+        fetch(`${BACKEND_URL}?action=allComplianceScores`),
+        fetch(`${BACKEND_URL}?action=allFleetScores`),
+        fetch(`${BACKEND_URL}?action=allReviewsScores`),
+        fetch(`${BACKEND_URL}?action=allLegalScores`)
+      ]);
+      const [wData, scoresData, fleetData, reviewsData, legalData] = await Promise.all([
+        wRes.json(), scoresRes.json(), fleetRes.json(), reviewsRes.json(), legalRes.json()
+      ]);
+
+      // Apply weights
+      if (wData.rules) {
+        weights.compliance = (wData.rules['wCompliance'] ?? 40) / 100;
+        weights.fleet      = (wData.rules['wFleet']      ?? 25) / 100;
+        weights.reviews    = (wData.rules['wReviews']    ?? 25) / 100;
+        weights.licensing  = (wData.rules['wLicensing']  ?? 10) / 100;
+      }
+
+      // Apply scores to regionData
+      if (scoresData.scores) {
+        REGIONS.forEach(region => {
+          const compData = scoresData.scores[region.key];
+          const idx = regionData.findIndex(x => x.key === region.key);
+          if (idx < 0) return;
+          if (!compData || compData.total === 0) {
+            regionData[idx].score      = null;
+            regionData[idx].compliance = null;
+          } else {
+            const compScore = compData.complianceScore ?? 0;
+            regionData[idx].complianceScore = compScore;
+            regionData[idx].compliance      = compData.compliancePct;
+            const available = [
+              { score: compScore,                               weight: weights.compliance, has: true },
+              { score: regionData[idx].fleetScore    ?? null,  weight: weights.fleet,      has: regionData[idx].fleetScore    !== null },
+              { score: regionData[idx].reviewsScore  ?? null,  weight: weights.reviews,    has: regionData[idx].reviewsScore  !== null },
+              { score: regionData[idx].licensingScore ?? null, weight: weights.licensing,  has: regionData[idx].licensingScore !== null },
+            ];
+            const totalWeight = available.filter(s => s.has).reduce((sum, s) => sum + s.weight, 0);
+            const weighted    = available.filter(s => s.has).reduce((sum, s) => sum + (s.score * s.weight), 0);
+            const normalized  = totalWeight > 0 ? weighted / totalWeight : compScore;
+            regionData[idx].score = Math.round(300 + (normalized / 100) * 550);
+          }
+        });
+      }
+    } catch(e) { console.error('Score load error:', e); }
+
+    // Cache the scores for instant load next time
+    try { localStorage.setItem('eliteHubScores', JSON.stringify({ data: regionData, ts: Date.now() })); } catch(e) {}
     document.getElementById('syncLabel').textContent  = 'Live';
     document.getElementById('lastSync').textContent   = new Date().toLocaleTimeString();
     document.getElementById('lbTimestamp').textContent = 'Updated ' + new Date().toLocaleTimeString();
@@ -789,34 +923,48 @@ function showToast(msg, type = 'info') {
 buildLeaderboard();
 buildRegionCards();
 refreshData();
-setInterval(refreshData, 300000); // auto-refresh every 5 min
+setInterval(refreshData, 120000); // auto-refresh every 2 min // auto-refresh every 5 min
+</script>
 
-function logout() {
-  localStorage.removeItem('elite_session');
-  window.location.href = 'login.html';
+<script>
+/* ══ SERVICE WORKER REGISTRATION + DATA PRE-WARM ═════════════ */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('https://elitecrest.github.io/elite-hub/sw.js')
+    .then(reg => {
+      console.log('[EliteHub] Service worker registered');
+      // Pre-warm data cache for all regions in background
+      setTimeout(prewarmDataCache, 3000);
+    })
+    .catch(err => console.log('[EliteHub] SW registration failed:', err));
 }
 
+async function prewarmDataCache() {
+  const BACKEND = 'https://script.google.com/macros/s/AKfycbzV4710lvcYxAVsZ-0Lus7pCFt3fR0rbywQ238e6hzhGvk2sBB4rxOjVH8QV1HtuF2ueg/exec';
+  const REGIONS = ['cleveland', 'phoenix', 'albuquerque', 'minneapolis', 'stlouis', 'chicago', 'indianapolis', 'pittsburgh', 'milwaukee'];
+  const CACHE_KEY = 'elite-hub-data-v1';
+  
+  // Pre-fetch compliance data for all regions
+  for (const region of REGIONS) {
+    try {
+      const res  = await fetch(`${BACKEND}?action=complianceData&region=${region}`);
+      const data = await res.json();
+      localStorage.setItem(`compliance_${region}`, JSON.stringify({ data, ts: Date.now() }));
+    } catch(e) {}
+    await new Promise(r => setTimeout(r, 400)); // small delay between calls
+  }
+  
+  // Pre-fetch fleet data for all regions  
+  for (const region of REGIONS) {
+    try {
+      const res  = await fetch(`${BACKEND}?action=fleetData&region=${region}`);
+      const data = await res.json();
+      localStorage.setItem(`fleet_${region}`, JSON.stringify({ data, ts: Date.now() }));
+    } catch(e) {}
+    await new Promise(r => setTimeout(r, 400));
+  }
 
-// Show logged-in username, admin button, and region locks
-window.addEventListener('load', function() {
-  try {
-    var sessionData = localStorage.getItem('elite_session');
-    if (!sessionData) return;
-    var u = JSON.parse(sessionData).user;
-    if (!u) return;
-
-    // Username
-    var el = document.getElementById('userDisplay');
-    if (el) el.textContent = u.username || '?';
-
-    // Admin button — Angel only
-    var adminBtn = document.getElementById('adminBtn');
-    if (adminBtn) adminBtn.style.display = (u.username||'').toLowerCase() === 'angel' ? '' : 'none';
-
-    // Region locks
-    setTimeout(applyRegionLocks, 200);
-  } catch(e) {}
-});
+  console.log('[EliteHub] Data pre-warm complete');
+}
 </script>
 
 </body>
