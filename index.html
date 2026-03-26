@@ -803,12 +803,19 @@ function logout() {
 
 // Show logged-in username and lock regions on load
 document.addEventListener('DOMContentLoaded', function() {
-  try {
-    const s  = JSON.parse(localStorage.getItem('elite_session') || 'null');
-    const el = document.getElementById('userDisplay');
-    if (el && s && s.user) el.textContent = s.user.username || '?';
-  } catch(e) {}
-  applyRegionLocks();
+  // Read session and show username
+  var sessionData = localStorage.getItem('elite_session');
+  if (sessionData) {
+    var parsed = JSON.parse(sessionData);
+    if (parsed && parsed.user) {
+      var u = parsed.user;
+      // Show username
+      var el = document.getElementById('userDisplay');
+      if (el) el.textContent = u.username || u.name || '?';
+      // Apply region locks
+      applyRegionLocks();
+    }
+  }
 });
 
 </body>
