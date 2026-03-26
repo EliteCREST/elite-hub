@@ -322,15 +322,13 @@
   }
 
   .region-card.locked {
-    opacity: .45;
+    opacity: .35;
     cursor: not-allowed;
-    pointer-events: none;
   }
   .region-card.locked .rc-arrow { display: none; }
   .podium-card.locked {
-    opacity: .45;
+    opacity: .35;
     cursor: not-allowed;
-    pointer-events: none;
   }
 
 </style>
@@ -719,6 +717,10 @@ function applyRegionLocks() {
 function openRegion(key) {
   const region = REGIONS.find(r => r.key === key);
   if (!region) return;
+  if (!canAccessRegion(key)) {
+    showToast('You do not have access to ' + region.city + '.', 'warn');
+    return;
+  }
   if (region.url) {
     window.location.href = region.url;
   } else {
