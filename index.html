@@ -1,14 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-(function() {
-  try {
-    const s = JSON.parse(localStorage.getItem('elite_session') || 'null');
-    if (!s || !s.user) { window.location.replace('login.html'); }
-  } catch(e) { window.location.replace('login.html'); }
-})();
-</script>
+
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Elite Hub — Main Command Center</title>
@@ -780,14 +774,16 @@ function logout() {
 
 </script>
 
-// Show logged-in username in header
-(function() {
+// Show logged-in username and lock regions on load
+document.addEventListener('DOMContentLoaded', function() {
   try {
-    const s = JSON.parse(localStorage.getItem('elite_session') || 'null');
-    const el = document.getElementById('userDisplay');
-    if (el && s && s.user) el.textContent = s.user.username || s.user.name || '?';
+    const s    = JSON.parse(localStorage.getItem('elite_session') || 'null');
+    const el   = document.getElementById('userDisplay');
+    if (el && s && s.user) {
+      el.textContent = s.user.username || '?';
+    }
   } catch(e) {}
-})();
+});
 
 </body>
 </html>
