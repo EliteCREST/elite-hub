@@ -1580,6 +1580,7 @@ async function uploadDocs(files) {
           fileName: file.name,
           mimeType: file.type,
           data:     b64,
+          uploadedBy: (getSession()?.user?.name || getSession()?.user?.username || 'Unknown'),
         })
       });
       const result = await res.json();
@@ -1927,16 +1928,21 @@ async function openDocsPanel(contractorId, contractorName) {
     }
 
     document.getElementById('dpBody').innerHTML = `<div class="dp-file-list">
-      ${files.map(f => `
-        <div class="dp-file-item">
+      ${files.map(f => {
+        const uploaded = f.uploaded ? new Date(f.uploaded).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+        const uploadedBy = f.uploadedBy || 'Unknown';
+        return `<div class="dp-file-item">
           <div class="dp-file-icon">${docIcon(f.name)}</div>
           <div class="dp-file-info">
             <div class="dp-file-name">${f.name}</div>
-            <div class="dp-file-date">${f.uploaded ? formatDate(f.uploaded) : ''}</div>
+            <div class="dp-file-date">📅 ${uploaded} &nbsp;·&nbsp; 👤 ${uploadedBy}</div>
           </div>
-          <a class="dp-file-btn" href="${f.embedUrl || f.viewUrl}" target="_blank" style="margin-right:4px;">👁 View</a>
-          <a class="dp-file-btn" href="${f.downloadUrl || f.viewUrl}" target="_blank" style="background:var(--gray-100);color:var(--gray-600);border-color:var(--gray-200);">⬇</a>
-        </div>`).join('')}
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <a class="dp-file-btn" href="${f.embedUrl || f.viewUrl}" target="_blank">👁 View</a>
+            <a class="dp-file-btn" href="${f.downloadUrl || f.viewUrl}" target="_blank" style="background:var(--gray-100);color:var(--gray-600);border-color:var(--gray-200);">⬇</a>
+          </div>
+        </div>`;
+      }).join('')}
     </div>`;
   } catch(e) {
     document.getElementById('dpBody').innerHTML = '<div class="dp-empty"><div class="dp-empty-icon">⚠️</div>Could not load documents.<br><span style="font-size:10px;">' + e.message + '</span></div>';
