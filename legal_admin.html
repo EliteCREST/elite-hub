@@ -36,7 +36,7 @@
     --radius-xl:   16px;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; background: var(--gray-100); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+  body { font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; background: var(--gray-100); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; padding-left: 48px; }
 
   /* ══ HEADER ══════════════════════════════════════════════════ */
   .elite-header { background: var(--navy); display: grid; grid-template-columns: 6px 200px 1fr auto; align-items: center; height: 68px; position: sticky; top: 0; z-index: 200; box-shadow: var(--shadow-lg); }
@@ -311,11 +311,6 @@ function toggleDarkMode() {
 })();
 </script>
 
-<!-- BACK NAV -->
-<nav class="back-nav">
-  <a id="backToHub" href="https://elitecrest.github.io/elite-hub/admin.html">← Admin Center &rsaquo; Legal & Complaints</a>
-</nav>
-
 <main>
   <div class="callout" id="pageCallout">
     <strong>Legal & Complaints</strong> — Track all legal cases, AG complaints, BBB complaints, ROC complaints, and liens for this region.
@@ -535,7 +530,6 @@ document.getElementById('hdrSub').textContent       = 'ALL REGIONS';
 document.getElementById('hdrPageName').textContent  = 'Legal Admin — All Regions';
 document.getElementById('hdrRegion').textContent    = 'National';
 document.getElementById('hdrAbbr').textContent      = 'ALL';
-document.getElementById('navRegion').textContent    = region.city;
 document.getElementById('footerRegion').textContent = region.city;
 document.getElementById('backToHub').href           = 'https://elitecrest.github.io/elite-hub/admin.html';
 document.getElementById('footerHubLink').href       = 'https://elitecrest.github.io/elite-hub/admin.html';

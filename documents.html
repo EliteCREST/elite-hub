@@ -32,7 +32,7 @@
   body {
     font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
     background: var(--gray-100); color: var(--text);
-    min-height: 100vh; display: flex; flex-direction: column;
+    min-height: 100vh; display: flex; flex-direction: column; padding-left: 48px;
   }
 
   /* ══ HEADER ══════════════════════════════════════════════════ */
@@ -565,7 +565,7 @@ function toggleDarkMode() {
   </div>
 </header>
 <div class="sub-bar"></div>
-<nav class="tool-nav"><span class="tool-nav-label">Tools</span><a class="tn-btn tn-dynamic" data-file="fleet.html"><span class="tn-icon">🚗</span><span class="tn-label">Fleet</span></a><a class="tn-btn tn-dynamic" data-file="compliance.html"><span class="tn-icon">📋</span><span class="tn-label">Compliance</span></a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">⚖️</span><span class="tn-label">Licensing</span></span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🏷️</span><span class="tn-label">Pricing</span></span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">📊</span><span class="tn-label">CFB</span></span><a class="tn-btn tn-dynamic" data-file="reviews.html"><span class="tn-icon">⭐</span><span class="tn-label">Reviews</span></a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🔍</span><span class="tn-label">Invoices</span></span></nav><script>
+<nav class="tool-nav"><span class="tool-nav-label">Tools</span><a class="tn-btn tn-hub-btn" id="hubNavBtn" href="#"><span class="tn-icon">🏠</span><span class="tn-label">Hub</span></a><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/index.html"><span class="tn-icon">🌐</span><span class="tn-label">Elite Hub</span></a><a class="tn-btn tn-dynamic" data-file="fleet.html"><span class="tn-icon">🚗</span><span class="tn-label">Fleet</span></a><a class="tn-btn tn-dynamic" data-file="compliance.html"><span class="tn-icon">📋</span><span class="tn-label">Compliance</span></a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">⚖️</span><span class="tn-label">Licensing</span></span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🏷️</span><span class="tn-label">Pricing</span></span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">📊</span><span class="tn-label">CFB</span></span><a class="tn-btn tn-dynamic" data-file="reviews.html"><span class="tn-icon">⭐</span><span class="tn-label">Reviews</span></a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🔍</span><span class="tn-label">Invoices</span></span></nav><script>
 (function(){
   var rk = new URLSearchParams(window.location.search).get('region') || 'cleveland';
   document.querySelectorAll('.tn-dynamic').forEach(function(a){
@@ -573,14 +573,6 @@ function toggleDarkMode() {
   });
 })();
 </script>
-
-<!-- BACK NAV -->
-<nav class="back-nav">
-  <a id="backToHub" href="#">
-    ← <span id="navRegion">Region</span> Hub
-    <span class="sep">›</span> Documents
-  </a>
-</nav>
 
 <div class="page-body">
 
@@ -747,7 +739,6 @@ function initPage() {
   document.getElementById('hdrPageName').textContent = region.city + ' — Documents';
   document.getElementById('hdrRegion').textContent   = region.city;
   document.getElementById('hdrAbbr').textContent     = region.abbr;
-  document.getElementById('navRegion').textContent   = region.city;
   document.getElementById('footerRegion').textContent= region.city;
   document.getElementById('pageCallout').innerHTML   =
     `<strong>${region.city} Documents</strong> — Upload and manage files for the ${region.city} office. Click a folder to open it, then drag &amp; drop or click Upload. All files are stored securely in Google Drive and are view-only once uploaded.`;
