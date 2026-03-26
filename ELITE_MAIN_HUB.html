@@ -417,6 +417,122 @@
   }
   .dark-toggle:hover { border-color: rgba(255,255,255,.5); color: white; }
 
+  /* ══ HAMBURGER MENU ════════════════════════════════════════ */
+  .hamburger-btn {
+    display: flex; flex-direction: column; justify-content: center;
+    gap: 5px; width: 36px; height: 36px;
+    background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.18);
+    border-radius: 7px; cursor: pointer; padding: 8px 7px;
+    transition: background .15s, border-color .15s; flex-shrink: 0;
+  }
+  .hamburger-btn:hover { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.35); }
+  .hamburger-btn span {
+    display: block; height: 2px; background: rgba(255,255,255,.85);
+    border-radius: 2px; transition: all .25s;
+  }
+  .hamburger-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .hamburger-btn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .hamburger-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* Overlay backdrop */
+  .menu-backdrop {
+    position: fixed; inset: 0; background: rgba(10,18,35,.5);
+    z-index: 299; opacity: 0; pointer-events: none;
+    transition: opacity .25s;
+  }
+  .menu-backdrop.open { opacity: 1; pointer-events: all; }
+
+  /* Slide-out drawer */
+  .menu-drawer {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 300px; max-width: 90vw;
+    background: var(--navy); z-index: 300;
+    transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1);
+    display: flex; flex-direction: column;
+    box-shadow: -8px 0 32px rgba(0,0,0,.35);
+    border-left: 3px solid var(--blue);
+  }
+  .menu-drawer.open { transform: translateX(0); }
+
+  /* Drawer header */
+  .drawer-header {
+    padding: 0 20px;
+    height: 68px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+    flex-shrink: 0;
+  }
+  .drawer-user {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .drawer-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--blue); display: flex; align-items: center;
+    justify-content: center; font-size: 14px; font-weight: 700; color: white;
+    flex-shrink: 0; text-transform: uppercase;
+  }
+  .drawer-name { color: white; font-size: 13px; font-weight: 700; }
+  .drawer-role { color: rgba(255,255,255,.45); font-size: 10px; letter-spacing: .5px; text-transform: uppercase; margin-top: 1px; }
+  .drawer-close {
+    background: none; border: none; color: rgba(255,255,255,.5);
+    font-size: 18px; cursor: pointer; padding: 4px 6px; line-height: 1;
+    transition: color .15s;
+  }
+  .drawer-close:hover { color: white; }
+
+  /* Drawer body */
+  .drawer-body { flex: 1; overflow-y: auto; padding: 12px 0; }
+
+  .drawer-section-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: rgba(255,255,255,.3);
+    padding: 14px 20px 6px;
+  }
+  .drawer-section-label:first-child { padding-top: 8px; }
+
+  .drawer-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 20px; text-decoration: none; color: rgba(255,255,255,.82);
+    font-size: 13px; font-weight: 500; transition: background .12s, color .12s;
+    cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+    font-family: inherit;
+  }
+  .drawer-item:hover { background: rgba(255,255,255,.07); color: white; }
+  .drawer-item.active-page { background: rgba(31,95,173,.35); color: white; }
+  .drawer-item .di-icon {
+    width: 30px; height: 30px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  .drawer-item .di-icon.blue   { background: rgba(31,95,173,.4); }
+  .drawer-item .di-icon.gold   { background: rgba(200,168,75,.25); }
+  .drawer-item .di-icon.green  { background: rgba(22,163,74,.25); }
+  .drawer-item .di-icon.purple { background: rgba(124,58,237,.25); }
+  .drawer-item .di-icon.gray   { background: rgba(255,255,255,.08); }
+  .drawer-item .di-text { flex: 1; }
+  .drawer-item .di-label { font-size: 13px; font-weight: 600; line-height: 1.2; }
+  .drawer-item .di-sub   { font-size: 10px; color: rgba(255,255,255,.4); margin-top: 2px; }
+
+  .drawer-divider { height: 1px; background: rgba(255,255,255,.08); margin: 8px 20px; }
+
+  /* Drawer footer */
+  .drawer-footer {
+    padding: 16px 20px; border-top: 1px solid rgba(255,255,255,.1);
+    flex-shrink: 0;
+  }
+  .drawer-signout {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; padding: 10px 14px; border-radius: 7px;
+    background: rgba(220,38,38,.15); border: 1px solid rgba(220,38,38,.25);
+    color: #FCA5A5; font-size: 12px; font-weight: 700;
+    cursor: pointer; transition: background .15s; font-family: inherit;
+  }
+  .drawer-signout:hover { background: rgba(220,38,38,.28); color: #FEE2E2; }
+
+  /* Dark mode drawer tweaks */
+  body.dark .menu-drawer { background: #0F172A; border-left-color: #1F5FAD; }
+  body.dark .drawer-item:hover { background: rgba(255,255,255,.06); }
+  body.dark .drawer-item.active-page { background: rgba(31,95,173,.3); }
+
 </style>
 </head>
 <body>
@@ -440,6 +556,157 @@ function toggleDarkMode() {
   if (btn) btn.textContent = isDark ? '☀️' : '🌙';
 }
 </script>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   HAMBURGER MENU
+   Reads session from localStorage (set by login.html).
+   Builds drawer links based on who is logged in.
+══════════════════════════════════════════════════════ */
+
+const BASE = 'https://elitecrest.github.io/elite-hub/';
+
+/* All possible admin/tool pages — shown only to admins */
+const ADMIN_PAGES = [
+  { label: 'Compliance Admin',  sub: 'Manage contractor records',  icon: '📋', color: 'blue',   url: BASE + 'compliance_admin.html' },
+  { label: 'Fleet Admin',       sub: 'Vehicles & safety scores',   icon: '🚗', color: 'blue',   url: BASE + 'fleet_admin__3_.html'  },
+  { label: 'Reviews Admin',     sub: 'Google review management',   icon: '⭐', color: 'gold',   url: BASE + 'reviews_admin.html'   },
+  { label: 'Legal Admin',       sub: 'Cases & legal tracking',     icon: '⚖️', color: 'purple', url: BASE + 'legal_admin.html'     },
+  { label: 'Documents Admin',   sub: 'File & document manager',    icon: '📁', color: 'green',  url: BASE + 'documents_admin.html' },
+  { label: 'Users Admin',       sub: 'Access & user management',   icon: '👥', color: 'gray',   url: BASE + 'users_admin.html'     },
+  { label: 'Scoring Rules',     sub: 'Safety scoring thresholds',  icon: '🎯', color: 'gold',   url: BASE + 'scoring_rules.html'   },
+];
+
+/* Personal dashboard pages — one per admin */
+const PERSONAL_PAGES = {
+  angel:   { label: 'My Dashboard — Angel',   url: BASE + 'angel.html'   },
+  sara:    { label: 'My Dashboard — Sara',    url: BASE + 'sara.html'    },
+  emma:    { label: 'My Dashboard — Emma',    url: BASE + 'emma.html'    },
+  carlynn: { label: 'My Dashboard — Carlynn', url: BASE + 'carlynn.html' },
+  jaida:   { label: 'My Dashboard — Jaida',   url: BASE + 'jaida.html'   },
+};
+
+/* Tool pages available to ALL authenticated users */
+const TOOL_PAGES = [
+  { label: 'Compliance',  sub: 'Contractor compliance records', icon: '📋', color: 'blue',   url: BASE + 'compliance__2_.html' },
+  { label: 'Fleet',       sub: 'Vehicle tracker & scores',      icon: '🚗', color: 'blue',   url: BASE + 'fleet.html'          },
+  { label: 'Reviews',     sub: 'Customer review scores',        icon: '⭐', color: 'gold',   url: BASE + 'reviews.html'        },
+  { label: 'Legal',       sub: 'Legal case tracker',            icon: '⚖️', color: 'purple', url: BASE + 'legal.html'          },
+  { label: 'Documents',   sub: 'Document library',              icon: '📁', color: 'green',  url: BASE + 'documents.html'      },
+];
+
+/* Admin usernames (lowercase) — determines whether admin section shows */
+const ADMIN_USERS = ['angel', 'sara', 'emma', 'carlynn', 'jaida'];
+
+let menuOpen = false;
+
+function toggleMenu() {
+  menuOpen ? closeMenu() : openMenu();
+}
+
+function openMenu() {
+  menuOpen = true;
+  document.getElementById('menuDrawer').classList.add('open');
+  document.getElementById('menuBackdrop').classList.add('open');
+  document.getElementById('hamburgerBtn').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  buildDrawer();
+}
+
+function closeMenu() {
+  menuOpen = false;
+  document.getElementById('menuDrawer').classList.remove('open');
+  document.getElementById('menuBackdrop').classList.remove('open');
+  document.getElementById('hamburgerBtn').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* Close on Escape key */
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && menuOpen) closeMenu(); });
+
+function getSession() {
+  try {
+    const raw = localStorage.getItem('eliteSession');
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function buildDrawer() {
+  const session  = getSession();
+  const username = session?.user?.username?.toLowerCase() || '';
+  const fullName = session?.user?.fullName || session?.user?.username || 'Guest';
+  const role     = session?.user?.role || 'Viewer';
+  const isAdmin  = ADMIN_USERS.includes(username);
+  const currentUrl = window.location.href;
+
+  /* Header identity */
+  document.getElementById('drawerAvatar').textContent = fullName.charAt(0).toUpperCase();
+  document.getElementById('drawerName').textContent   = fullName;
+  document.getElementById('drawerRole').textContent   = isAdmin ? 'Administrator' : role;
+
+  let html = '';
+
+  /* ── PERSONAL DASHBOARD (admins only) ── */
+  if (isAdmin && PERSONAL_PAGES[username]) {
+    const pg = PERSONAL_PAGES[username];
+    html += `<div class="drawer-section-label">My Space</div>`;
+    html += drawerItem('👤', 'gray', pg.label, 'Personal stats & activity', pg.url, currentUrl);
+  }
+
+  /* ── TOOLS (all users) ── */
+  html += `<div class="drawer-section-label">Tools</div>`;
+  TOOL_PAGES.forEach(pg => {
+    html += drawerItem(pg.icon, pg.color, pg.label, pg.sub, pg.url, currentUrl);
+  });
+
+  /* ── ADMIN (admins only) ── */
+  if (isAdmin) {
+    html += `<div class="drawer-divider"></div>`;
+    html += `<div class="drawer-section-label">Admin</div>`;
+    ADMIN_PAGES.forEach(pg => {
+      html += drawerItem(pg.icon, pg.color, pg.label, pg.sub, pg.url, currentUrl);
+    });
+  }
+
+  /* ── UTILITIES ── */
+  html += `<div class="drawer-divider"></div>`;
+  html += `<div class="drawer-section-label">Utilities</div>`;
+  html += drawerItem('↻', 'gray', 'Refresh Data', 'Re-sync all region data', null, currentUrl, 'refreshData(); closeMenu();');
+  html += drawerItem('🌙', 'gray', 'Toggle Dark Mode', 'Switch light / dark theme', null, currentUrl, 'toggleDarkMode(); closeMenu();');
+
+  document.getElementById('drawerBody').innerHTML = html;
+}
+
+function drawerItem(icon, color, label, sub, url, currentUrl, onclick) {
+  const isActive = url && currentUrl.includes(url.split('/').pop());
+  const action   = onclick
+    ? `onclick="${onclick}"`
+    : url ? `onclick="window.location.href='${url}'; closeMenu();"` : '';
+  return `
+    <button class="drawer-item${isActive ? ' active-page' : ''}" ${action}>
+      <div class="di-icon ${color}">${icon}</div>
+      <div class="di-text">
+        <div class="di-label">${label}</div>
+        <div class="di-sub">${sub}</div>
+      </div>
+    </button>`;
+}
+
+function signOut() {
+  closeMenu();
+  localStorage.removeItem('eliteSession');
+  window.location.href = BASE + 'login.html';
+}
+
+/* Sync user display in header with session */
+(function syncHeaderUser() {
+  const session = getSession();
+  if (session?.user) {
+    const el = document.getElementById('userDisplay');
+    if (el) el.textContent = session.user.fullName || session.user.username || 'Admin';
+  }
+})();
+
 
 
 <!-- BUILD MODE BANNER -->
@@ -479,11 +746,45 @@ function toggleDarkMode() {
       <div class="meta-val" id="userDisplay">Admin</div>
     </div>
     <div class="hdr-divider"></div>
-    <a class="admin-btn" href="https://elitecrest.github.io/elite-hub/admin.html">⚙ Admin</a>
     <button class="dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle light/dark mode">🌙</button>
+    <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMenu()" title="Menu" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </header>
 <div class="sub-bar"></div>
+
+<!-- MENU BACKDROP -->
+<div class="menu-backdrop" id="menuBackdrop" onclick="closeMenu()"></div>
+
+<!-- SLIDE-OUT MENU DRAWER -->
+<div class="menu-drawer" id="menuDrawer" role="dialog" aria-label="Navigation menu">
+
+  <!-- DRAWER HEADER — User identity -->
+  <div class="drawer-header">
+    <div class="drawer-user">
+      <div class="drawer-avatar" id="drawerAvatar">?</div>
+      <div>
+        <div class="drawer-name" id="drawerName">Loading…</div>
+        <div class="drawer-role" id="drawerRole">—</div>
+      </div>
+    </div>
+    <button class="drawer-close" onclick="closeMenu()" aria-label="Close menu">✕</button>
+  </div>
+
+  <!-- DRAWER BODY -->
+  <div class="drawer-body" id="drawerBody">
+    <!-- Populated by buildDrawer() based on session -->
+  </div>
+
+  <!-- DRAWER FOOTER -->
+  <div class="drawer-footer">
+    <button class="drawer-signout" onclick="signOut()">
+      <span>🚪</span> Sign Out
+    </button>
+  </div>
+
+</div>
 
 <main>
 
@@ -939,7 +1240,7 @@ if ('serviceWorker' in navigator) {
 }
 
 async function prewarmDataCache() {
-  const BACKEND = 'https://script.google.com/macros/s/AKfycbzV4710lvcYxAVsZ-0Lus7pCFt3fR0rbywQ238e6hzhGvk2sBB4rxOjVH8QV1HtuF2ueg/exec';
+  const BACKEND = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec';
   const REGIONS = ['cleveland', 'phoenix', 'albuquerque', 'minneapolis', 'stlouis', 'chicago', 'indianapolis', 'pittsburgh', 'milwaukee'];
   const CACHE_KEY = 'elite-hub-data-v1';
   
