@@ -1,6 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+// ── AUTH GUARD ───────────────────────────────────────────────
+(function() {
+  function getSession() {
+    try { return JSON.parse(localStorage.getItem('elite_session') || 'null'); } catch { return null; }
+  }
+  const session = getSession();
+  const page    = window.location.pathname.split('/').pop().replace('.html','').replace(/[^a-z0-9_]/gi,'_').toLowerCase();
+
+  // Not logged in → go to login
+  if (!session || !session.user) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // Check page access — admins always have full access
+  const role = String(session.user.role || '').toLowerCase();
+  const isAdmin = ['admin','administration','sr director','sr general manager'].includes(role);
+  if (!isAdmin && session.user[page] === 'false') {
+    window.location.href = 'index.html';
+    return;
+  }
+})();
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>St. Louis Hub — Elite</title>
@@ -543,7 +568,7 @@ const REGION = {
 };
 
 const MAIN_HUB_URL = 'https://elitecrest.github.io/elite-hub/index.html'; // ← Paste permanent Main Hub GAS URL
-const BACKEND_URL  = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec'; // ← Paste shared GAS backend URL
+const BACKEND_URL  = 'https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec'; // ← Paste shared GAS backend URL
 
 /* ── PAGE REGISTRY FOR THIS REGION ──────────────────
    Add sub-pages here. url: '' = not yet deployed.
@@ -904,6 +929,12 @@ syncData();
   } catch(e) {}
   // elite-hub-cache marker
 setInterval(syncData, 120000); // auto-refresh every 2 min
+
+function logout() {
+  localStorage.removeItem('elite_session');
+  window.location.href = 'login.html';
+}
+
 </script>
 </body>
 </html>

@@ -360,7 +360,8 @@
     </div>
     <div class="hdr-divider"></div>
     <a class="admin-btn" href="https://elitecrest.github.io/elite-hub/admin.html">⚙ Admin</a>
-  </div>
+    <button onclick="logout()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);padding:6px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.5px;" onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">Sign Out</button>
+</div>
 </header>
 <div class="sub-bar"></div>
 
@@ -415,7 +416,7 @@
 ══════════════════════════════════════════════════════ */
 
 const BUILD_MODE  = true;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec'; // Paste GAS Web App URL here
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec'; // Paste GAS Web App URL here
 
 /* ── REGION REGISTRY ─────────────────────────────────
    Add/remove regions here only. Everything else auto-builds.
@@ -734,6 +735,12 @@ buildLeaderboard();
 buildRegionCards();
 refreshData();
 setInterval(refreshData, 300000); // auto-refresh every 5 min
+
+function logout() {
+  localStorage.removeItem('elite_session');
+  window.location.href = 'login.html';
+}
+
 </script>
 </body>
 </html>

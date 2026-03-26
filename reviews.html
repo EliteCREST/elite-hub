@@ -1,6 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+// ── AUTH GUARD ───────────────────────────────────────────────
+(function() {
+  function getSession() {
+    try { return JSON.parse(localStorage.getItem('elite_session') || 'null'); } catch { return null; }
+  }
+  const session = getSession();
+  const page    = window.location.pathname.split('/').pop().replace('.html','').replace(/[^a-z0-9_]/gi,'_').toLowerCase();
+
+  // Not logged in → go to login
+  if (!session || !session.user) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // Check page access — admins always have full access
+  const role = String(session.user.role || '').toLowerCase();
+  const isAdmin = ['admin','administration','sr director','sr general manager'].includes(role);
+  if (!isAdmin && session.user[page] === 'false') {
+    window.location.href = 'index.html';
+    return;
+  }
+})();
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reviews & Reputation — Elite Hub</title>
