@@ -791,10 +791,13 @@ function logout() {
 // Show logged-in username and lock regions on load
 document.addEventListener('DOMContentLoaded', function() {
   try {
-    const s  = JSON.parse(localStorage.getItem('elite_session') || 'null');
+    const raw = localStorage.getItem('elite_session');
+    console.log('[Session Raw]', raw);
+    const s  = JSON.parse(raw || 'null');
+    console.log('[Session User]', s && s.user);
     const el = document.getElementById('userDisplay');
     if (el && s && s.user) el.textContent = s.user.username || '?';
-  } catch(e) {}
+  } catch(e) { console.log('[Session Error]', e); }
   applyRegionLocks();
 });
 
