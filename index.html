@@ -318,6 +318,19 @@
     .lb-header span:nth-child(n+5),
     .lb-row > *:nth-child(n+5) { display: none; }
   }
+
+  .region-card.locked {
+    opacity: .45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  .region-card.locked .rc-arrow { display: none; }
+  .podium-card.locked {
+    opacity: .45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
 </style>
 </head>
 <body>
@@ -604,7 +617,7 @@ function buildRegionCards() {
     const dotCls = sc === 'excellent' || sc === 'good' ? 'dot-green' : sc === 'fair' ? 'dot-yellow' : d.score === null ? 'dot-yellow' : 'dot-red';
 
     return `
-      <div class="region-card" onclick="openRegion('${r.key}')">
+      <div class="region-card ${canAccessRegion(r.key) ? '' : 'locked'}" onclick="openRegion('${r.key}')">
         <div class="rc-top">
           <div class="rc-icon">${r.icon}</div>
           <div class="rc-identity">
@@ -651,23 +664,39 @@ function buildRegionCards() {
 /* ══════════════════════════════════════════════════════
    NAVIGATION
 ══════════════════════════════════════════════════════ */
+function getUserRegions() {
+  try {
+    const s = JSON.parse(localStorage.getItem('elite_session') || 'null');
+    if (!s || !s.user) return { all: true, regions: [] };
+    const username = String(s.user.username || '').toLowerCase();
+    if (username === 'angel') return { all: true, regions: [] };
+    const raw = String(s.user.region || s.user.regions || '').toUpperCase();
+    const regions = raw.split(/[,\s]+/).filter(Boolean);
+    return { all: regions.includes('ALL') || regions.length === 0, regions };
+  } catch { return { all: true, regions: [] }; }
+}
+
+const REGION_ABBR_MAP = {
+  cleveland:'CLE', phoenix:'PHX', chicago:'CHI', stlouis:'STL',
+  minneapolis:'MSP', milwaukee:'MKE', indianapolis:'IND',
+  pittsburgh:'PIT', albuquerque:'ABQ'
+};
+
+function canAccessRegion(key) {
+  const { all, regions } = getUserRegions();
+  if (all) return true;
+  const abbr = REGION_ABBR_MAP[key];
+  return abbr && regions.includes(abbr);
+}
+
 function openRegion(key) {
   const region = REGIONS.find(r => r.key === key);
   if (!region) return;
-
-  if (!BUILD_MODE) {
-    const userRegion = localStorage.getItem('eliteUserRegion');
-    const userRole   = localStorage.getItem('eliteUserRole');
-    if (userRole !== 'admin' && userRegion !== key) {
-      showToast(`Access restricted — you are assigned to ${userRegion || 'no region'}.`, 'error');
-      return;
-    }
-  }
-
+  if (!canAccessRegion(key)) return; // silently do nothing
   if (region.url) {
     window.location.href = region.url;
   } else {
-    showToast(`${region.city} Hub not yet deployed. Paste its GAS URL into REGIONS['${key}'].url`, 'warn');
+    showToast(`${region.city} Hub not yet deployed.`, 'warn');
   }
 }
 
