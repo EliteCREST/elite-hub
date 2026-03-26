@@ -520,15 +520,16 @@
   /* ══ STICKY TOOL NAV + BACK NAV ═════════════════════════ */
   .tool-nav {
     position: sticky;
-    top: 71px; /* header 68px + sub-bar 3px */
+    top: 71px; /* header(68) + sub-bar(3) */
     z-index: 190;
   }
   .back-nav {
     position: sticky;
-    top: 109px; /* header 68px + sub-bar 3px + tool-nav ~38px */
+    top: 109px; /* header(68) + sub-bar(3) + tool-nav(38) */
     z-index: 189;
     box-shadow: 0 2px 6px rgba(27,42,74,.15);
   }
+  html { scroll-padding-top: 145px; }
 </style>
 </head>
 <body>
