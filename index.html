@@ -674,7 +674,7 @@ function getUserRegions() {
     if (username === 'angel') return { all: true, regions: [] };
     const raw = String(s.user.region || s.user.regions || '').toUpperCase();
     const regions = raw.split(/[,\s]+/).filter(Boolean);
-    return { all: regions.includes('ALL') || regions.length === 0, regions };
+    return { all: regions.includes('ALL'), regions };
   } catch { return { all: true, regions: [] }; }
 }
 
@@ -689,6 +689,20 @@ function canAccessRegion(key) {
   if (all) return true;
   const abbr = REGION_ABBR_MAP[key];
   return abbr && regions.includes(abbr);
+}
+
+function applyRegionLocks() {
+  document.querySelectorAll('.region-card, .podium-card').forEach(card => {
+    const onclick = card.getAttribute('onclick') || '';
+    const match   = onclick.match(/openRegion\('([^']+)'\)/);
+    if (!match) return;
+    const key = match[1];
+    if (!canAccessRegion(key)) {
+      card.classList.add('locked');
+    } else {
+      card.classList.remove('locked');
+    }
+  });
 }
 
 function openRegion(key) {
@@ -777,12 +791,11 @@ function logout() {
 // Show logged-in username and lock regions on load
 document.addEventListener('DOMContentLoaded', function() {
   try {
-    const s    = JSON.parse(localStorage.getItem('elite_session') || 'null');
-    const el   = document.getElementById('userDisplay');
-    if (el && s && s.user) {
-      el.textContent = s.user.username || '?';
-    }
+    const s  = JSON.parse(localStorage.getItem('elite_session') || 'null');
+    const el = document.getElementById('userDisplay');
+    if (el && s && s.user) el.textContent = s.user.username || '?';
   } catch(e) {}
+  applyRegionLocks();
 });
 
 </body>
