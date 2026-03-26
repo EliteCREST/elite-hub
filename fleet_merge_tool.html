@@ -370,31 +370,107 @@
 
   <!-- STEP 1: UPLOAD -->
   <div id="view-upload">
-    <div class="panel">
-      <div class="panel-header">
-        <span class="panel-title">📂 Drop Your GeoTab Reports</span>
-        <span class="badge badge-blue">Up to 10 files</span>
-      </div>
-      <div class="panel-body">
-        <div class="drop-zone" id="dropZone">
-          <input type="file" id="fileInput" multiple accept=".xlsx,.xls,.csv">
-          <div class="drop-icon">⬇</div>
-          <div class="drop-title">Drop files here or click to browse</div>
-          <div class="drop-sub">Export your GeoTab reports as Excel or CSV and drop them all at once.<br>The tool will merge them automatically using the EVID column.</div>
-          <div class="file-types">
-            <span class="file-type-badge">.xlsx</span>
-            <span class="file-type-badge">.xls</span>
-            <span class="file-type-badge">.csv</span>
-          </div>
+
+    <!-- MODE TABS -->
+    <div style="display:flex;gap:0;margin-bottom:20px;background:white;border:1px solid var(--gray-200);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);">
+      <button id="tab-excel" onclick="switchTab('excel')" style="flex:1;padding:12px 20px;font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;border:none;cursor:pointer;background:var(--navy);color:white;font-family:'DM Sans',sans-serif;border-right:1px solid rgba(255,255,255,.1);">
+        📊 Excel / CSV Reports
+      </button>
+      <button id="tab-pdf" onclick="switchTab('pdf')" style="flex:1;padding:12px 20px;font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;border:none;cursor:pointer;background:white;color:var(--gray-600);font-family:'DM Sans',sans-serif;">
+        📄 PDF Reports (AI)
+      </button>
+    </div>
+
+    <!-- EXCEL TAB -->
+    <div id="pane-excel">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">📂 Drop Your GeoTab Reports</span>
+          <span class="badge badge-blue">Up to 10 files</span>
         </div>
-        <div class="file-list" id="fileList"></div>
-        <div class="btn-row">
-          <button class="btn btn-primary" id="btnMerge" disabled onclick="runMerge()">⚡ Merge Reports</button>
-          <button class="btn btn-outline" onclick="clearAll()">✕ Clear All</button>
-          <span id="fileCount" style="font-size:12px;color:var(--gray-400);"></span>
+        <div class="panel-body">
+          <div class="drop-zone" id="dropZone">
+            <input type="file" id="fileInput" multiple accept=".xlsx,.xls,.csv">
+            <div class="drop-icon">⬇</div>
+            <div class="drop-title">Drop files here or click to browse</div>
+            <div class="drop-sub">Export your GeoTab reports as Excel or CSV and drop them all at once.<br>The tool will merge them automatically using the EVID column.</div>
+            <div class="file-types">
+              <span class="file-type-badge">.xlsx</span>
+              <span class="file-type-badge">.xls</span>
+              <span class="file-type-badge">.csv</span>
+            </div>
+          </div>
+          <div class="file-list" id="fileList"></div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnMerge" disabled onclick="runMerge()">⚡ Merge Reports</button>
+            <button class="btn btn-outline" onclick="clearAll()">✕ Clear All</button>
+            <span id="fileCount" style="font-size:12px;color:var(--gray-400);"></span>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- PDF TAB -->
+    <div id="pane-pdf" style="display:none;">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">📄 GeoTab PDF Reports — AI Extraction</span>
+          <span class="badge badge-blue">Claude AI powered</span>
+        </div>
+        <div class="panel-body">
+
+          <!-- API Key -->
+          <div style="background:var(--blue-pale);border-left:4px solid var(--blue);border-radius:0 var(--radius) var(--radius) 0;padding:12px 16px;margin-bottom:20px;font-size:12px;color:var(--navy);line-height:1.6;">
+            <strong>How it works:</strong> Drop your GeoTab PDF reports below. Claude AI reads each PDF, extracts the fleet data table, and converts it into the same column format as your Excel reports — ready to merge and push to Sheets.
+          </div>
+
+          <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--gray-600);margin-bottom:6px;">Anthropic API Key</label>
+            <input type="password" id="pdfApiKey" placeholder="sk-ant-..." style="width:100%;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;">
+            <div style="font-size:11px;color:var(--gray-400);margin-top:4px;">Your API key is used only in this browser session and never stored.</div>
+          </div>
+
+          <!-- PDF Drop Zone -->
+          <div class="drop-zone" id="pdfDropZone" style="border-color:#e2e8f2;">
+            <input type="file" id="pdfFileInput" multiple accept=".pdf">
+            <div class="drop-icon">📄</div>
+            <div class="drop-title">Drop GeoTab PDF reports here or click to browse</div>
+            <div class="drop-sub">Claude AI will extract fleet data from each PDF automatically.</div>
+            <div class="file-types">
+              <span class="file-type-badge">.pdf</span>
+            </div>
+          </div>
+
+          <div class="file-list" id="pdfFileList"></div>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnExtract" disabled onclick="extractPDFs()">🤖 Extract with AI</button>
+            <button class="btn btn-outline" onclick="clearPDFs()">✕ Clear PDFs</button>
+            <span id="pdfCount" style="font-size:12px;color:var(--gray-400);"></span>
+          </div>
+
+          <!-- Extraction Progress -->
+          <div id="pdfProgress" style="display:none;margin-top:16px;">
+            <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:6px;" id="pdfProgressLabel">Extracting...</div>
+            <div class="progress-bar"><div class="progress-fill" id="pdfProgressFill"></div></div>
+          </div>
+
+          <!-- Extraction Results -->
+          <div id="pdfResults" style="display:none;margin-top:20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <div style="font-size:13px;font-weight:700;color:var(--navy);" id="pdfResultsTitle">Extracted Data</div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-outline btn-sm" style="padding:5px 12px;font-size:10px;" onclick="exportPDFExcel()">⬇ Export Excel</button>
+                <button class="btn btn-primary btn-sm" style="padding:5px 12px;font-size:10px;" onclick="usePDFData()">→ Use in Merge Tool</button>
+              </div>
+            </div>
+            <div class="table-wrap" id="pdfTableWrap" style="max-height:400px;overflow:auto;border:1px solid var(--gray-200);border-radius:var(--radius);"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- STEP 2: REVIEW -->
@@ -938,8 +1014,264 @@ async function pushToSheets() {
 }
 
 /* ══════════════════════════════════════════════════════
-   NAVIGATION
+   TAB SWITCHING
 ══════════════════════════════════════════════════════ */
+function switchTab(tab) {
+  const isExcel = tab === 'excel';
+  document.getElementById('pane-excel').style.display = isExcel ? '' : 'none';
+  document.getElementById('pane-pdf').style.display   = isExcel ? 'none' : '';
+  document.getElementById('tab-excel').style.background = isExcel ? 'var(--navy)' : 'white';
+  document.getElementById('tab-excel').style.color     = isExcel ? 'white' : 'var(--gray-600)';
+  document.getElementById('tab-pdf').style.background  = isExcel ? 'white' : 'var(--navy)';
+  document.getElementById('tab-pdf').style.color       = isExcel ? 'var(--gray-600)' : 'white';
+}
+
+/* ══════════════════════════════════════════════════════
+   PDF HANDLING
+══════════════════════════════════════════════════════ */
+let pdfFiles     = [];  // { name, size, file, base64, status, rows }
+let pdfExtracted = [];  // final extracted rows
+let pdfColumns   = [];  // columns from extraction
+
+const pdfDropZone  = document.getElementById('pdfDropZone');
+const pdfFileInput = document.getElementById('pdfFileInput');
+
+pdfDropZone.addEventListener('dragover',  e => { e.preventDefault(); pdfDropZone.classList.add('drag-over'); });
+pdfDropZone.addEventListener('dragleave', () => pdfDropZone.classList.remove('drag-over'));
+pdfDropZone.addEventListener('drop', e => {
+  e.preventDefault(); pdfDropZone.classList.remove('drag-over');
+  handlePDFFiles([...e.dataTransfer.files]);
+});
+pdfFileInput.addEventListener('change', () => handlePDFFiles([...pdfFileInput.files]));
+pdfDropZone.addEventListener('click', () => pdfFileInput.click());
+
+function handlePDFFiles(files) {
+  files.forEach(f => {
+    if (pdfFiles.find(x => x.name === f.name)) return;
+    if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
+      showToast(`${f.name} — only PDF files supported here`, 'error'); return;
+    }
+    pdfFiles.push({ name: f.name, size: f.size, file: f, base64: null, status: 'ready', rows: [] });
+  });
+  renderPDFList();
+  document.getElementById('btnExtract').disabled = pdfFiles.length === 0;
+  document.getElementById('pdfCount').textContent = pdfFiles.length ? `${pdfFiles.length} PDF${pdfFiles.length !== 1 ? 's' : ''} loaded` : '';
+}
+
+function renderPDFList() {
+  const list = document.getElementById('pdfFileList');
+  if (!pdfFiles.length) { list.innerHTML = ''; return; }
+  list.innerHTML = pdfFiles.map((f, i) => `
+    <div class="file-item">
+      <div class="file-icon">📄</div>
+      <div class="file-info">
+        <div class="file-name">${f.name}</div>
+        <div class="file-meta">${(f.size/1024).toFixed(1)} KB · ${
+          f.status === 'ready'      ? 'Ready' :
+          f.status === 'extracting' ? '🤖 Extracting...' :
+          f.status === 'done'       ? `✓ ${f.rows.length} rows extracted` :
+          f.status === 'error'      ? `✕ ${f.error}` : f.status
+        }</div>
+      </div>
+      <button onclick="removePDF(${i})" style="background:none;border:none;cursor:pointer;color:var(--gray-400);font-size:16px;padding:4px;">✕</button>
+    </div>`).join('');
+}
+
+function removePDF(i) {
+  pdfFiles.splice(i, 1);
+  renderPDFList();
+  document.getElementById('btnExtract').disabled = pdfFiles.length === 0;
+  document.getElementById('pdfCount').textContent = pdfFiles.length ? `${pdfFiles.length} PDF${pdfFiles.length !== 1 ? 's' : ''} loaded` : '';
+}
+
+function clearPDFs() {
+  pdfFiles = []; pdfExtracted = []; pdfColumns = [];
+  renderPDFList();
+  document.getElementById('btnExtract').disabled = true;
+  document.getElementById('pdfCount').textContent = '';
+  document.getElementById('pdfResults').style.display = 'none';
+  document.getElementById('pdfProgress').style.display = 'none';
+}
+
+async function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function extractPDFs() {
+  const apiKey = document.getElementById('pdfApiKey').value.trim();
+  if (!apiKey) { showToast('Enter your Anthropic API key first', 'error'); return; }
+  if (!pdfFiles.length) { showToast('No PDFs loaded', 'error'); return; }
+
+  document.getElementById('btnExtract').disabled = true;
+  document.getElementById('pdfProgress').style.display = '';
+  document.getElementById('pdfResults').style.display  = 'none';
+
+  pdfExtracted = [];
+  pdfColumns   = [];
+
+  const FLEET_COLUMNS = [
+    'EVID','Device Name','Status','Serial #','Last Communicated','Region',
+    'Assigned Driver','Last Known Driver','Agreement Status','GeoTab Status',
+    'Brand','Year','Make','Model','Color','License Plate Number','Tag State',
+    'Tag Expiration','Vehicle Location','Office Location','Vehicle Wrap','VIN',
+    'Cab Size','Bed Size','Accessory','Odometer','Odometer Date Checked',
+    'Toll ID / Transponder','Last Maintenance','Maintenance Due Date',
+    'Oil Change Due (Miles)','Insurance Exp Date','Notes','Ownership','Fleet Type'
+  ];
+
+  for (let i = 0; i < pdfFiles.length; i++) {
+    const f = pdfFiles[i];
+    const pct = Math.round((i / pdfFiles.length) * 90);
+    document.getElementById('pdfProgressFill').style.width  = pct + '%';
+    document.getElementById('pdfProgressLabel').textContent = `Extracting ${f.name} (${i+1} of ${pdfFiles.length})…`;
+    f.status = 'extracting';
+    renderPDFList();
+
+    try {
+      // Convert PDF to base64
+      const base64 = await fileToBase64(f.file);
+
+      // Call Claude API
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-opus-4-5',
+          max_tokens: 4096,
+          messages: [{
+            role: 'user',
+            content: [
+              {
+                type: 'document',
+                source: { type: 'base64', media_type: 'application/pdf', data: base64 }
+              },
+              {
+                type: 'text',
+                text: `This is a GeoTab fleet report PDF. Extract ALL vehicle/fleet data rows from it.
+
+Return ONLY a valid JSON array of objects. Each object represents one vehicle row.
+Map the data to these exact column names where possible:
+${FLEET_COLUMNS.join(', ')}
+
+Rules:
+- Use null for missing values
+- Dates should be in MM/DD/YYYY format if present  
+- EVID is the vehicle ID number (may be labeled as "EVID", "Vehicle ID", "Unit #", etc.)
+- Include every row you find, even if some fields are empty
+- Return ONLY the JSON array, no explanation, no markdown, no backticks`
+              }
+            ]
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error?.message || `API error ${response.status}`);
+      }
+
+      const result = await response.json();
+      const text   = result.content?.[0]?.text || '';
+
+      // Parse JSON from response
+      let rows = [];
+      try {
+        // Strip any accidental markdown fences
+        const clean = text.replace(/```json|```/g, '').trim();
+        rows = JSON.parse(clean);
+        if (!Array.isArray(rows)) rows = [rows];
+      } catch(e) {
+        throw new Error('Could not parse AI response as JSON — try again');
+      }
+
+      f.rows   = rows;
+      f.status = 'done';
+      pdfExtracted.push(...rows);
+
+      // Build column union
+      rows.forEach(row => {
+        Object.keys(row).forEach(k => {
+          if (!pdfColumns.includes(k)) pdfColumns.push(k);
+        });
+      });
+
+    } catch(err) {
+      f.status = 'error';
+      f.error  = err.message;
+      showToast(`${f.name}: ${err.message}`, 'error');
+    }
+
+    renderPDFList();
+  }
+
+  document.getElementById('pdfProgressFill').style.width  = '100%';
+  document.getElementById('pdfProgressLabel').textContent = `Done — ${pdfExtracted.length} rows extracted from ${pdfFiles.filter(f=>f.status==='done').length} PDFs`;
+
+  if (pdfExtracted.length > 0) {
+    document.getElementById('pdfResults').style.display = '';
+    document.getElementById('pdfResultsTitle').textContent = `${pdfExtracted.length} rows extracted from ${pdfFiles.filter(f=>f.status==='done').length} PDF${pdfFiles.filter(f=>f.status==='done').length !== 1 ? 's' : ''}`;
+    renderPDFTable();
+    showToast(`Extracted ${pdfExtracted.length} rows successfully`, 'success');
+  }
+
+  document.getElementById('btnExtract').disabled = false;
+}
+
+function renderPDFTable() {
+  if (!pdfExtracted.length) return;
+  const cols = pdfColumns;
+  const thead = `<thead><tr><th>#</th>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead>`;
+  const tbody = `<tbody>${pdfExtracted.map((row, i) => `
+    <tr>
+      <td style="color:var(--gray-400);text-align:right;">${i+1}</td>
+      ${cols.map(c => `<td>${row[c] ?? ''}</td>`).join('')}
+    </tr>`).join('')}</tbody>`;
+  document.getElementById('pdfTableWrap').innerHTML = `<table>${thead}${tbody}</table>`;
+}
+
+function exportPDFExcel() {
+  if (!pdfExtracted.length) return;
+  const cols      = pdfColumns;
+  const sheetData = [cols, ...pdfExtracted.map(r => cols.map(c => r[c] ?? ''))];
+  const ws        = XLSX.utils.aoa_to_sheet(sheetData);
+  const wb        = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Fleet_Data');
+  XLSX.writeFile(wb, `Fleet_PDF_Extracted_${new Date().toISOString().split('T')[0]}.xlsx`);
+  showToast('Excel file downloaded', 'success');
+}
+
+function usePDFData() {
+  if (!pdfExtracted.length) return;
+  // Inject extracted data into the main merge tool as a virtual file
+  const name = `PDF_Extracted_${pdfExtracted.length}_rows`;
+  const entry = {
+    name,
+    size: 0,
+    ext: 'pdf',
+    status: 'ok',
+    data: pdfExtracted,
+    rows: pdfExtracted.length,
+    columns: pdfColumns
+  };
+  loadedFiles.push(entry);
+  switchTab('excel');
+  renderFileList();
+  document.getElementById('btnMerge').disabled = false;
+  document.getElementById('fileCount').textContent = `${loadedFiles.length} file${loadedFiles.length !== 1 ? 's' : ''} loaded`;
+  showToast(`${pdfExtracted.length} PDF rows added to merge queue`, 'success');
+}
+
+
 function goToStep(n) {
   document.getElementById('view-upload').style.display = n === 1 ? '' : 'none';
   document.getElementById('view-review').style.display = n === 2 ? '' : 'none';
