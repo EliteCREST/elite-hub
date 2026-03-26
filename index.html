@@ -666,29 +666,42 @@ function buildRegionCards() {
 /* ══════════════════════════════════════════════════════
    NAVIGATION
 ══════════════════════════════════════════════════════ */
-function getUserRegions() {
-  try {
-    const s = JSON.parse(localStorage.getItem('elite_session') || 'null');
-    if (!s || !s.user) return { all: true, regions: [] };
-    const username = String(s.user.username || '').toLowerCase();
-    if (username === 'angel') return { all: true, regions: [] };
-    const raw = String(s.user.region || s.user.regions || '').toUpperCase();
-    const regions = raw.split(/[,\s]+/).filter(Boolean);
-    return { all: regions.includes('ALL'), regions };
-  } catch { return { all: true, regions: [] }; }
-}
-
+// Maps both directions: key→abbr and name→abbr
 const REGION_ABBR_MAP = {
   cleveland:'CLE', phoenix:'PHX', chicago:'CHI', stlouis:'STL',
   minneapolis:'MSP', milwaukee:'MKE', indianapolis:'IND',
   pittsburgh:'PIT', albuquerque:'ABQ'
 };
 
+function getUserRegions() {
+  try {
+    const s = JSON.parse(localStorage.getItem('elite_session') || 'null');
+    if (!s || !s.user) return { all: false, keys: [] };
+    const username = String(s.user.username || '').toLowerCase();
+    if (username === 'angel') return { all: true, keys: [] };
+    // Region may be normalized name like 'cleveland' or abbr like 'CLE'
+    const raw = String(s.user.region || s.user.regions || '').toLowerCase().trim();
+    if (!raw || raw === 'all') return { all: raw === 'all', keys: [] };
+    // Split on comma/space
+    const parts = raw.split(/[,\s]+/).filter(Boolean);
+    // Convert everything to region keys (matching REGIONS array keys like 'cleveland')
+    const NAME_TO_KEY = {
+      'cle':'cleveland','phx':'phoenix','chi':'chicago','stl':'stlouis',
+      'msp':'minneapolis','mke':'milwaukee','ind':'indianapolis',
+      'pit':'pittsburgh','abq':'albuquerque','aqe':'albuquerque',
+      'cleveland':'cleveland','phoenix':'phoenix','chicago':'chicago',
+      'stlouis':'stlouis','minneapolis':'minneapolis','milwaukee':'milwaukee',
+      'indianapolis':'indianapolis','pittsburgh':'pittsburgh','albuquerque':'albuquerque'
+    };
+    const keys = parts.map(p => NAME_TO_KEY[p]).filter(Boolean);
+    return { all: false, keys };
+  } catch(e) { return { all: false, keys: [] }; }
+}
+
 function canAccessRegion(key) {
-  const { all, regions } = getUserRegions();
+  const { all, keys } = getUserRegions();
   if (all) return true;
-  const abbr = REGION_ABBR_MAP[key];
-  return abbr && regions.includes(abbr);
+  return keys.includes(key);
 }
 
 function applyRegionLocks() {
@@ -791,13 +804,10 @@ function logout() {
 // Show logged-in username and lock regions on load
 document.addEventListener('DOMContentLoaded', function() {
   try {
-    const raw = localStorage.getItem('elite_session');
-    console.log('[Session Raw]', raw);
-    const s  = JSON.parse(raw || 'null');
-    console.log('[Session User]', s && s.user);
+    const s  = JSON.parse(localStorage.getItem('elite_session') || 'null');
     const el = document.getElementById('userDisplay');
     if (el && s && s.user) el.textContent = s.user.username || '?';
-  } catch(e) { console.log('[Session Error]', e); }
+  } catch(e) {}
   applyRegionLocks();
 });
 
