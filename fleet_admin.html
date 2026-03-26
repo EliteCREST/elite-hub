@@ -382,34 +382,47 @@
   }
 
   /* ══ TOOL NAV BAR ══════════════════════════════════════════ */
+/* ══ SIDEBAR NAV ═══════════════════════════════════════ */
   .tool-nav {
+    position: fixed;
+    top: 71px; /* below sticky header (68px) + sub-bar (3px) */
+    left: 0;
+    bottom: 0;
+    width: 48px;
     background: var(--navy);
-    border-bottom: 1px solid rgba(255,255,255,.08);
-    padding: 0 22px;
-    display: flex; align-items: center; gap: 4px;
-    overflow-x: auto; white-space: nowrap;
-    scrollbar-width: none;
+    border-right: 1px solid rgba(255,255,255,.08);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    padding: 10px 0;
+    z-index: 190;
+    overflow: hidden;
+    transition: width .22s cubic-bezier(.4,0,.2,1);
+    box-shadow: 2px 0 12px rgba(0,0,0,.18);
   }
-  .tool-nav::-webkit-scrollbar { display: none; }
-  .tool-nav-label {
-    font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
-    text-transform: uppercase; color: rgba(255,255,255,.3);
-    padding-right: 10px; border-right: 1px solid rgba(255,255,255,.1);
-    margin-right: 6px; flex-shrink: 0;
+  .tool-nav:hover {
+    width: 160px;
   }
+  .tool-nav-label { display: none; }
   .tn-btn {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 6px 11px; border-radius: 5px;
-    font-size: 10px; font-weight: 700; letter-spacing: .3px;
-    text-decoration: none; color: rgba(255,255,255,.75);
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 0 9px 14px;
+    font-size: 11px; font-weight: 700; letter-spacing: .3px;
+    text-decoration: none; color: rgba(255,255,255,.65);
     transition: background .15s, color .15s;
     border: none; background: none; cursor: pointer;
-    font-family: Arial, sans-serif; flex-shrink: 0;
-    white-space: nowrap;
+    font-family: Arial, sans-serif;
+    white-space: nowrap; overflow: hidden;
+    flex-shrink: 0; width: 100%;
+    text-align: left;
   }
   .tn-btn:hover  { background: rgba(255,255,255,.08); color: white; }
-  .tn-btn.active { background: rgba(255,255,255,.12); color: white; }
-  .tn-btn .tn-icon { font-size: 12px; }
+  .tn-btn.active { background: rgba(255,255,255,.13); color: white; border-left: 3px solid var(--page-color, #1F5FAD); padding-left: 11px; }
+  .tn-btn .tn-icon { font-size: 15px; flex-shrink: 0; width: 20px; text-align: center; }
+  .tn-btn .tn-label { opacity: 0; transition: opacity .15s .05s; white-space: nowrap; }
+  .tool-nav:hover .tn-btn .tn-label { opacity: 1; }
+  body.dark .tool-nav { background: #0F172A; border-right-color: rgba(255,255,255,.06); }
 
 
   /* ══ DARK MODE ════════════════════════════════════════════ */
@@ -489,24 +502,6 @@
   /* Header stays dark */
   body.dark .elite-header { background: #0F172A !important; }
 
-  /* ══ ADMIN/SCORING DARK MODE EXTRAS ══════════════════════ */
-  body.dark .admin-card { background: #1F2937 !important; border-color: #374151 !important; }
-  body.dark .ac-name { color: #F1F5F9 !important; }
-  body.dark .ac-desc { color: #9CA3AF !important; }
-  body.dark .rule-row { background: #1F2937 !important; border-color: #374151 !important; }
-  body.dark .rule-label { color: #F1F5F9 !important; }
-  body.dark .rule-desc { color: #9CA3AF !important; }
-  body.dark .table-card { background: #1F2937 !important; border-color: #374151 !important; }
-  body.dark .table-header { background: #0F172A !important; }
-  body.dark .search-box { background: #111827 !important; border-color: #374151 !important; }
-  body.dark .search-box input { color: #F1F5F9 !important; }
-  body.dark .notif-card { background: #1F2937 !important; border-color: #374151 !important; }
-  body.dark .notif-title { color: #F1F5F9 !important; }
-  body.dark .notif-meta { color: #9CA3AF !important; }
-  body.dark .modal { background: #1F2937 !important; }
-  body.dark .modal-body { background: #1F2937 !important; }
-  body.dark .modal-footer { background: #1F2937 !important; border-color: #374151 !important; }
-
 
   .dark-toggle {
     background: none; border: 1.5px solid rgba(255,255,255,.2);
@@ -516,31 +511,6 @@
   }
   .dark-toggle:hover { border-color: rgba(255,255,255,.75); color: white; }
 
-
-  /* ══ STICKY TOOL NAV + BACK NAV ═════════════════════════ */
-  .sub-bar {
-    position: sticky;
-    top: 68px; /* flush under header */
-    z-index: 192;
-  }
-  .tool-nav {
-    position: sticky;
-    top: 71px; /* header(68) + sub-bar(3) */
-    z-index: 191;
-    background: var(--navy) !important; /* solid — no bleed-through */
-    margin: 0 !important;
-    padding-top: 2px !important;
-    padding-bottom: 2px !important;
-  }
-  .back-nav {
-    position: sticky;
-    top: 109px; /* header(68) + sub-bar(3) + tool-nav(38) */
-    z-index: 190;
-    background: var(--navy) !important;
-    box-shadow: 0 3px 8px rgba(27,42,74,.35);
-    margin: 0 !important;
-  }
-  html { scroll-padding-top: 145px; }
 </style>
 </head>
 <body>
@@ -599,7 +569,7 @@ function toggleDarkMode() {
   </div>
 </header>
 <div class="sub-bar"></div>
-<nav class="tool-nav"><span class="tool-nav-label">Tools</span><a class="tn-btn active tn-dynamic" data-file="fleet.html"><span class="tn-icon">🚗</span>Fleet</a><a class="tn-btn tn-dynamic" data-file="compliance.html"><span class="tn-icon">📋</span>Compliance</a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">⚖️</span>Licensing</span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🏷️</span>Pricing</span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">📊</span>CFB</span><a class="tn-btn tn-dynamic" data-file="reviews.html"><span class="tn-icon">⭐</span>Reviews</a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🔍</span>Invoices</span><a class="tn-btn tn-dynamic" data-file="documents.html"><span class="tn-icon">📁</span>Documents</a></nav><script>
+<nav class="tool-nav"><span class="tool-nav-label">Tools</span><a class="tn-btn active tn-dynamic" data-file="fleet.html"><span class="tn-icon">🚗</span><span class="tn-label">Fleet</span></a><a class="tn-btn tn-dynamic" data-file="compliance.html"><span class="tn-icon">📋</span><span class="tn-label">Compliance</span></a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">⚖️</span><span class="tn-label">Licensing</span></span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🏷️</span><span class="tn-label">Pricing</span></span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">📊</span><span class="tn-label">CFB</span></span><a class="tn-btn tn-dynamic" data-file="reviews.html"><span class="tn-icon">⭐</span><span class="tn-label">Reviews</span></a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🔍</span><span class="tn-label">Invoices</span></span><a class="tn-btn tn-dynamic" data-file="documents.html"><span class="tn-icon">📁</span><span class="tn-label">Documents</span></a></nav><script>
 (function(){
   var rk = new URLSearchParams(window.location.search).get('region') || 'cleveland';
   document.querySelectorAll('.tn-dynamic').forEach(function(a){
