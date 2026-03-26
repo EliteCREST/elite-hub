@@ -50,13 +50,6 @@
   });
   const hasAllRegions = userAbbrs.includes('ALL') || userAbbrs.length === 0;
 
-  // Check explicit page access flag
-  const pageVal = String(session.user[page] || 'true').toLowerCase();
-  if (pageVal === 'false') {
-    window.location.href = 'index.html';
-    return;
-  }
-
   // Check hub page region access
   const hubRegion = HUB_PAGE_REGIONS[page];
   if (hubRegion && !hasAllRegions) {
@@ -65,15 +58,24 @@
       window.location.href = 'index.html';
       return;
     }
-  }
-
-  // Check region-specific pages (compliance, fleet, etc.) via URL param
-  const urlRegion = new URLSearchParams(window.location.search).get('region');
-  if (urlRegion && !hasAllRegions) {
-    const required = REGION_ABBR[urlRegion.toLowerCase()];
-    if (required && !userAbbrs.includes(required)) {
-      window.location.href = 'index.html';
-      return;
+    // Hub region passed — no further checks needed
+  } else {
+    // Check region-specific pages (compliance, fleet, etc.) via URL param
+    const urlRegion = new URLSearchParams(window.location.search).get('region');
+    if (urlRegion && !hasAllRegions) {
+      const required = REGION_ABBR[urlRegion.toLowerCase()];
+      if (required && !userAbbrs.includes(required)) {
+        window.location.href = 'index.html';
+        return;
+      }
+      // URL region passed — no further checks needed for regional pages
+    } else {
+      // Non-regional page — check explicit page access flag
+      const pageVal = String(session.user[page] || 'true').toLowerCase();
+      if (pageVal === 'false') {
+        window.location.href = 'index.html';
+        return;
+      }
     }
   }
 })();
