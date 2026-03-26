@@ -1397,7 +1397,7 @@ function renderTable() {
         <td onclick="event.stopPropagation()">
           <div class="row-actions">
             <button class="row-btn upload-btn-sm" onclick="openDetailUpload(${JSON.stringify(c).replace(/"/g,'&quot;')})">⬆ Upload</button>
-            <button class="row-btn" style="background:var(--blue-pale);color:var(--blue);border-color:var(--blue);" data-name="${c.name.replace(/&/g,'&amp;')}" data-id="${c.id.replace(/&/g,'__AMP__')}" onclick="event.stopPropagation();openDocsPanel(this.dataset.id.replace(/__AMP__/g,'&'),this.dataset.name.replace(/&amp;/g,'&'))">📄 View Docs</button>
+            <button class="row-btn" style="background:var(--blue-pale);color:var(--blue);border-color:var(--blue);" data-contractor="${c.id}" onclick="event.stopPropagation();openDocsPanel(this.dataset.contractor,'${c.name}')">📄 View Docs</button>
           </div>
         </td>
       </tr>`;
@@ -1903,6 +1903,7 @@ function applyEditPermissions() {
 
 /* ══ VIEW DOCS PANEL ═════════════════════════════════════════ */
 async function openDocsPanel(contractorId, contractorName) {
+  contractorId = contractorId || '';
   document.getElementById('dpTitle').textContent = contractorName || 'Documents';
   document.getElementById('dpSub').textContent   = 'Insurance & compliance documents';
   document.getElementById('dpBody').innerHTML    = '<div class="dp-empty"><div class="dp-empty-icon">⏳</div>Loading documents…</div>';
@@ -1910,7 +1911,7 @@ async function openDocsPanel(contractorId, contractorName) {
   document.getElementById('docsPanel').classList.add('open');
 
   try {
-    const url  = `${BACKEND_URL}?action=listFiles&region=${regionKey}&folder=contractor_${contractorId}`;
+    const url  = `${BACKEND_URL}?action=listFiles&region=${regionKey}&folder=${encodeURIComponent('contractor_' + contractorId)}`;
     console.log('[ViewDocs] Fetching:', url);
     const res  = await fetch(url);
     const data = await res.json();
