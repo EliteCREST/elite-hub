@@ -416,6 +416,19 @@
   .notif-pill  { font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;border:1.5px solid var(--gray-200);cursor:pointer;background:white;color:var(--gray-500);transition:all .15s; }
   .notif-pill.active { background:var(--navy);color:white;border-color:var(--navy); }
 
+
+  /* ══ STICKY TOOL NAV + BACK NAV ═════════════════════════ */
+  .tool-nav {
+    position: sticky;
+    top: 71px; /* header 68px + sub-bar 3px */
+    z-index: 190;
+  }
+  .back-nav {
+    position: sticky;
+    top: 109px; /* header 68px + sub-bar 3px + tool-nav ~38px */
+    z-index: 189;
+    box-shadow: 0 2px 6px rgba(27,42,74,.15);
+  }
 </style>
 </head>
 <body>

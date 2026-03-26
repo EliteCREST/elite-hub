@@ -223,6 +223,19 @@
   body.dark .callout { background: #1E3A5F !important; border-color: #3B82F6 !important; color: #F1F5F9 !important; }
   body.dark input, body.dark select, body.dark textarea { background: #111827 !important; color: #F1F5F9 !important; border-color: #374151 !important; }
   body.dark footer { background: #0F172A !important; }
+
+  /* ══ STICKY TOOL NAV + BACK NAV ═════════════════════════ */
+  .tool-nav {
+    position: sticky;
+    top: 71px; /* header 68px + sub-bar 3px */
+    z-index: 190;
+  }
+  .back-nav {
+    position: sticky;
+    top: 109px; /* header 68px + sub-bar 3px + tool-nav ~38px */
+    z-index: 189;
+    box-shadow: 0 2px 6px rgba(27,42,74,.15);
+  }
 </style>
 </head>
 <body>
