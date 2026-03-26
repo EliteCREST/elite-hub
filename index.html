@@ -717,15 +717,10 @@ function applyRegionLocks() {
 function openRegion(key) {
   const region = REGIONS.find(r => r.key === key);
   if (!region) return;
-  if (!canAccessRegion(key)) {
-    showToast('You do not have access to ' + region.city + '.', 'warn');
-    return;
-  }
-  if (region.url) {
-    window.location.href = region.url;
-  } else {
-    showToast(region.city + ' Hub not yet deployed.', 'warn');
-  }
+  const s = JSON.parse(localStorage.getItem('elite_session')||'null');
+  const userRegion = s && s.user ? s.user.region : 'NO SESSION';
+  const username   = s && s.user ? s.user.username : 'NO USER';
+  alert('User: ' + username + '\nRegion in session: ' + userRegion + '\nClicking: ' + key + '\nCan access: ' + canAccessRegion(key));
 }
 
 /* ══════════════════════════════════════════════════════
