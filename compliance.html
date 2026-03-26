@@ -922,7 +922,21 @@ function toggleDarkMode() {
         <div class="mh-title" id="detailName">—</div>
         <div class="mh-sub" id="detailSub">—</div>
       </div>
-      <button onclick="closeDetailModal()">✕</button>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div id="offboardStatusDisplay" style="font-size:12px;"></div>
+        <label id="offboardRequestForm" style="display:flex;align-items:center;gap:6px;cursor:pointer;color:rgba(255,255,255,.7);font-size:12px;font-weight:600;">
+          <input type="checkbox" id="offboardCheck" onchange="toggleOffboardForm(this.checked)"
+            style="width:14px;height:14px;accent-color:#EF4444;cursor:pointer;">
+          Request Offboarding
+        </label>
+        <button onclick="closeDetailModal()" style="color:rgba(255,255,255,.6);background:none;border:none;font-size:20px;cursor:pointer;padding:0;line-height:1;">✕</button>
+      </div>
+    </div>
+    <!-- Offboard reason (slides in below header when checked) -->
+    <div id="offboardReasonWrap" style="display:none;background:#FEF2F2;padding:10px 24px;border-bottom:1px solid #FECACA;">
+      <label style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#DC2626;display:block;margin-bottom:4px;">Reason for Offboarding</label>
+      <textarea id="offboardReason" rows="2" placeholder="Enter reason..."
+        style="width:100%;padding:6px 10px;border:1.5px solid #FECACA;border-radius:6px;font-size:12px;font-family:Arial,sans-serif;outline:none;resize:none;background:white;"></textarea>
     </div>
     <div class="modal-body">
       <!-- Contact -->
@@ -996,24 +1010,6 @@ function toggleDarkMode() {
           <div class="detail-item"><div class="di-label">Travel Distance (miles)</div><input class="di-input" id="dTravelDist" placeholder="—" type="number"></div>
         </div>
       </div>
-      <!-- Offboarding -->
-      <div class="detail-section" id="offboardSection">
-        <div class="detail-section-title" style="color:var(--red);">⚠️ Offboarding</div>
-        <div id="offboardStatusDisplay" style="margin-bottom:12px;font-size:13px;"></div>
-        <div id="offboardRequestForm">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px;">
-            <input type="checkbox" id="offboardCheck" onchange="toggleOffboardForm(this.checked)"
-              style="width:16px;height:16px;accent-color:var(--red);">
-            <span style="font-size:13px;font-weight:600;color:var(--red);">Request Offboarding</span>
-          </label>
-          <div id="offboardReasonWrap" style="display:none;">
-            <label style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--gray-400);display:block;margin-bottom:4px;">Reason for Offboarding</label>
-            <textarea id="offboardReason" rows="3" placeholder="Enter reason for offboarding this contractor..."
-              style="width:100%;padding:8px 10px;border:1.5px solid #FECACA;border-radius:6px;font-size:12px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea>
-          </div>
-        </div>
-      </div>
-
       <!-- Document Upload -->
       <div class="detail-section">
         <div class="detail-section-title">Insurance Documents</div>
