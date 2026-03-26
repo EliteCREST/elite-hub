@@ -34,7 +34,7 @@
   if (username === 'angel') return;
 
   // Get user regions
-  const userRegionsRaw = String(session.user.region || session.user.regions || '').toUpperCase();
+  const userRegionsRaw = String(session.user.regions || session.user.region || '').toUpperCase();
   const userRegions    = userRegionsRaw.split(/[,;\s]+/).filter(Boolean);
   const hasAllRegions  = userRegions.includes('ALL') || userRegions.length === 0;
 
