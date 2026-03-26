@@ -719,11 +719,10 @@ function applyRegionLocks() {
 function openRegion(key) {
   const region = REGIONS.find(r => r.key === key);
   if (!region) return;
-  if (!canAccessRegion(key)) return; // silently do nothing
   if (region.url) {
     window.location.href = region.url;
   } else {
-    showToast(`${region.city} Hub not yet deployed.`, 'warn');
+    showToast(region.city + ' Hub not yet deployed.', 'warn');
   }
 }
 
@@ -797,31 +796,28 @@ function logout() {
   window.location.href = 'login.html';
 }
 
-</script>
 
-// Show logged-in username and lock regions on load
-document.addEventListener('DOMContentLoaded', function() {
+// Show logged-in username, admin button, and region locks
+window.addEventListener('load', function() {
   try {
     var sessionData = localStorage.getItem('elite_session');
     if (!sessionData) return;
-    var parsed = JSON.parse(sessionData);
-    if (!parsed || !parsed.user) return;
-    var u = parsed.user;
+    var u = JSON.parse(sessionData).user;
+    if (!u) return;
 
-    // Show username
+    // Username
     var el = document.getElementById('userDisplay');
     if (el) el.textContent = u.username || '?';
 
-    // Show Admin button only for Angel
+    // Admin button — Angel only
     var adminBtn = document.getElementById('adminBtn');
-    if (adminBtn && (u.username || '').toLowerCase() === 'angel') {
-      adminBtn.style.display = '';
-    }
+    if (adminBtn) adminBtn.style.display = (u.username||'').toLowerCase() === 'angel' ? '' : 'none';
 
-    // Apply region locks after short delay to ensure cards are rendered
-    setTimeout(applyRegionLocks, 100);
+    // Region locks
+    setTimeout(applyRegionLocks, 200);
   } catch(e) {}
 });
+</script>
 
 </body>
 </html>
