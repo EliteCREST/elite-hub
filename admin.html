@@ -416,7 +416,7 @@ function toggleDarkMode() {
 <header class="elite-header">
   <div class="header-accent"></div>
   <div class="header-logo">
-    <div class="logo-mark"><span>ADMIN</span></div>
+    <div class="logo-mark"><span id="hdrUserBadge">—</span></div>
     <div class="logo-text">
       <div class="brand">Elite Hub</div>
       <div class="sub">Admin Center</div>
@@ -886,5 +886,16 @@ function logout() {
 }
 
 </script>
+
+// Show logged-in username in header badge
+(function() {
+  function getSession() { try { return JSON.parse(localStorage.getItem('elite_session')||'null'); } catch { return null; } }
+  const s = getSession();
+  const el = document.getElementById('hdrUserBadge');
+  if (el && s && s.user) {
+    el.textContent = s.user.username || '?';
+  }
+})();
+
 </body>
 </html>

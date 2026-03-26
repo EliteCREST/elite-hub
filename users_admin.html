@@ -685,5 +685,16 @@ function applyRegionAccess(region) {
 }
 
 </script>
+
+// Show logged-in username in header badge
+(function() {
+  function getSession() { try { return JSON.parse(localStorage.getItem('elite_session')||'null'); } catch { return null; } }
+  const s = getSession();
+  const el = document.getElementById('hdrUserBadge');
+  if (el && s && s.user) {
+    el.textContent = s.user.username || '?';
+  }
+})();
+
 </body>
 </html>
