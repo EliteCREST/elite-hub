@@ -374,7 +374,7 @@
       <div class="meta-val" id="userDisplay">—</div>
     </div>
     <div class="hdr-divider"></div>
-    <a class="admin-btn" href="https://elitecrest.github.io/elite-hub/admin.html">⚙ Admin</a>
+    <a class="admin-btn" id="adminBtn" href="https://elitecrest.github.io/elite-hub/admin.html" style="display:none;">⚙ Admin</a>
     <button onclick="logout()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);padding:6px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.5px;" onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">Sign Out</button>
 </div>
 </header>
@@ -619,7 +619,7 @@ function buildRegionCards() {
     const dotCls = sc === 'excellent' || sc === 'good' ? 'dot-green' : sc === 'fair' ? 'dot-yellow' : d.score === null ? 'dot-yellow' : 'dot-red';
 
     return `
-      <div class="region-card ${canAccessRegion(r.key) ? '' : 'locked'}" onclick="openRegion('${r.key}')">
+      <div class="region-card" data-key="${r.key}" onclick="openRegion('${r.key}')">
         <div class="rc-top">
           <div class="rc-icon">${r.icon}</div>
           <div class="rc-identity">
@@ -706,10 +706,8 @@ function canAccessRegion(key) {
 
 function applyRegionLocks() {
   document.querySelectorAll('.region-card, .podium-card').forEach(card => {
-    const onclick = card.getAttribute('onclick') || '';
-    const match   = onclick.match(/openRegion\('([^']+)'\)/);
-    if (!match) return;
-    const key = match[1];
+    const key = card.getAttribute('data-key');
+    if (!key) return;
     if (!canAccessRegion(key)) {
       card.classList.add('locked');
     } else {
@@ -803,19 +801,26 @@ function logout() {
 
 // Show logged-in username and lock regions on load
 document.addEventListener('DOMContentLoaded', function() {
-  // Read session and show username
-  var sessionData = localStorage.getItem('elite_session');
-  if (sessionData) {
+  try {
+    var sessionData = localStorage.getItem('elite_session');
+    if (!sessionData) return;
     var parsed = JSON.parse(sessionData);
-    if (parsed && parsed.user) {
-      var u = parsed.user;
-      // Show username
-      var el = document.getElementById('userDisplay');
-      if (el) el.textContent = u.username || u.name || '?';
-      // Apply region locks
-      applyRegionLocks();
+    if (!parsed || !parsed.user) return;
+    var u = parsed.user;
+
+    // Show username
+    var el = document.getElementById('userDisplay');
+    if (el) el.textContent = u.username || '?';
+
+    // Show Admin button only for Angel
+    var adminBtn = document.getElementById('adminBtn');
+    if (adminBtn && (u.username || '').toLowerCase() === 'angel') {
+      adminBtn.style.display = '';
     }
-  }
+
+    // Apply region locks after short delay to ensure cards are rendered
+    setTimeout(applyRegionLocks, 100);
+  } catch(e) {}
 });
 
 </body>
