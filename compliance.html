@@ -936,6 +936,7 @@ function toggleDarkMode() {
           <div class="detail-item"><div class="di-label">Invoice Email</div><input class="di-input" type="email" id="dEmail2" placeholder="—"></div>
           <div class="detail-item"><div class="di-label">Supervisor</div><input class="di-input" id="dSupervisor" placeholder="—"></div>
           <div class="detail-item"><div class="di-label di-readonly-label">Region</div><div class="di-val" id="dRegion">—</div></div>
+          <div class="detail-item"><div class="di-label di-readonly-label">Onboarded</div><div class="di-val" id="dOnboarded">—</div></div>
           <div class="detail-item"><div class="di-label">Address</div><input class="di-input" id="dAddress" placeholder="—"></div>
           <div class="detail-item"><div class="di-label">City</div><input class="di-input" id="dCity" placeholder="—"></div>
           <div class="detail-item"><div class="di-label">State</div><input class="di-input" id="dState" placeholder="—" style="max-width:80px;"></div>
@@ -995,6 +996,24 @@ function toggleDarkMode() {
           <div class="detail-item"><div class="di-label">Travel Distance (miles)</div><input class="di-input" id="dTravelDist" placeholder="—" type="number"></div>
         </div>
       </div>
+      <!-- Offboarding -->
+      <div class="detail-section" id="offboardSection">
+        <div class="detail-section-title" style="color:var(--red);">⚠️ Offboarding</div>
+        <div id="offboardStatusDisplay" style="margin-bottom:12px;font-size:13px;"></div>
+        <div id="offboardRequestForm">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px;">
+            <input type="checkbox" id="offboardCheck" onchange="toggleOffboardForm(this.checked)"
+              style="width:16px;height:16px;accent-color:var(--red);">
+            <span style="font-size:13px;font-weight:600;color:var(--red);">Request Offboarding</span>
+          </label>
+          <div id="offboardReasonWrap" style="display:none;">
+            <label style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--gray-400);display:block;margin-bottom:4px;">Reason for Offboarding</label>
+            <textarea id="offboardReason" rows="3" placeholder="Enter reason for offboarding this contractor..."
+              style="width:100%;padding:8px 10px;border:1.5px solid #FECACA;border-radius:6px;font-size:12px;font-family:Arial,sans-serif;outline:none;resize:vertical;"></textarea>
+          </div>
+        </div>
+      </div>
+
       <!-- Document Upload -->
       <div class="detail-section">
         <div class="detail-section-title">Insurance Documents</div>
@@ -1243,8 +1262,12 @@ function normalizeContractor(r) {
     exempt:          r['exempt']           || '',
     wc_policy:       r['wc_policy']       || '',
     wc_expiry:       r['wc_expiry']       || '',
-    gl_renewal:      r['gl_renewal']      || '',
-    wc_renewal:      r['wc_renewal']      || '',
+    gl_renewal:           r['gl_renewal']           || '',
+    wc_renewal:           r['wc_renewal']           || '',
+    onboarded:            r['onboarded']            || '',
+    offboard_status:      r['offboard_status']      || '',
+    offboard_reason:      r['offboard_reason']      || '',
+    offboard_requested_by:r['offboard_requested_by']|| '',
     wc_ins_co:       r['wc_ins_co']       || '',
     wc_ins_contact:  r['wc_ins_contact']  || '',
     wc_ins_phone:    r['wc_ins_phone']    || '',
@@ -1431,6 +1454,24 @@ function openDetail(c) {
   set('dContact2',       c.contact2);
   set('dSupervisor',     c.supervisor);
   set('dRegion',         c.region);
+  // Onboarded date
+  const onbEl = document.getElementById('dOnboarded');
+  if (onbEl) onbEl.textContent = c.onboarded || '—';
+  // Offboard status
+  const offStat  = document.getElementById('offboardStatusDisplay');
+  const offForm  = document.getElementById('offboardRequestForm');
+  const offCheck = document.getElementById('offboardCheck');
+  if (offCheck) offCheck.checked = false;
+  if (document.getElementById('offboardReasonWrap')) document.getElementById('offboardReasonWrap').style.display = 'none';
+  if (offStat) {
+    const st = c.offboard_status || '';
+    if (st === 'Pending') {
+      offStat.innerHTML = '<div style="background:#FEF9C3;border:1px solid #FDE047;border-radius:8px;padding:10px 14px;">⏳ <strong>Offboard Pending</strong> — Requested by ' + (c.offboard_requested_by||'Unknown') + '<br><span style="font-size:11px;color:var(--gray-400);">Reason: ' + (c.offboard_reason||'—') + '</span></div>';
+      if (offForm) offForm.style.display = 'none';
+    } else if (st === 'Denied') {
+      offStat.innerHTML = '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 14px;">✕ <strong>Offboard Request Denied</strong></div>';
+    } else { offStat.innerHTML = ''; }
+  }
   set('dAddress',        c.address);
   set('dCity',           c.city);
   set('dState',          c.state);
@@ -1479,6 +1520,20 @@ async function saveDetailChanges() {
   if (!currentContractor) return;
   const btn = document.querySelector('.btn-save-detail');
   btn.textContent = 'Saving…'; btn.disabled = true;
+
+  // Handle offboard request
+  const offboardChecked = document.getElementById('offboardCheck')?.checked;
+  const offboardReason  = document.getElementById('offboardReason')?.value.trim();
+  if (offboardChecked) {
+    if (!offboardReason) { showToast('Please enter a reason for offboarding.', 'warn'); btn.textContent = '💾 Save Changes'; btn.disabled = false; return; }
+    const session = getSession();
+    const reqBy   = session?.user?.name || session?.user?.username || 'Unknown';
+    await fetch(BACKEND_URL + '?action=requestOffboard&name=' + encodeURIComponent(currentContractor.name) + '&reason=' + encodeURIComponent(offboardReason) + '&requestedBy=' + encodeURIComponent(reqBy));
+    showToast('Offboard request submitted ✓', 'info');
+    closeDetailModal();
+    btn.textContent = '💾 Save Changes'; btn.disabled = false;
+    return;
+  }
 
   const g = id => { const el = document.getElementById(id); return el ? el.value || el.textContent || '' : ''; };
 
@@ -1955,6 +2010,12 @@ function closeDocsPanel() {
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDocsPanel(); } });
+
+
+function toggleOffboardForm(checked) {
+  const wrap = document.getElementById('offboardReasonWrap');
+  if (wrap) wrap.style.display = checked ? 'block' : 'none';
+}
 
 </script>
 

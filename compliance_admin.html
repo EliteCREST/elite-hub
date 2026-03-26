@@ -567,6 +567,58 @@
   .crew-count-btn:hover { background:var(--blue);color:white; }
   .crew-count-btn.zero { background:var(--gray-100);color:var(--gray-400);border-color:var(--gray-200); }
 
+
+  /* ══ READONLY FIELDS ════════════════════════════════════════ */
+  .field-readonly input,
+  .field-readonly select,
+  .field-readonly textarea {
+    background: var(--gray-100) !important;
+    color: var(--gray-400) !important;
+    cursor: not-allowed !important;
+    border-color: var(--gray-200) !important;
+    pointer-events: none;
+  }
+  .field-readonly label::after {
+    content: ' (view only)';
+    font-size: 9px;
+    color: var(--gray-400);
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .section-locked {
+    opacity: .7;
+    position: relative;
+  }
+  .section-locked::after {
+    content: '🔒 View Only';
+    position: absolute;
+    top: 12px; right: 14px;
+    font-size: 10px; font-weight: 700;
+    color: var(--gray-400);
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+
+
+  .offboard-banner {
+    background:#FEF9C3;border:1px solid #FDE047;border-radius:8px;
+    padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;
+    justify-content:space-between;gap:10px;flex-wrap:wrap;
+  }
+  .offboard-banner.approved { background:#FEE2E2;border-color:#FECACA; }
+  .ob-text { font-size:12px;flex:1; }
+  .ob-btns { display:flex;gap:6px;flex-shrink:0; }
+  .ob-btn  { font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;cursor:pointer;border:none; }
+  .ob-approve { background:#16A34A;color:white; }
+  .ob-deny    { background:#DC2626;color:white; }
+  .ob-approve:hover { background:#15803D; }
+  .ob-deny:hover    { background:#B91C1C; }
+  .pending-offboard-count {
+    background:#FDE047;color:#713F12;font-size:10px;font-weight:700;
+    padding:2px 8px;border-radius:20px;margin-left:6px;
+  }
+
 </style>
 </head>
 <body>
@@ -1042,7 +1094,11 @@ function normalizeContractor(r) {
     trade4:          String(r['trade4']          || ''),
     contract_status: String(r['contract_status'] || 'Active'),
     region:          String(r['region']          || ''),
-    from:            String(r['from']            || ''),
+    from:               String(r['from']               || ''),
+    onboarded:          String(r['onboarded']          || ''),
+    offboard_status:    String(r['offboard_status']    || ''),
+    offboard_reason:    String(r['offboard_reason']    || ''),
+    offboard_requested_by: String(r['offboard_requested_by'] || ''),
   };
 }
 
@@ -1248,7 +1304,10 @@ function renderTable() {
         <td>${c.gl_renewal ? '<span style="font-size:11px;color:#16A34A;font-weight:600;">✓ ' + new Date(c.gl_renewal).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + '</span>' : '<span style="color:var(--gray-300);font-size:11px;">—</span>'}</td>
         <td>${expiryCell(c.wc_expiry)}</td>
         <td>${c.wc_renewal ? '<span style="font-size:11px;color:#16A34A;font-weight:600;">✓ ' + new Date(c.wc_renewal).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + '</span>' : '<span style="color:var(--gray-300);font-size:11px;">—</span>'}</td>
-        <td><span class="badge ${contractBadge}">${c.contract_status || '—'}</span></td>
+        <td>
+          <span class="badge ${contractBadge}">${c.contract_status || '—'}</span>
+          ${c.offboard_status === 'Pending' ? '<div class="offboard-banner" style="margin-top:6px;"><div class="ob-text">⏳ <strong>Offboard Pending</strong> — ' + (c.offboard_requested_by||'?') + ': ' + (c.offboard_reason||'') + '</div><div class="ob-btns"><button class="ob-btn ob-approve" onclick="event.stopPropagation();approveOffboard(\'' + c.name + '\')" >✓ Approve</button><button class="ob-btn ob-deny" onclick="event.stopPropagation();denyOffboard(\'' + c.name + '\')">✕ Deny</button></div></div>' : ''}
+        </td>
         <td><button class="crew-count-btn zero" data-crew-contractor="${c.name}" onclick="event.stopPropagation();openCrewPanel('${c.name}')">👷 Crews</button></td>
         <td>${c.pay_id ? '<span class="badge-ok">✓ OK</span>' : '<span class="badge-attn">✕ Attn</span>'}</td>
         <td>${c.link ? '<span class="badge-ok">✓ OK</span>' : '<span class="badge-attn">✕ Attn</span>'}</td>
@@ -1278,6 +1337,7 @@ function openAddModal() {
   clearForm();
   document.getElementById('fStatus').value = 'Active';
   document.getElementById('editModal').classList.add('open');
+  applyEditPermissions();
 }
 
 function openEditModal(id) {
@@ -1289,6 +1349,7 @@ function openEditModal(id) {
   document.getElementById('modalInactiveNote').style.display = 'none';
   populateForm(c);
   document.getElementById('editModal').classList.add('open');
+  applyEditPermissions();
 
   // Show inactive warning when status changes
   document.getElementById('fStatus').onchange = function() {
@@ -1397,6 +1458,8 @@ function getFormValues() {
     trade4:          g('fTrade4'),
     will_travel:     g('fTravel'),
     travel_distance: g('fTravelDist'),
+    // Only include GL/WC fields if admin
+    ...(isAdmin() ? {
     gl_policy:       g('fGLPolicy'),
     gl_expiry:       g('fGLExpiry'),
     gl_renewal:      g('fGLRenewal'),
@@ -1415,6 +1478,7 @@ function getFormValues() {
     wc_ins_phone:    g('fWCInsPhone'),
     wc_ins_email:    g('fWCInsEmail'),
     wc_coverage:     g('fWCCoverage'),
+    } : {}),  // end GL/WC admin-only fields
   };
 }
 
@@ -1848,6 +1912,66 @@ async function loadAllCrewCounts() {
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCrewPanel(); });
+
+
+/* ══ SESSION & PERMISSIONS ══════════════════════════════════ */
+function getSession() {
+  try { return JSON.parse(localStorage.getItem('elite_session') || 'null'); } catch { return null; }
+}
+function isAdmin() {
+  const s = getSession();
+  if (!s || !s.user) return true; // if no session, don't restrict
+  const role = String(s.user.role || '').toLowerCase();
+  return role === 'admin' || role === 'administration' || role === 'sr director' || role === 'sr general manager';
+}
+function applyEditPermissions() {
+  if (isAdmin()) return; // admins see everything editable
+  // Lock GL section
+  document.querySelectorAll('.fs-gl').forEach(el => {
+    el.classList.add('section-locked');
+    el.querySelectorAll('input,select,textarea').forEach(f => {
+      f.disabled = true; f.style.pointerEvents = 'none';
+    });
+  });
+  // Lock WC section
+  document.querySelectorAll('.fs-wc').forEach(el => {
+    el.classList.add('section-locked');
+    el.querySelectorAll('input,select,textarea').forEach(f => {
+      f.disabled = true; f.style.pointerEvents = 'none';
+    });
+  });
+  // Lock Region field
+  const fRegion = document.getElementById('fRegion');
+  if (fRegion) {
+    fRegion.disabled = true;
+    fRegion.style.pointerEvents = 'none';
+    fRegion.closest('.form-group')?.classList.add('field-readonly');
+  }
+  // Lock Pay ID field
+  const fPayId = document.getElementById('fPayId');
+  if (fPayId) {
+    fPayId.disabled = true;
+    fPayId.style.pointerEvents = 'none';
+    fPayId.closest('.form-group')?.classList.add('field-readonly');
+  }
+}
+
+
+/* ══ OFFBOARDING ════════════════════════════════════════════ */
+async function approveOffboard(contractorName) {
+  if (!confirm('Approve offboarding for ' + contractorName + '? They will be hidden from all views.')) return;
+  const res  = await fetch(BACKEND_URL + '?action=approveOffboard&name=' + encodeURIComponent(contractorName));
+  const data = await res.json();
+  if (data.success) { showToast('Offboarding approved', 'info'); await syncData(); }
+  else showToast('Error: ' + (data.error||'Unknown'), 'error');
+}
+
+async function denyOffboard(contractorName) {
+  const res  = await fetch(BACKEND_URL + '?action=denyOffboard&name=' + encodeURIComponent(contractorName));
+  const data = await res.json();
+  if (data.success) { showToast('Offboarding denied', 'info'); await syncData(); }
+  else showToast('Error: ' + (data.error||'Unknown'), 'error');
+}
 
 </script>
 
