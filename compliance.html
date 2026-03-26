@@ -1,6 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+// ── AUTH GUARD ───────────────────────────────────────────────
+(function() {
+  function getSession() {
+    try { return JSON.parse(localStorage.getItem('elite_session') || 'null'); } catch { return null; }
+  }
+  const session = getSession();
+  const page    = window.location.pathname.split('/').pop().replace('.html','').replace(/[^a-z0-9_]/gi,'_').toLowerCase();
+
+  // Not logged in → go to login
+  if (!session || !session.user) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // Check page access — admins always have full access
+  const role = String(session.user.role || '').toLowerCase();
+  const isAdmin = ['admin','administration','sr director','sr general manager'].includes(role);
+  if (!isAdmin && session.user[page] === 'false') {
+    window.location.href = 'index.html';
+    return;
+  }
+})();
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Contractor Compliance — Elite Hub</title>
@@ -841,7 +866,7 @@ function toggleDarkMode() {
   <div class="filter-bar">
     <div class="search-box">
       <span style="color:var(--gray-400);">🔍</span>
-      <input type="text" id="searchInput" placeholder="Search contractors, trade, market..." oninput="applyFilters()">
+      <input type="text" id="searchInput" placeholder="Search contractors, trade, supervisor..." oninput="applyFilters()">
     </div>
     <div class="filter-divider"></div>
     <button class="filter-pill active" onclick="setStatusFilter('all',this)">All</button>
@@ -1039,52 +1064,84 @@ function toggleDarkMode() {
 
 <!-- ADD CONTRACTOR MODAL -->
 <div class="modal-overlay" id="addModal" onclick="if(event.target===this)closeAddModal()">
-  <div class="modal">
+  <div class="modal" style="max-width:640px;">
     <div class="modal-header">
-      <div><div class="mh-title">Add Contractor</div></div>
-      <button onclick="closeAddModal()">✕</button>
+      <div><div class="mh-title">Add Contractor</div><div class="mh-sub">New subcontractor record</div></div>
+      <button onclick="closeAddModal()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;">✕</button>
     </div>
     <div class="modal-body">
+
+      <!-- Contact Info -->
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gray-400);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--gray-200);">🏢 Company & Contact</div>
       <div class="form-row">
         <div class="form-group"><label>Company Name *</label><input type="text" id="fCompany" placeholder="ABC Roofing LLC"></div>
-        <div class="form-group"><label>Contact Name</label><input type="text" id="fContact" placeholder="John Smith"></div>
+        <div class="form-group"><label>Pay ID</label><input type="text" id="fPayId" placeholder="Paylocity ID"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Phone</label><input type="text" id="fPhone" placeholder="555-000-0000"></div>
+        <div class="form-group"><label>Full Name (Contact 1)</label><input type="text" id="fContact" placeholder="John Smith"></div>
+        <div class="form-group"><label>Full Name 2 (Contact 2)</label><input type="text" id="fContact2" placeholder="Jane Smith"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Phone</label><input type="text" id="fPhone" placeholder="(555) 000-0000"></div>
         <div class="form-group"><label>Email</label><input type="email" id="fEmail" placeholder="john@example.com"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Market / Brand</label><input type="text" id="fMarket" placeholder="ASP Cleveland"></div>
-        <div class="form-group"><label>Contract Status</label>
-          <select id="fContract"><option value="Active">Active</option><option value="Inactive">Inactive</option><option value="Pending">Pending</option></select>
-        </div>
+        <div class="form-group"><label>Invoice Email</label><input type="email" id="fEmail2" placeholder="billing@example.com"></div>
+        <div class="form-group"><label>Supervisor</label><input type="text" id="fSupervisor" placeholder="Supervisor name"></div>
       </div>
+      <div class="form-row">
+        <div class="form-group"><label>Address</label><input type="text" id="fAddress" placeholder="123 Main St"></div>
+        <div class="form-group"><label>City</label><input type="text" id="fCity" placeholder="Cleveland"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>State</label><input type="text" id="fState" placeholder="OH" style="max-width:80px;"></div>
+        <div class="form-group"><label>Zip</label><input type="text" id="fZip" placeholder="44101" style="max-width:100px;"></div>
+      </div>
+
+      <!-- Trades & Contract -->
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gray-400);margin:16px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--gray-200);">🔨 Trades & Contract</div>
       <div class="form-row">
         <div class="form-group"><label>Primary Trade</label>
-          <select id="fTrade1"><option value="">Select...</option><option>Roofing</option><option>Gutters</option><option>Siding</option><option>Windows</option></select>
+          <select id="fTrade1"><option value="">Select...</option><option>ROOFING</option><option>GUTTERS</option><option>SIDING</option><option>WINDOWS</option><option>INSULATION</option><option>PAINTING</option></select>
         </div>
         <div class="form-group"><label>Trade 2</label>
-          <select id="fTrade2"><option value="">None</option><option>Roofing</option><option>Gutters</option><option>Siding</option><option>Windows</option></select>
+          <select id="fTrade2"><option value="">None</option><option>ROOFING</option><option>GUTTERS</option><option>SIDING</option><option>WINDOWS</option><option>INSULATION</option><option>PAINTING</option></select>
         </div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>GL Policy #</label><input type="text" id="fGLPolicy" placeholder="Policy number"></div>
-        <div class="form-group"><label>GL Expiry Date</label><input type="date" id="fGLExpiry"></div>
+        <div class="form-group"><label>Trade 3</label>
+          <select id="fTrade3"><option value="">None</option><option>ROOFING</option><option>GUTTERS</option><option>SIDING</option><option>WINDOWS</option><option>INSULATION</option><option>PAINTING</option></select>
+        </div>
+        <div class="form-group"><label>Trade 4</label>
+          <select id="fTrade4"><option value="">None</option><option>ROOFING</option><option>GUTTERS</option><option>SIDING</option><option>WINDOWS</option><option>INSULATION</option><option>PAINTING</option></select>
+        </div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>WC Policy #</label><input type="text" id="fWCPolicy" placeholder="Policy number"></div>
-        <div class="form-group"><label>WC Expiry Date</label><input type="date" id="fWCExpiry"></div>
-      </div>
-      <div class="form-row">
+        <div class="form-group"><label>Contract Status</label>
+          <select id="fContract"><option value="Active">Active</option><option value="Pending">Pending</option><option value="Inactive">Inactive</option></select>
+        </div>
         <div class="form-group"><label>Will Travel</label>
           <select id="fTravel"><option value="No">No</option><option value="Yes">Yes</option></select>
         </div>
-        <div class="form-group"><label>Travel Distance (miles)</label><input type="number" id="fTravelDist" placeholder="e.g. 50"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Notes</label><input type="text" id="fNotes" placeholder="Optional notes..."></div>
+        <div class="form-group"><label>Travel Distance (miles)</label><input type="number" id="fTravelDist" placeholder="e.g. 50"></div>
         <div class="form-group"></div>
       </div>
+
+      <!-- GL/WC - admin only -->
+      <div id="addGLWCSection">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gray-400);margin:16px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--gray-200);">🛡 Insurance (Admin Only)</div>
+        <div class="form-row">
+          <div class="form-group"><label>GL Policy #</label><input type="text" id="fGLPolicy" placeholder="Policy number"></div>
+          <div class="form-group"><label>GL Expiry Date</label><input type="date" id="fGLExpiry"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>WC Policy #</label><input type="text" id="fWCPolicy" placeholder="Policy number"></div>
+          <div class="form-group"><label>WC Expiry Date</label><input type="date" id="fWCExpiry"></div>
+        </div>
+      </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
@@ -1349,7 +1406,7 @@ function applyFilters() {
     if (statusFilter !== 'all' && status !== statusFilter) return false;
     if (trade) { const t = trade.toUpperCase(); if (![c.trade, c.trade2, c.trade3, c.trade4].map(x => (x||'').toUpperCase()).includes(t)) return false; }
     if (contract && c.contract_status !== contract)         return false;
-    if (search && ![c.name, c.trade, c.market, c.contact, c.email].join(' ').toLowerCase().includes(search)) return false;
+    if (search && ![c.name, c.trade, c.supervisor, c.contact, c.email].join(' ').toLowerCase().includes(search)) return false;
     return true;
   });
 
@@ -1587,7 +1644,7 @@ async function loadContractorDocs(contractorId) {
   list.innerHTML = '<div style="font-size:12px;color:var(--gray-400);">Loading documents...</div>';
 
   try {
-    const res  = await fetch(`${BACKEND_URL}?action=listFiles&region=${regionKey}&folder=contractor_${contractorId}`);
+    const res  = await fetch(BACKEND_URL + '?action=listFiles&region=' + encodeURIComponent(regionKey) + '&folder=' + encodeURIComponent('contractor_' + contractorId));
     const data = await res.json();
     const files = data.files || [];
 
@@ -1685,7 +1742,10 @@ function docIcon(name) {
 }
 
 /* ══ ADD CONTRACTOR ══════════════════════════════════════════ */
-function openAddModal()  { document.getElementById('addModal').classList.add('open');
+function openAddModal()  {
+  const glwc = document.getElementById('addGLWCSection');
+  if (glwc) glwc.style.display = isAdmin() ? 'block' : 'none';
+  document.getElementById('addModal').classList.add('open');
   applyEditPermissions(); }
 function closeAddModal() { document.getElementById('addModal').classList.remove('open'); }
 
@@ -1693,46 +1753,64 @@ async function saveContractor() {
   const name = document.getElementById('fCompany').value.trim();
   if (!name) { showToast('Please enter a company name.', 'warn'); return; }
 
+  const g = id => document.getElementById(id)?.value.trim() || '';
+
   const contractor = {
-    id:              'new-' + Date.now(),
-    region:          regionKey,
     name,
-    contact_name:    document.getElementById('fContact').value.trim(),
-    phone:           document.getElementById('fPhone').value.trim(),
-    email:           document.getElementById('fEmail').value.trim(),
-    market:          document.getElementById('fMarket').value.trim(),
-    contract_status: document.getElementById('fContract').value,
-    trade1:          document.getElementById('fTrade1').value,
-    trade2:          document.getElementById('fTrade2').value,
-    gl_policy:       document.getElementById('fGLPolicy').value.trim(),
-    gl_expiry:       document.getElementById('fGLExpiry').value,
-    wc_policy:       document.getElementById('fWCPolicy').value.trim(),
-    wc_expiry:       document.getElementById('fWCExpiry').value,
-    will_travel:     document.getElementById('fTravel').value,
-    travel_distance: document.getElementById('fTravelDist').value,
-    notes:           document.getElementById('fNotes').value.trim(),
+    pay_id:          g('fPayId'),
+    region:          region.abbr,
+    contact:         g('fContact'),
+    contact2:        g('fContact2'),
+    phone:           g('fPhone'),
+    email:           g('fEmail'),
+    email2:          g('fEmail2'),
+    supervisor:      g('fSupervisor'),
+    address:         g('fAddress'),
+    city:            g('fCity'),
+    state:           g('fState'),
+    zip:             g('fZip'),
+    trade1:          g('fTrade1'),
+    trade2:          g('fTrade2'),
+    trade3:          g('fTrade3'),
+    trade4:          g('fTrade4'),
+    contract_status: g('fContract') || 'Active',
+    will_travel:     g('fTravel') || 'No',
+    travel_distance: g('fTravelDist'),
+    gl_policy:       g('fGLPolicy'),
+    gl_expiry:       g('fGLExpiry'),
+    wc_policy:       g('fWCPolicy'),
+    wc_expiry:       g('fWCExpiry'),
   };
 
-  allContractors.unshift(normalizeContractor(contractor));
-  closeAddModal();
-  renderAll();
-  showToast(`${name} added.`, 'info');
+  const btn = document.querySelector('#addModal .btn-primary');
+  btn.textContent = 'Saving…'; btn.disabled = true;
 
-  // Save to backend
   try {
-    await fetch(BACKEND_URL, {
+    const res  = await fetch(BACKEND_URL, {
       method: 'POST',
-      body: JSON.stringify({ action: 'writeRow', tab: 'COMPLIANCE_Data', row: Object.values(contractor) })
+      body: JSON.stringify({ action: 'addContractor', contractor })
     });
-  } catch(e) { /* silent */ }
+    const data = await res.json();
+    if (data.success) {
+      allContractors.unshift(normalizeContractor({...contractor, id: contractor.name}));
+      closeAddModal();
+      renderAll();
+      showToast(name + ' added ✓', 'info');
+    } else {
+      showToast('Error: ' + (data.error||'Unknown'), 'error');
+    }
+  } catch(e) {
+    showToast('Connection error', 'error');
+  }
+  btn.textContent = 'Save Contractor'; btn.disabled = false;
 }
 
 /* ══ EXPORT ══════════════════════════════════════════════════ */
 function exportCSV() {
   if (!filtered.length) { showToast('No data to export.', 'warn'); return; }
-  const headers = ['Name','Contact','Phone','Email','Market','Trade','GL Policy','GL Expiry','WC Policy','WC Expiry','Contract Status','Will Travel','Travel Distance','Notes'];
+  const headers = ['Name','Contact','Phone','Email','Supervisor','Trade','GL Policy','GL Expiry','WC Policy','WC Expiry','Contract Status','Will Travel','Travel Distance'];
   const rows = filtered.map(c => [
-    c.name, c.contact, c.phone, c.email, c.market, c.trade,
+    c.name, c.contact, c.phone, c.email, c.supervisor, c.trade,
     c.gl_policy, c.gl_expiry, c.wc_policy, c.wc_expiry,
     c.contract_status, c.will_travel, c.travel_distance, c.notes
   ].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
@@ -1974,7 +2052,7 @@ async function openDocsPanel(contractorId, contractorName) {
     }
 
     if (!files.length) {
-      document.getElementById('dpBody').innerHTML = `<div class="dp-empty"><div class="dp-empty-icon">📭</div>No documents found.<br><span style="font-size:10px;color:var(--gray-300);">Folder: contractor_${contractorId}</span></div>`;
+      document.getElementById('dpBody').innerHTML = '<div class="dp-empty"><div class="dp-empty-icon">📭</div>No documents found.<br><span style="font-size:10px;color:var(--gray-300);">Folder: contractor_' + contractorId + '</span></div>';
       return;
     }
 
@@ -2011,6 +2089,12 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDocsP
 function toggleOffboardForm(checked) {
   const wrap = document.getElementById('offboardReasonWrap');
   if (wrap) wrap.style.display = checked ? 'block' : 'none';
+}
+
+
+function logout() {
+  localStorage.removeItem('elite_session');
+  window.location.href = 'login.html';
 }
 
 </script>
