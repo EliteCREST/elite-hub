@@ -1576,7 +1576,7 @@ async function uploadDocs(files) {
         body: JSON.stringify({
           action:   'uploadFile',
           region:   regionKey,
-          folder:   `contractor_${currentContractor.id}`,
+          folder:   'contractor_' + currentContractor.id,
           fileName: file.name,
           mimeType: file.type,
           data:     b64,
@@ -1911,11 +1911,9 @@ async function openDocsPanel(contractorId, contractorName) {
   document.getElementById('docsPanel').classList.add('open');
 
   try {
-    const url  = `${BACKEND_URL}?action=listFiles&region=${regionKey}&folder=${encodeURIComponent('contractor_' + contractorId)}`;
-    console.log('[ViewDocs] Fetching:', url);
+    const url  = BACKEND_URL + '?action=listFiles&region=' + encodeURIComponent(regionKey) + '&folder=' + encodeURIComponent('contractor_' + contractorId);
     const res  = await fetch(url);
     const data = await res.json();
-    console.log('[ViewDocs] Response:', JSON.stringify(data));
     const files = data.files || [];
 
     if (data.error) {
@@ -1936,7 +1934,8 @@ async function openDocsPanel(contractorId, contractorName) {
             <div class="dp-file-name">${f.name}</div>
             <div class="dp-file-date">${f.uploaded ? formatDate(f.uploaded) : ''}</div>
           </div>
-          <a class="dp-file-btn" href="${f.viewUrl}" target="_blank">View ↗</a>
+          <a class="dp-file-btn" href="${f.embedUrl || f.viewUrl}" target="_blank" style="margin-right:4px;">👁 View</a>
+          <a class="dp-file-btn" href="${f.downloadUrl || f.viewUrl}" target="_blank" style="background:var(--gray-100);color:var(--gray-600);border-color:var(--gray-200);">⬇</a>
         </div>`).join('')}
     </div>`;
   } catch(e) {
