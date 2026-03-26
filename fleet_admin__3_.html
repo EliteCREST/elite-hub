@@ -34,10 +34,21 @@
   const username = String(session.user.username || '').toLowerCase();
   if (username === 'angel') return;
 
-  // Get user's regions (may be multi e.g. "CLE, IND")
-  const userRegionsRaw = String(session.user.region || session.user.regions || '').toUpperCase();
-  const userRegions    = userRegionsRaw.split(/[,\s]+/).filter(Boolean);
-  const hasAllRegions  = userRegions.includes('ALL') || userRegions.length === 0;
+  // Normalize region — handles both 'cleveland' and 'CLE'
+  const NAME_TO_ABBR = {
+    cleveland:'CLE', phoenix:'PHX', chicago:'CHI', stlouis:'STL',
+    minneapolis:'MSP', milwaukee:'MKE', indianapolis:'IND',
+    pittsburgh:'PIT', albuquerque:'ABQ'
+  };
+  const rawRegion  = String(session.user.region || session.user.regions || '');
+  const parts      = rawRegion.split(/[,\s]+/).filter(Boolean);
+  // Convert each part to an abbreviation
+  const userAbbrs  = parts.map(p => {
+    const upper = p.trim().toUpperCase();
+    const lower = p.trim().toLowerCase();
+    return NAME_TO_ABBR[lower] || upper; // if it's already an abbr like CLE, keep it
+  });
+  const hasAllRegions = userAbbrs.includes('ALL') || userAbbrs.length === 0;
 
   // Check explicit page access flag
   if (session.user[page] === 'false') {
@@ -49,7 +60,7 @@
   const hubRegion = HUB_PAGE_REGIONS[page];
   if (hubRegion && !hasAllRegions) {
     const required = REGION_ABBR[hubRegion];
-    if (!userRegions.includes(required)) {
+    if (!userAbbrs.includes(required)) {
       window.location.href = 'index.html';
       return;
     }
@@ -59,7 +70,7 @@
   const urlRegion = new URLSearchParams(window.location.search).get('region');
   if (urlRegion && !hasAllRegions) {
     const required = REGION_ABBR[urlRegion.toLowerCase()];
-    if (required && !userRegions.includes(required)) {
+    if (required && !userAbbrs.includes(required)) {
       window.location.href = 'index.html';
       return;
     }
