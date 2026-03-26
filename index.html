@@ -703,13 +703,15 @@ function canAccessRegion(key) {
 }
 
 function applyRegionLocks() {
-  document.querySelectorAll('.region-card, .podium-card').forEach(card => {
+  document.querySelectorAll('.region-card[data-key], .podium-card[data-key]').forEach(card => {
     const key = card.getAttribute('data-key');
     if (!key) return;
-    if (!canAccessRegion(key)) {
-      card.classList.add('locked');
-    } else {
+    if (canAccessRegion(key)) {
       card.classList.remove('locked');
+      card.style.opacity = '1';
+    } else {
+      card.classList.add('locked');
+      card.style.opacity = '0.35';
     }
   });
 }
@@ -717,10 +719,11 @@ function applyRegionLocks() {
 function openRegion(key) {
   const region = REGIONS.find(r => r.key === key);
   if (!region) return;
-  const s = JSON.parse(localStorage.getItem('elite_session')||'null');
-  const userRegion = s && s.user ? s.user.region : 'NO SESSION';
-  const username   = s && s.user ? s.user.username : 'NO USER';
-  alert('User: ' + username + '\nRegion in session: ' + userRegion + '\nClicking: ' + key + '\nCan access: ' + canAccessRegion(key));
+  if (region.url) {
+    window.location.href = region.url;
+  } else {
+    showToast(region.city + ' Hub not yet deployed.', 'warn');
+  }
 }
 
 /* ══════════════════════════════════════════════════════
