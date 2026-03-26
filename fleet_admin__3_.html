@@ -69,7 +69,7 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fleet Management — Elite Hub</title>
+<title>Fleet Admin — All Regions — Elite Hub</title>
 <style>
   :root {
     --navy:        #1B2A4A;
@@ -564,13 +564,12 @@
   }
   .dark-toggle:hover { border-color: rgba(255,255,255,.75); color: white; }
 
-
-  /* ══ SAFETY PANEL ════════════════════════════════════════════ */
-  .safety-overlay { position:fixed;inset:0;z-index:600;background:rgba(27,42,74,.5);backdrop-filter:blur(3px);display:none; }
+/* ══ SAFETY PANEL ════════════════════════════════════════════ */
+  .safety-overlay { position:fixed;inset:0;z-index:400;background:rgba(27,42,74,.5);backdrop-filter:blur(3px);display:none; }
   .safety-overlay.open { display:block; }
   .safety-panel {
     position:fixed;top:0;right:-540px;width:540px;height:100vh;
-    background:white;z-index:601;box-shadow:-8px 0 32px rgba(27,42,74,.2);
+    background:white;z-index:401;box-shadow:-8px 0 32px rgba(27,42,74,.2);
     display:flex;flex-direction:column;transition:right .3s ease;
   }
   .safety-panel.open { right:0; }
@@ -634,8 +633,7 @@
   .safety-badge.poor      { background:#FEE2E2;color:#DC2626; }
   .safety-badge.none      { background:var(--gray-100);color:var(--gray-400); }
 
-
-  /* ══ SAFETY SUMMARY STRIP ════════════════════════════════════ */
+/* ══ SAFETY SUMMARY STRIP ════════════════════════════════════ */
   .safety-strip {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -742,7 +740,7 @@ function toggleDarkMode() {
 
 <!-- BACK NAV -->
 <nav class="back-nav">
-  <a id="backToHub" href="#">← <span id="navRegion">Region</span> Hub &rsaquo; Fleet Management</a>
+  <a href="https://elitecrest.github.io/elite-hub/admin.html">← Admin Center &rsaquo; Fleet Management</a>
 </nav>
 
 <main>
@@ -757,10 +755,13 @@ function toggleDarkMode() {
       <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Vehicle</button>
       <button class="btn btn-outline btn-sm" onclick="if(typeof syncData==='function')syncData()">↻ Sync</button>
       <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export</button>
+      <button class="btn btn-navy btn-sm" onclick="openBulkInsurance()">🛡 Bulk Insurance Update</button>
+      <a href="https://elitecrest.github.io/elite-hub/fleet_merge_tool.html" target="_blank" class="btn btn-outline btn-sm" style="text-decoration:none;">⚡ Merge Tool</a>
+      <button class="btn btn-outline btn-sm" onclick="recalcScores()" id="btnRecalc">🏆 Recalc Scores</button>
     </div>
   </div>
   <div class="kpi-grid">
-    <div class="kpi-card good-card"><div class="kpi-icon">🚗</div><div class="kpi-label">Total Vehicles</div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-sub">This region</div></div>
+    <div class="kpi-card good-card"><div class="kpi-icon">🚗</div><div class="kpi-label">Total Vehicles</div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-sub">All regions</div></div>
     <div class="kpi-card good-card"><div class="kpi-icon">✅</div><div class="kpi-label">Active</div><div class="kpi-value" id="kpiActive">—</div><div class="kpi-sub">In service</div></div>
     <div class="kpi-card"><div class="kpi-icon">🔧</div><div class="kpi-label">In Shop</div><div class="kpi-value" id="kpiShop">—</div><div class="kpi-sub">Under maintenance</div></div>
     <div class="kpi-card warn-card"><div class="kpi-icon">⚠️</div><div class="kpi-label">Tag Expiring</div><div class="kpi-value" id="kpiTagWarn">—</div><div class="kpi-sub">Within 60 days</div></div>
@@ -768,8 +769,8 @@ function toggleDarkMode() {
     <div class="kpi-card warn-card"><div class="kpi-icon">🛢️</div><div class="kpi-label">Oil Due</div><div class="kpi-value" id="kpiOilDue">—</div><div class="kpi-sub">Needs oil change</div></div>
     <div class="kpi-card alert-card"><div class="kpi-icon">📋</div><div class="kpi-label">Unsigned</div><div class="kpi-value" id="kpiUnsigned">—</div><div class="kpi-sub">Agreement pending</div></div>
     <div class="kpi-card"><div class="kpi-icon">📡</div><div class="kpi-label">GeoTab Issues</div><div class="kpi-value" id="kpiGeotab">—</div><div class="kpi-sub">Connectivity issues</div></div>
+    <div class="kpi-card good-card"><div class="kpi-icon">🏆</div><div class="kpi-label">Avg Fleet Score</div><div class="kpi-value" id="kpiFleetScore">—</div><div class="kpi-sub">0–100 behavior score</div></div>
   </div>
-
 
   <!-- SAFETY SUMMARY STRIP -->
   <div class="safety-strip-title">🛡 Fleet Safety Summary</div>
@@ -784,7 +785,7 @@ function toggleDarkMode() {
     <div class="safety-strip-card ss-ok"><div class="ss-icon">🔧</div><div class="ss-label">Vehicle Health</div><div class="ss-value ok" id="ssHealth">—</div><div class="ss-sub">Engine + Tire + Battery</div></div>
   </div>
 
-  <!-- FILTER BAR -->
+<!-- FILTER BAR -->
   <div class="filter-bar">
     <div class="search-box">
       <span style="color:var(--gray-400);">🔍</span>
@@ -798,6 +799,18 @@ function toggleDarkMode() {
     <button class="filter-pill red-pill" onclick="setFilter('tag-expired',this)">Tag Expired</button>
     <button class="filter-pill" onclick="setFilter('unsigned',this)">Unsigned</button>
     <div class="filter-divider"></div>
+    <select class="filter-select" id="regionAdminFilter" onchange="applyFilters()">
+      <option value="">All Regions</option>
+      <option value="CLE">Cleveland</option>
+      <option value="PHX">Phoenix</option>
+      <option value="ABQ">Albuquerque</option>
+      <option value="MSP">Minneapolis</option>
+      <option value="STL">St. Louis</option>
+      <option value="CHI">Chicago</option>
+      <option value="IND">Indianapolis</option>
+      <option value="PIT">Pittsburgh</option>
+      <option value="MKE">Milwaukee</option>
+    </select>
     <select class="filter-select" id="brandFilter" onchange="applyFilters()">
       <option value="">All Brands</option>
       <option>Aspen</option>
@@ -829,7 +842,8 @@ function toggleDarkMode() {
     <button class="sort-btn" onclick="sortBy('driver',this)">Driver ↕</button>
     <button class="sort-btn" onclick="sortBy('make',this)">Make ↕</button>
     <button class="sort-btn" onclick="sortBy('tag_expiration',this)">Tag Exp ↕</button>
-    <button class="sort-btn" onclick="sortBy('geotab',this)">GeoTab ↕</button>
+    <button class="sort-btn" onclick="sortBy('geotab_status',this)">GeoTab ↕</button>
+    <button class="sort-btn" onclick="sortBy('status',this)">Status ↕</button>
     <span id="vehicleCount" style="margin-left:auto;font-size:11px;color:var(--gray-400);"></span>
   </div>
 
@@ -846,7 +860,7 @@ function toggleDarkMode() {
 
 <footer>
   <div class="footer-brand">
-    <strong>Elite Family of Brands</strong> &nbsp;·&nbsp; <span id="footerRegion">Region</span> Fleet &nbsp;·&nbsp; Internal Use Only
+    <strong>Elite Family of Brands</strong> &nbsp;·&nbsp; <span id="footerRegion">Region</span> Fleet Admin &nbsp;·&nbsp; All Regions &nbsp;·&nbsp; Internal Use Only
   </div>
   <div class="footer-links">
     <a id="footerHubLink" href="#">← Region Hub</a>
@@ -871,6 +885,14 @@ function toggleDarkMode() {
         <div class="form-section-title">🚗 Vehicle Info</div>
         <div class="form-row">
           <div class="form-group"><label>EVID #</label><input type="text" id="fEVID" placeholder="e.g. 2074"></div>
+          <div class="form-group"><label>Status</label>
+            <select id="fStatus">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="In Shop">In Shop</option>
+              <option value="Unknown">Unknown</option>
+            </select>
+          </div>
         </div>
         <div class="form-row-3">
           <div class="form-group"><label>Year</label><input type="text" id="fYear" placeholder="2025"></div>
@@ -954,6 +976,47 @@ function toggleDarkMode() {
           <div class="form-group"><label>Device Name</label><input type="text" id="fDeviceName" placeholder="GeoTab device name"></div>
           <div class="form-group"><label>Serial #</label><input type="text" id="fSerial" placeholder="Device serial"></div>
         </div>
+        <div class="form-row">
+          <div class="form-group"><label>Firmware Version</label><input type="text" id="fFirmware" placeholder="e.g. 124.45.29"></div>
+          <div class="form-group"><label>Download Status</label>
+            <select id="fDownloadStatus">
+              <option value="">Unknown</option>
+              <option value="OK">OK</option>
+              <option value="Device is not downloading data">Not Downloading</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Current Activity</label>
+            <select id="fCurrentActivity">
+              <option value="">Unknown</option>
+              <option value="Stopped">Stopped</option>
+              <option value="Driving">Driving</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Work Time</label>
+            <select id="fWorkTime">
+              <option value="">Unknown</option>
+              <option value="Standard Hours">Standard Hours</option>
+              <option value="All Hours">All Hours</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Engine Hours</label><input type="text" id="fEngineHours" placeholder="e.g. 929:57"></div>
+          <div class="form-group"><label>Last Trip Date</label><input type="date" id="fLastTrip"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Last Stop Zone</label><input type="text" id="fLastStopZone" placeholder="e.g. Home Zone, Customer Zone"></div>
+          <div class="form-group"><label>Privacy Mode</label>
+            <select id="fPrivacyMode">
+              <option value="">Unknown</option>
+              <option value="FALSE">Off</option>
+              <option value="TRUE">On</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Device Group</label><input type="text" id="fDeviceGroup" placeholder="e.g. Vehicle, Gasoline or Petrol, Chicago"></div>
       </div>
 
       <div class="form-section fs-reg">
@@ -1036,46 +1099,50 @@ let editingId    = null;
 /* ══════════════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════════════ */
-document.getElementById('hdrSub').textContent       = region.abbr + ' Fleet';
-document.getElementById('hdrPageName').textContent  = region.city + ' — Fleet Management';
-document.getElementById('hdrRegion').textContent    = region.city;
-document.getElementById('hdrAbbr').textContent      = region.abbr;
-document.getElementById('navRegion').textContent    = region.city;
-document.getElementById('footerRegion').textContent = region.city;
-document.getElementById('backToHub').href           = region.hubUrl || '#';
-document.getElementById('footerHubLink').href       = region.hubUrl || '#';
-document.getElementById('pageCallout').innerHTML    =
-  `<strong>${region.city} — Fleet Management</strong> — Vehicle tracking, GeoTab health, registration, and maintenance for all vehicles in the ${region.city} region. Data synced from Google Sheets (<strong>Fleet_Data</strong> tab).`;
+document.addEventListener('DOMContentLoaded', () => {
+  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const setHref = (id, val) => { const el = document.getElementById(id); if (el) el.href = val; };
+  const setHTML = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
+
+  setText('hdrSub',       'ALL REGIONS');
+  setText('hdrPageName',  'Fleet Admin — All Regions');
+  setText('hdrRegion',    'All Regions');
+  setText('hdrAbbr',      'ALL');
+  setText('navRegion',    'All Regions');
+  setText('footerRegion', 'All Regions');
+  setHref('backToHub',    'https://elitecrest.github.io/elite-hub/admin.html');
+  setHref('footerHubLink','https://elitecrest.github.io/elite-hub/admin.html');
+  setHTML('pageCallout',  '<strong>Fleet Management — All Regions</strong> — Vehicle tracking, GeoTab health, registration, and maintenance across all regions. Data synced from Google Sheets (<strong>Fleet_Data</strong> tab).');
+});
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-
-syncData();
-setInterval(syncData, 120000); // auto-refresh every 2 min
 
 /* ══════════════════════════════════════════════════════════════
    DATA SYNC
 ══════════════════════════════════════════════════════════════ */
-async function syncData() {
-  // Show cached data instantly if available
-  const cacheKey = `fleet_${regionKey}`;
-  const cached = getCached(cacheKey);
-  if (cached && cached.data) {
-    allVehicles = cached.data.map(normalizeVehicle);
-    populateMakeFilter();
-    renderAll();
-  } else {
-    document.getElementById('vehicleCount').textContent = 'Loading...';
-  }
+const FLEET_CACHE_KEY = 'fleet_admin_all';
+
+async function syncData(useCache = false) {
   document.getElementById('hdrSync').textContent = '…';
+
+  // Optionally show cached data instantly while live fetch runs
+  if (useCache) {
+    const cached = getCached(FLEET_CACHE_KEY);
+    if (cached && cached.data) {
+      allVehicles = cached.data.map(normalizeVehicle);
+      populateMakeFilter();
+      renderAll();
+    }
+  }
+
   try {
-    const res  = await fetch(`${BACKEND_URL}?action=fleetData&region=${regionKey}`);
+    const res  = await fetch(`${BACKEND_URL}?action=fleetData`); // no region = all regions
     const data = await res.json();
     allVehicles = (data.data || []).map(normalizeVehicle);
-    setCache(cacheKey, data);
+    setCache(FLEET_CACHE_KEY, data);
     populateMakeFilter();
     renderAll();
     document.getElementById('hdrSync').textContent = new Date().toLocaleTimeString();
-    // Auto-load safety scores for all vehicles
     loadAllSafetyScores();
   } catch(e) {
     document.getElementById('vehicleCount').textContent = 'Error loading — check backend';
@@ -1084,51 +1151,58 @@ async function syncData() {
   }
 }
 
+// Script is at bottom of body — DOM is already ready, call directly
+syncData(false);
+setInterval(() => syncData(false), 120000);
+
 function normalizeVehicle(r) {
-  // Helper to check multiple possible column name formats
-  function f() {
-    for (const k of arguments) { if (r[k] !== undefined && r[k] !== '') return String(r[k]); }
-    return '';
-  }
   return {
-    id:               f('evid','id') || Math.random().toString(36).slice(2),
-    evid:             f('evid'),
-    device_name:      f('device name','device_name'),
-    status:           f('status'),
-    serial:           f('serial #','serial#','serial'),
-    last_communicated:f('last communicated','last_communicated'),
-    region:           f('region'),
-    driver:           f('assigned driver','assigned_driver'),
-    last_driver:      f('last known driver','last_known_driver'),
-    agreement:        f('agreement status','agreement_status'),
-    ownership:        f('ownership'),
-    fleet_type:       f('fleet_type','fleet type'),
-    serial_no:        f('serial #','serial#'),
-    brand:            f('brand'),
-    vehicle_location: f('vehicle location','vehicle_location'),
-    wrap:             f('vehicle wrap?','vehicle wrap','vehicle_wrap'),
-    wrap_existing:    f('wrap existing'),
-    year:             f('year'),
-    make:             f('make'),
-    model:            f('model'),
-    color:            f('color'),
-    cab_size:         f('cab size','cab_size'),
-    bed_size:         f('bed size','bed_size'),
-    accessory:        f('accessory'),
-    vin:              f('vin'),
-    plate:            f('license plate number','license_plate_number'),
-    tag_state:        f('tag state','tag_state'),
-    tag_expiration:   f('tag expiration','tag_expiration'),
-    geotab:           f('geotab status','geotab_status','geotab'),
-    office_location:  f('office location','office_location'),
-    odometer:         f('odometer'),
-    odom_date:        f('odometer date checked','odometer_date_checked'),
-    toll:             f('toll id / transponder','toll id / transponder'),
-    last_maint:       f('last maintenance','last_maintenance'),
-    maint_due:        f('maintenance due date','maintenance_due_date'),
-    oil_due:          f('oil change due (miles)','oil change due (miles)'),
-    notes:            f('notes'),
-    ins_exp:          f('insurance exp date','insurance_exp_date'),
+    id:               String(r['evid'] || r['id'] || Math.random().toString(36).slice(2)),
+    evid:             String(r['evid']              || ''),
+    device_name:      String(r['device_name']       || ''),
+    status:           String(r['status']            || ''),
+    serial:           String(r['serial#']           || ''),
+    last_communicated:String(r['last_communicated'] || ''),
+    region:           String(r['region']            || ''),
+    driver:           String(r['assigned_driver']   || ''),
+    last_driver:      String(r['last_known_driver'] || ''),
+    agreement:        String(r['agreement_status']  || ''),
+    geotab:           String(r['geotab_status']     || ''),
+    brand:            String(r['brand']             || ''),
+    year:             String(r['year']              || ''),
+    make:             String(r['make']              || ''),
+    model:            String(r['model']             || ''),
+    color:            String(r['color']             || ''),
+    plate:            String(r['license_plate_number'] || ''),
+    tag_state:        String(r['tag_state']         || ''),
+    tag_expiration:   String(r['tag_expiration']    || ''),
+    vehicle_location: String(r['vehicle_location']  || ''),
+    office_location:  String(r['office_location']   || ''),
+    wrap:             String(r['vehicle_wrap']       || ''),
+    vin:              String(r['vin']               || ''),
+    cab_size:         String(r['cab_size']          || ''),
+    bed_size:         String(r['bed_size']          || ''),
+    accessory:        String(r['accessory']         || ''),
+    odometer:         String(r['odometer']          || ''),
+    odom_date:        String(r['odometer_date_checked'] || ''),
+    toll:             String(r['toll_id_/_transponder'] || ''),
+    last_maint:       String(r['last_maintenance']  || ''),
+    maint_due:        String(r['maintenance_due_date'] || ''),
+    oil_due:          String(r['oil_change_due_(miles)'] || ''),
+    ins_exp:          String(r['insurance_exp_date'] || ''),
+    notes:            String(r['notes']             || ''),
+    device_group:     String(r['device_group']      || ''),
+    work_time:        String(r['work_time']         || ''),
+    current_activity: String(r['current_activity']  || ''),
+    in_privacy_mode:  String(r['in_privacy_mode']   || ''),
+    last_stop_zone:   String(r['last_stop_zone']    || ''),
+    engine_hours:     String(r['engine_hours'] || r['current_engine_hours'] || ''),
+    firmware_version: String(r['firmware_version']  || ''),
+    download_status:  String(r['download_status']   || ''),
+    last_trip:        String(r['last_trip']         || ''),
+    fleet_score:      r['fleet_score'] !== undefined && r['fleet_score'] !== '' ? Number(r['fleet_score']) : null,
+    score_breakdown:  String(r['score_breakdown']  || ''),
+    score_calculated: String(r['score_calculated'] || ''),
   };
 }
 
@@ -1195,18 +1269,12 @@ function renderAll() {
 
 function updateKPIs() {
   const total    = allVehicles.length;
-  const active   = allVehicles.filter(v => {
-    const agreement = (v.agreement || '').toLowerCase();
-    const inShop    = (v.status || '').toLowerCase().includes('shop');
-    const tagOk     = getTagStatus(v.tag_expiration) !== 'expired';
-    const geotabOk  = (v.geotab || '').toLowerCase() === 'active';
-    return agreement === 'signed' && !inShop && tagOk && geotabOk;
-  }).length;
+  const active   = allVehicles.filter(v => (v.status||'').toLowerCase() === 'active').length;
   const shop     = allVehicles.filter(v => (v.status||'').toLowerCase().includes('shop')).length;
   const tagExp   = allVehicles.filter(v => getTagStatus(v.tag_expiration) === 'expired').length;
   const tagWarn  = allVehicles.filter(v => getTagStatus(v.tag_expiration) === 'expiring').length;
   const unsigned = allVehicles.filter(v => v.agreement && v.agreement.toLowerCase() !== 'signed').length;
-  const geotab   = allVehicles.filter(v => { const g = (v.geotab || '').toLowerCase(); return g !== 'active' && g !== 'ok'; }).length;
+  const geotab   = allVehicles.filter(v => v.geotab && v.geotab.toLowerCase() !== 'ok').length;
   const oilDue   = allVehicles.filter(v => v.oil_due && parseInt(v.oil_due) <= 500).length;
 
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
@@ -1219,6 +1287,13 @@ function updateKPIs() {
   set('kpiGeotab',  geotab);
   set('kpiOilDue',  oilDue);
   set('hdrTotal',   total);
+  const scored = allVehicles.filter(v => v.fleet_score !== null);
+  const avgScore = scored.length ? Math.round(scored.reduce((s,v) => s + v.fleet_score, 0) / scored.length) : null;
+  const scoreEl = document.getElementById('kpiFleetScore');
+  if (scoreEl) {
+    scoreEl.textContent = avgScore !== null ? avgScore : '—';
+    scoreEl.style.color = avgScore === null ? '' : avgScore >= 80 ? 'var(--green)' : avgScore >= 60 ? 'var(--yellow)' : 'var(--red)';
+  }
 }
 
 function populateMakeFilter() {
@@ -1244,14 +1319,10 @@ function applyFilters() {
   const ownership  = (document.getElementById('ownershipFilter')||{}).value || '';
   const fleetType  = (document.getElementById('fleetTypeFilter')||{}).value || '';
 
+  const regionAdmin = (document.getElementById('regionAdminFilter')||{}).value || '';
   filtered = allVehicles.filter(v => {
-    if (statusFilter === 'active') {
-      const agreement = (v.agreement || '').toLowerCase();
-      const inShop    = (v.status || '').toLowerCase().includes('shop');
-      const tagOk     = getTagStatus(v.tag_expiration) !== 'expired';
-      const geotabOk  = (v.geotab || '').toLowerCase() === 'active';
-      if (!(agreement === 'signed' && !inShop && tagOk && geotabOk)) return false;
-    }
+    if (regionAdmin && !(v.region||'').toUpperCase().includes(regionAdmin)) return false;
+    if (statusFilter === 'active'     && (v.status||'').toLowerCase() !== 'active') return false;
     if (statusFilter === 'shop'       && !(v.status||'').toLowerCase().includes('shop')) return false;
     if (statusFilter === 'unknown'    && (v.status||'').toLowerCase() !== 'unknown') return false;
     if (statusFilter === 'tag-expired'&& getTagStatus(v.tag_expiration) !== 'expired') return false;
@@ -1317,25 +1388,24 @@ function renderVehicles() {
           <div class="vc-tags">
             ${v.plate ? `<span class="tag tag-plate">${v.plate}</span>` : ''}
             ${geotabTag(v)}
+              <span class="safety-badge none" id="safety-badge-${v.evid}" onclick="event.stopPropagation();openSafety('${v.evid}','${v.make} ${v.model}')" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid currentColor;">🛡 Safety Score —</span>
             ${v.brand ? `<span class="tag tag-brand">${v.brand}</span>` : ''}
             ${v.agreement === 'Signed' ? `<span class="tag tag-signed">Signed</span>` : v.agreement ? `<span class="tag tag-unsigned">${v.agreement}</span>` : ''}
+            ${v.region ? `<span class="tag tag-gray">${v.region}</span>` : ''}
             ${v.vehicle_location ? `<span class="tag tag-location">${v.vehicle_location}</span>` : ''}
             ${tagExpiryTag(v)}
             ${v.wrap === 'Yes' ? `<span class="tag tag-wrap">Wrapped</span>` : ''}
+            ${v.download_status && v.download_status !== 'OK' ? `<span class="tag" style="background:var(--red-pale);color:var(--red);">⚠ Not Downloading</span>` : ''}
+            ${v.fleet_score !== null ? `<span class="tag" style="${v.fleet_score >= 80 ? 'background:var(--green-pale);color:var(--green);' : v.fleet_score >= 60 ? 'background:var(--yellow-pale);color:var(--yellow);' : 'background:var(--red-pale);color:var(--red);'}font-weight:700;">⬤ ${v.fleet_score}</span>` : ''}
             ${v.ownership ? `<span class="tag tag-gray">${v.ownership}</span>` : ''}
             ${v.fleet_type ? `<span class="tag ${v.fleet_type === 'Accuserve' ? 'tag-brand' : 'tag-signed'}">${v.fleet_type}</span>` : ''}
           </div>
         </div>
-        <div class="vc-status" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <div class="vc-status">
           <div class="status-dot-label">
             <div class="sdot ${sl.dot}"></div>
             <span style="color:var(--gray-600);font-size:11px;font-weight:700;">${sl.label}</span>
           </div>
-          <span class="safety-badge none" id="safety-badge-${v.evid}"
-            onclick="event.stopPropagation();openSafety('${v.evid}','${v.make} ${v.model}')"
-            style="font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid currentColor;cursor:pointer;">
-            🛡 Safety Score —
-          </span>
         </div>
       </div>
       <div class="vc-detail" id="detail-${v.id}">
@@ -1358,6 +1428,18 @@ function renderVehicles() {
           <div class="detail-item"><div class="di-label">GeoTab Device</div><div class="di-val ${!v.device_name?'missing':''}">${v.device_name||'—'}</div></div>
           <div class="detail-item"><div class="di-label">Serial #</div><div class="di-val ${!v.serial?'missing':''}">${v.serial||'—'}</div></div>
           <div class="detail-item"><div class="di-label">Last Communicated</div><div class="di-val ${!v.last_communicated?'missing':''}">${v.last_communicated||'—'}</div></div>
+          <div class="detail-item"><div class="di-label">Fleet Score</div><div class="di-val">${v.fleet_score !== null ? `<span style="${v.fleet_score >= 80 ? 'color:var(--green);' : v.fleet_score >= 60 ? 'color:var(--yellow);' : 'color:var(--red);'}font-size:18px;font-weight:700;">${v.fleet_score}</span><span style="color:var(--gray-400);font-size:11px;"> / 100</span>` : '<span class="missing">No data</span>'}</div></div>
+          <div class="detail-item" style="grid-column:1/-1"><div class="di-label">Score Breakdown</div><div class="di-val" style="font-size:11px;line-height:1.7;white-space:normal;">${v.score_breakdown || '<span class=\"missing\">—</span>'}</div></div>
+          <div class="detail-item"><div class="di-label">Score Calculated</div><div class="di-val ${!v.score_calculated?'missing':''}">${v.score_calculated || '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Download Status</div><div class="di-val">${v.download_status === 'OK' ? '<span style="color:var(--green);font-weight:700;">✓ OK</span>' : v.download_status ? '<span style="color:var(--red);font-weight:700;">' + v.download_status + '</span>' : '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Last Trip</div><div class="di-val ${!v.last_trip?'missing':''}">${v.last_trip ? formatDate(v.last_trip) : '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Engine Hours</div><div class="di-val ${!v.engine_hours?'missing':''}">${v.engine_hours || '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Firmware</div><div class="di-val ${!v.firmware_version?'missing':''}">${v.firmware_version || '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Current Activity</div><div class="di-val ${!v.current_activity?'missing':''}">${v.current_activity || '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Last Stop Zone</div><div class="di-val ${!v.last_stop_zone?'missing':''}">${v.last_stop_zone || '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Work Time</div><div class="di-val ${!v.work_time?'missing':''}">${v.work_time || '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Privacy Mode</div><div class="di-val">${v.in_privacy_mode === 'TRUE' ? 'Yes' : v.in_privacy_mode === 'FALSE' ? 'No' : '—'}</div></div>
+          <div class="detail-item"><div class="di-label">Device Group</div><div class="di-val ${!v.device_group?'missing':''}">${v.device_group || '—'}</div></div>
           ${v.notes ? `<div class="detail-item" style="grid-column:1/-1"><div class="di-label">Notes</div><div class="di-val">${v.notes}</div></div>` : ''}
         </div>
         <div class="vc-detail-actions">
@@ -1405,19 +1487,22 @@ function closeModal() {
 }
 
 function clearForm() {
-  ['fEVID','fDeviceName','fSerial','fDriver','fLastDriver','fVIN','fColor',
-   'fPlate','fTagState','fToll','fOdometer','fOdomDate','fLastMaint','fMaintDue',
-   'fOilDue','fInsExp','fNotes','fCabSize','fBedSize','fAccessory','fYear','fMake','fModel']
+  ['fEVID','fDeviceName','fSerial','fFirmware','fEngineHours','fLastStopZone','fDeviceGroup',
+   'fDriver','fLastDriver','fVIN','fColor','fPlate','fTagState','fToll','fOdometer','fOdomDate',
+   'fLastMaint','fMaintDue','fOilDue','fInsExp','fNotes','fCabSize','fBedSize','fAccessory',
+   'fYear','fMake','fModel']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  ['fAgreement','fGeotab','fBrand','fWrap']
+  ['fStatus','fAgreement','fGeotab','fBrand','fWrap','fDownloadStatus','fCurrentActivity','fWorkTime','fPrivacyMode']
     .forEach(id => { const el = document.getElementById(id); if (el) el.selectedIndex = 0; });
   document.getElementById('fTagExp') && (document.getElementById('fTagExp').value = '');
   document.getElementById('fInsExp') && (document.getElementById('fInsExp').value = '');
+  document.getElementById('fLastTrip') && (document.getElementById('fLastTrip').value = '');
 }
 
 function populateForm(v) {
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
   set('fEVID',          v.evid);
+  set('fStatus',        v.status);
   set('fYear',          v.year);
   set('fMake',          v.make);
   set('fModel',         v.model);
@@ -1449,12 +1534,22 @@ function populateForm(v) {
   set('fOwnership',     v.ownership);
   set('fFleetType',     v.fleet_type);
   set('fNotes',         v.notes);
+  set('fFirmware',      v.firmware_version);
+  set('fDownloadStatus',v.download_status);
+  set('fCurrentActivity',v.current_activity);
+  set('fWorkTime',      v.work_time);
+  set('fEngineHours',   v.engine_hours);
+  set('fLastTrip',      v.last_trip);
+  set('fLastStopZone',  v.last_stop_zone);
+  set('fPrivacyMode',   v.in_privacy_mode);
+  set('fDeviceGroup',   v.device_group);
 }
 
 function getFormValues() {
   const g = id => (document.getElementById(id)||{}).value || '';
   return {
     evid:             g('fEVID'),
+    status:           g('fStatus'),
     year:             g('fYear'),
     make:             g('fMake'),
     model:            g('fModel'),
@@ -1486,35 +1581,17 @@ function getFormValues() {
     ownership:        g('fOwnership'),
     fleet_type:       g('fFleetType'),
     notes:            g('fNotes'),
+    firmware_version: g('fFirmware'),
+    download_status:  g('fDownloadStatus'),
+    current_activity: g('fCurrentActivity'),
+    work_time:        g('fWorkTime'),
+    engine_hours:     g('fEngineHours'),
+    last_trip:        g('fLastTrip'),
+    last_stop_zone:   g('fLastStopZone'),
+    in_privacy_mode:  g('fPrivacyMode'),
+    device_group:     g('fDeviceGroup'),
     region:           regionKey,
   };
-}
-
-async function toggleShop(id) {
-  const v = allVehicles.find(v => v.id === id);
-  if (!v) return;
-
-  const isShop  = (v.status || '').toLowerCase().includes('shop');
-  const newStatus = isShop ? 'Active' : 'In Shop';
-  v.status = newStatus;
-
-  // Re-render immediately so UI updates
-  renderAll();
-
-  // Save back to sheet
-  try {
-    await fetch(BACKEND_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'updateVehicle',
-        evid:    v.evid,
-        vehicle: { status: newStatus },
-      })
-    });
-    showToast(`Vehicle ${v.evid} marked as ${newStatus}.`, 'info');
-  } catch(e) {
-    showToast('Could not save status change to sheet.', 'error');
-  }
 }
 
 async function saveVehicle() {
@@ -1601,7 +1678,162 @@ function setCache(key, data) {
   try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch(e) {}
 }
 
+</script>
 
+<!-- ══ BULK INSURANCE MODAL ══════════════════════════════════ -->
+<div class="modal-overlay" id="bulkInsModal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <div>
+        <div class="mh-title">🛡 Bulk Insurance Update</div>
+        <div class="mh-sub">Update insurance expiry date for all vehicles in a state</div>
+      </div>
+      <button class="close-btn" onclick="closeBulkInsurance()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--blue-pale);border-left:4px solid var(--blue);border-radius:0 var(--radius) var(--radius) 0;padding:12px 16px;margin-bottom:20px;font-size:12.5px;color:var(--navy);line-height:1.5;">
+        Select a tag state and new insurance expiry date. All vehicles with that tag state will be updated at once.
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div class="form-group">
+          <label>Tag State</label>
+          <select id="biState" onchange="previewBulkInsurance()" style="border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:8px 10px;font-size:13px;font-family:Arial,sans-serif;color:var(--text);outline:none;width:100%;">
+            <option value="">Select state...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>New Insurance Expiry Date</label>
+          <input type="date" id="biDate" onchange="previewBulkInsurance()" style="border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:8px 10px;font-size:13px;font-family:Arial,sans-serif;color:var(--text);outline:none;width:100%;">
+        </div>
+      </div>
+
+      <div id="biPreview" style="display:none;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gray-400);margin-bottom:8px;">Vehicles to be updated</div>
+        <div id="biPreviewList" style="border:1px solid var(--gray-200);border-radius:var(--radius-lg);overflow:hidden;max-height:280px;overflow-y:auto;"></div>
+        <div style="margin-top:10px;padding:10px 14px;background:var(--blue-pale);border-radius:var(--radius);font-size:12px;color:var(--navy);">
+          <strong id="biCount">0</strong> vehicles will have their insurance expiry updated to <strong id="biDateDisplay">—</strong>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div style="font-size:11px;color:var(--gray-400);">Changes save directly to Google Sheets</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline" onclick="closeBulkInsurance()">Cancel</button>
+        <button class="btn btn-primary" id="biSaveBtn" onclick="saveBulkInsurance()" disabled style="opacity:.5;cursor:not-allowed;">Apply to All</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══ RECALC SCORES ═══════════════════════════════════════════ */
+async function recalcScores() {
+  const btn = document.getElementById('btnRecalc');
+  if (btn) { btn.textContent = '⏳ Recalculating...'; btn.disabled = true; }
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'calculateFleetScores' })
+    });
+    showToast('Scores recalculated — syncing data...', 'info');
+    await syncData(false);
+  } catch(e) {
+    showToast('Could not reach backend to recalculate scores', 'error');
+  } finally {
+    if (btn) { btn.textContent = '🏆 Recalc Scores'; btn.disabled = false; }
+  }
+}
+
+/* ══ BULK INSURANCE ══════════════════════════════════════════ */
+function openBulkInsurance() {
+  const states = [...new Set(allVehicles.map(v => v.tag_state).filter(Boolean))].sort();
+  const sel = document.getElementById('biState');
+  sel.innerHTML = '<option value="">Select state...</option>' +
+    states.map(s => `<option value="${s}">${s}</option>`).join('');
+  document.getElementById('biDate').value = '';
+  document.getElementById('biPreview').style.display = 'none';
+  document.getElementById('biSaveBtn').disabled = true;
+  document.getElementById('biSaveBtn').style.opacity = '.5';
+  document.getElementById('biSaveBtn').style.cursor = 'not-allowed';
+  document.getElementById('bulkInsModal').classList.add('open');
+}
+
+function closeBulkInsurance() {
+  document.getElementById('bulkInsModal').classList.remove('open');
+}
+
+function previewBulkInsurance() {
+  const state   = document.getElementById('biState').value;
+  const date    = document.getElementById('biDate').value;
+  const preview = document.getElementById('biPreview');
+  const saveBtn = document.getElementById('biSaveBtn');
+  if (!state || !date) {
+    preview.style.display = 'none';
+    saveBtn.disabled = true;
+    saveBtn.style.opacity = '.5';
+    saveBtn.style.cursor = 'not-allowed';
+    return;
+  }
+  const matches = allVehicles.filter(v => (v.tag_state||'').toUpperCase() === state.toUpperCase());
+  document.getElementById('biCount').textContent = matches.length;
+  document.getElementById('biDateDisplay').textContent = new Date(date + 'T12:00:00').toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
+  document.getElementById('biPreviewList').innerHTML = matches.length
+    ? matches.map(v => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--gray-100);font-size:12px;">
+          <div>
+            <span style="font-weight:700;color:var(--navy);">${v.evid||'—'}</span>
+            <span style="color:var(--gray-600);margin-left:8px;">${[v.year,v.make,v.model].filter(Boolean).join(' ')}</span>
+          </div>
+          <div style="font-size:11px;color:var(--gray-400);">${v.driver||'Unassigned'} · ${v.tag_state}</div>
+        </div>`).join('')
+    : '<div style="padding:16px;text-align:center;color:var(--gray-400);font-size:12px;">No vehicles with that tag state</div>';
+  preview.style.display = 'block';
+  if (matches.length > 0) {
+    saveBtn.disabled = false;
+    saveBtn.style.opacity = '1';
+    saveBtn.style.cursor = 'pointer';
+  }
+}
+
+async function saveBulkInsurance() {
+  const state   = document.getElementById('biState').value;
+  const date    = document.getElementById('biDate').value;
+  const matches = allVehicles.filter(v => (v.tag_state||'').toUpperCase() === state.toUpperCase());
+  if (!matches.length || !date) return;
+  const saveBtn = document.getElementById('biSaveBtn');
+  saveBtn.textContent = 'Saving...';
+  saveBtn.disabled = true;
+  matches.forEach(v => {
+    const idx = allVehicles.findIndex(x => x.id === v.id);
+    if (idx >= 0) allVehicles[idx].ins_exp = date;
+  });
+  renderAll();
+  closeBulkInsurance();
+  showToast(`Insurance updated for ${matches.length} vehicles (${state}).`, 'info');
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'bulkUpdateInsurance', state, insExp: date, evids: matches.map(v => v.evid) })
+    });
+  } catch(e) {}
+}
+</script>
+
+<div class="safety-overlay" id="safetyOverlay" onclick="closeSafety()"></div>
+<div class="safety-panel" id="safetyPanel">
+  <div class="sp-header">
+    <div>
+      <div class="sp-title" id="spTitle">Vehicle Safety Report</div>
+      <div class="sp-sub"  id="spSub">GeoTab driving data</div>
+    </div>
+    <button class="sp-close" onclick="closeSafety()">✕</button>
+  </div>
+  <div class="sp-body" id="spBody">
+    <div style="text-align:center;padding:48px 20px;color:var(--gray-400);">Loading safety data…</div>
+  </div>
+</div>
+<script>
 /* ══ SAFETY PANEL ══════════════════════════════════════════ */
 const safetyCache = {};
 
@@ -1613,7 +1845,7 @@ async function openSafety(evid, vehicleName) {
   document.getElementById('safetyPanel').classList.add('open');
   if (safetyCache[evid]) { renderSafety(safetyCache[evid]); return; }
   try {
-    const res  = await fetch(BACKEND_URL + '?action=vehicleSafety&evid=' + encodeURIComponent(evid));
+    const res  = await fetch(`${BACKEND_URL}?action=vehicleSafety&evid=${encodeURIComponent(evid)}`);
     const data = await res.json();
     safetyCache[evid] = data;
     renderSafety(data);
@@ -1647,27 +1879,22 @@ function updateSafetyBadge(evid, score) {
   const badge = document.getElementById('safety-badge-' + evid);
   if (!badge) return;
   badge.className = 'safety-badge ' + safetyScoreClass(score);
-  badge.innerHTML = '🛡 Safety Score ' + (score !== null && score !== undefined ? score : '—');
+  badge.innerHTML = '🛡 ' + (score !== null && score !== undefined ? score : '—');
 }
 
 function metricClass(val) {
   const n = parseInt(String(val).match(/^(\d+)/)?.[1] || '0');
-  if (n === 0) return 'ok';
-  if (n <= 2)  return 'warn';
-  return 'alert';
+  if (n === 0) return 'ok'; if (n <= 2) return 'warn'; return 'alert';
 }
-
 function metricColor(val) {
   const n = parseInt(String(val).match(/^(\d+)/)?.[1] || '0');
-  if (n === 0) return 'green';
-  if (n <= 2)  return 'orange';
-  return 'red';
+  if (n === 0) return 'green'; if (n <= 2) return 'orange'; return 'red';
 }
 
 function renderSafety(data) {
   const body = document.getElementById('spBody');
-  if (!data || (!data.found && data.evid)) {
-    body.innerHTML = '<div style="text-align:center;padding:48px;color:#94A3B8;"><div style="font-size:32px;margin-bottom:12px;">📡</div><div style="font-weight:700;color:#1B2A4A;margin-bottom:6px;">No GeoTab data found</div><div style="font-size:12px;">This vehicle was not matched in Fleet_Scoring tab.</div></div>';
+  if (!data.found && data.evid) {
+    body.innerHTML = `<div style="text-align:center;padding:48px;color:#94A3B8;"><div style="font-size:32px;margin-bottom:12px;">📡</div><div style="font-weight:700;margin-bottom:6px;">No GeoTab data found</div><div style="font-size:12px;">EVID ${data.evid} not matched in Fleet_Scoring.</div></div>`;
     return;
   }
   const score    = data.safety_score !== undefined ? data.safety_score : '—';
@@ -1675,20 +1902,20 @@ function renderSafety(data) {
   const color    = scoreNum !== null ? safetyScoreColor(scoreNum) : '#94A3B8';
   const barPct   = scoreNum !== null ? Math.round((scoreNum / 500) * 100) : 0;
   const metrics  = [
-    { label: 'Major Collision',    val: data.major_collision },
-    { label: 'Minor Collision',    val: data.minor_collision },
-    { label: 'Possible Collision', val: data.possible_collision },
-    { label: 'Seat Belt',          val: data.seat_belt },
-    { label: 'Excessive Speeding', val: data.excessive_speeding },
-    { label: 'Speeding',           val: data.speeding },
-    { label: 'Hard Acceleration',  val: data.hard_acceleration },
-    { label: 'Harsh Braking',      val: data.harsh_braking },
-    { label: 'Harsh Cornering',    val: data.harsh_cornering },
-    { label: 'Engine Abuse',       val: data.engine_abuse },
-    { label: 'Engine Light On',    val: data.engine_light },
-    { label: 'Low Tire Pressure',  val: data.low_tire },
-    { label: 'Battery Drain',      val: data.battery_drain },
-    { label: 'Device Removal',     val: data.device_removal },
+    { label:'Major Collision',    val:data.major_collision },
+    { label:'Minor Collision',    val:data.minor_collision },
+    { label:'Possible Collision', val:data.possible_collision },
+    { label:'Seat Belt',          val:data.seat_belt },
+    { label:'Excessive Speeding', val:data.excessive_speeding },
+    { label:'Speeding',           val:data.speeding },
+    { label:'Hard Acceleration',  val:data.hard_acceleration },
+    { label:'Harsh Braking',      val:data.harsh_braking },
+    { label:'Harsh Cornering',    val:data.harsh_cornering },
+    { label:'Engine Abuse',       val:data.engine_abuse },
+    { label:'Engine Light On',    val:data.engine_light },
+    { label:'Low Tire Pressure',  val:data.low_tire },
+    { label:'Battery Drain',      val:data.battery_drain },
+    { label:'Device Removal',     val:data.device_removal },
   ];
   body.innerHTML = `
     <div class="sp-score-wrap">
@@ -1705,72 +1932,34 @@ function renderSafety(data) {
     <div class="sp-section">
       <div class="sp-section-title">📍 Activity</div>
       <div class="sp-trip-stats">
-        <div class="sp-trip-stat"><div class="sp-trip-val">${data.distance || '—'}</div><div class="sp-trip-lbl">Distance</div></div>
-        <div class="sp-trip-stat"><div class="sp-trip-val">${data.idling_time || '—'}</div><div class="sp-trip-lbl">Total Idling</div></div>
-        <div class="sp-trip-stat"><div class="sp-trip-val">${data.hours_trips || '—'}</div><div class="sp-trip-lbl">Trips</div></div>
+        <div class="sp-trip-stat"><div class="sp-trip-val">${data.distance||'—'}</div><div class="sp-trip-lbl">Distance</div></div>
+        <div class="sp-trip-stat"><div class="sp-trip-val">${data.idling_time||'—'}</div><div class="sp-trip-lbl">Total Idling</div></div>
+        <div class="sp-trip-stat"><div class="sp-trip-val">${data.hours_trips||'—'}</div><div class="sp-trip-lbl">Trips</div></div>
       </div>
     </div>
     <div class="sp-section">
       <div class="sp-section-title">⚠️ Safety Events</div>
-      <div class="sp-metrics">
-        ${metrics.map(m => '<div class="sp-metric ' + metricClass(m.val) + '"><div class="sp-metric-val ' + metricColor(m.val) + '">' + (m.val || '0 times') + '</div><div class="sp-metric-lbl">' + m.label + '</div></div>').join('')}
-      </div>
+      <div class="sp-metrics">${metrics.map(m=>`<div class="sp-metric ${metricClass(m.val)}"><div class="sp-metric-val ${metricColor(m.val)}">${m.val||'0 times'}</div><div class="sp-metric-lbl">${m.label}</div></div>`).join('')}</div>
     </div>`;
 }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSafety(); });
 
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeSafety(); });
-
-
-async function loadAllSafetyScores() {
-  try {
-    const res  = await fetch(BACKEND_URL + '?action=allFleetScores');
-    const data = await res.json();
-    if (!data.scores) return;
-    // Match each vehicle's EVID to the scores
-    allVehicles.forEach(v => {
-      if (!v.evid) return;
-      // Try to find this vehicle in the scores by matching EVID in the name field
-      const regionScores = data.scores[regionKey];
-      if (!regionScores) return;
-      // allFleetScores returns region-level scores, not per-vehicle
-      // Use vehicleSafety per vehicle instead — batch fetch
-    });
-    // Fetch per-vehicle safety scores in parallel
-    const fetches = allVehicles.map(v =>
-      fetch(BACKEND_URL + '?action=vehicleSafety&evid=' + encodeURIComponent(v.evid))
-        .then(r => r.json())
-        .then(d => { if (d.found) { safetyCache[v.evid] = d; updateSafetyBadge(v.evid, d.safety_score); }})
-        .catch(() => {})
-    );
-    await Promise.all(fetches);
-    updateSafetySummary();
-  } catch(e) {}
-}
 
 
 function updateSafetySummary() {
   if (!Object.keys(safetyCache).length) return;
-
   function parseNum(val) {
     if (!val) return 0;
     const m = String(val).match(/^(\d+)/);
     return m ? parseInt(m[1]) : 0;
   }
-
   function colorClass(n, warnAt, alertAt) {
-    if (n === 0) return 'ok';
-    if (n <= warnAt) return 'warn';
-    return 'alert';
+    if (n === 0) return 'ok'; if (n <= warnAt) return 'warn'; return 'alert';
   }
-
   function cardClass(n, warnAt, alertAt) {
-    if (n === 0) return 'ss-ok';
-    if (n <= warnAt) return 'ss-warn';
-    return 'ss-alert';
+    if (n === 0) return 'ss-ok'; if (n <= warnAt) return 'ss-warn'; return 'ss-alert';
   }
-
-  let totalDist = 0, totalIdle = '', collision = 0, speed = 0, seat = 0, harsh = 0, device = 0, health = 0;
-
+  let collision=0, speed=0, seat=0, harsh=0, device=0, health=0, totalDist=0;
   Object.values(safetyCache).forEach(d => {
     if (!d.found) return;
     collision += parseNum(d.major_collision) + parseNum(d.minor_collision) + parseNum(d.possible_collision);
@@ -1779,39 +1968,46 @@ function updateSafetySummary() {
     harsh     += parseNum(d.harsh_braking) + parseNum(d.harsh_cornering);
     device    += parseNum(d.device_removal);
     health    += parseNum(d.engine_abuse) + parseNum(d.engine_light) + parseNum(d.low_tire) + parseNum(d.battery_drain);
+    const dm = String(d.distance||'').match(/([\d,]+)/);
+    if (dm) totalDist += parseInt(dm[1].replace(',',''));
   });
-
-  // Distance — sum raw numbers from cache
-  const distArr = Object.values(safetyCache).map(d => {
-    if (!d.distance) return 0;
-    const m = String(d.distance).match(/([\d,]+)/);
-    return m ? parseInt(m[1].replace(',','')) : 0;
-  });
-  totalDist = distArr.reduce((a,b)=>a+b,0);
-
   const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
-  const setClass = (cardId, valId, n, warnAt, alertAt) => {
-    const card = document.querySelector('#safetySummaryStrip .safety-strip-card:nth-child(' + cardId + ')');
+  const setClass = (nth, valId, n, warnAt, alertAt) => {
+    const card = document.querySelectorAll('#safetySummaryStrip .safety-strip-card')[nth];
     const val  = document.getElementById(valId);
     if (card) card.className = 'safety-strip-card ' + cardClass(n, warnAt, alertAt);
     if (val)  val.className  = 'ss-value ' + colorClass(n, warnAt, alertAt);
   };
-
   set('ssDist',      totalDist > 0 ? totalDist.toLocaleString() + ' mi' : '—');
-  set('ssIdle',      '—'); // aggregate idling is complex — show — for now
   set('ssCollision', collision);
   set('ssSpeed',     speed);
   set('ssSeat',      seat);
   set('ssHarsh',     harsh);
   set('ssDevice',    device);
   set('ssHealth',    health);
+  setClass(2, 'ssCollision', collision, 2, 5);
+  setClass(3, 'ssSpeed',     speed,     5, 15);
+  setClass(4, 'ssSeat',      seat,      2, 5);
+  setClass(5, 'ssHarsh',     harsh,     5, 15);
+  setClass(6, 'ssDevice',    device,    1, 3);
+  setClass(7, 'ssHealth',    health,    5, 15);
+}
 
-  setClass(3, 'ssCollision', collision, 2, 5);
-  setClass(4, 'ssSpeed',     speed,     5, 15);
-  setClass(5, 'ssSeat',      seat,      2, 5);
-  setClass(6, 'ssHarsh',     harsh,     5, 15);
-  setClass(7, 'ssDevice',    device,    1, 3);
-  setClass(8, 'ssHealth',    health,    5, 15);
+
+async function loadAllSafetyScores() {
+  const fetches = allVehicles.map(v =>
+    fetch(BACKEND_URL + '?action=vehicleSafety&evid=' + encodeURIComponent(v.evid))
+      .then(r => r.json())
+      .then(d => {
+        if (d.found) {
+          safetyCache[v.evid] = d;
+          updateSafetyBadge(v.evid, d.safety_score);
+        }
+      })
+      .catch(() => {})
+  );
+  await Promise.all(fetches);
+  updateSafetySummary();
 }
 
 
@@ -1821,20 +2017,5 @@ function logout() {
 }
 
 </script>
-
-<div class="safety-overlay" id="safetyOverlay" onclick="closeSafety()"></div>
-<div class="safety-panel" id="safetyPanel">
-  <div class="sp-header">
-    <div>
-      <div class="sp-title" id="spTitle">Vehicle Safety Report</div>
-      <div class="sp-sub"  id="spSub">GeoTab driving data</div>
-    </div>
-    <button class="sp-close" onclick="closeSafety()">✕</button>
-  </div>
-  <div class="sp-body" id="spBody">
-    <div style="text-align:center;padding:48px 20px;color:var(--gray-400);">Loading safety data…</div>
-  </div>
-</div>
-
 </body>
 </html>

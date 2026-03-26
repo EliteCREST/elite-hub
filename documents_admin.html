@@ -1,6 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+// ── AUTH GUARD ───────────────────────────────────────────────
+(function() {
+  function getSession() {
+    try { return JSON.parse(localStorage.getItem('elite_session') || 'null'); } catch { return null; }
+  }
+
+  const REGION_ABBR = {
+    cleveland:'CLE', phoenix:'PHX', chicago:'CHI', stlouis:'STL',
+    minneapolis:'MSP', milwaukee:'MKE', indianapolis:'IND',
+    pittsburgh:'PIT', albuquerque:'ABQ'
+  };
+
+  const HUB_PAGE_REGIONS = {
+    'hub_cleveland':'cleveland','hub_phoenix':'phoenix','hub_chicago':'chicago',
+    'hub_stlouis':'stlouis','hub_minneapolis':'minneapolis','hub_milwaukee':'milwaukee',
+    'hub_indianapolis':'indianapolis','hub_pittsburgh':'pittsburgh','hub_albuquerque':'albuquerque'
+  };
+
+  const session = getSession();
+  const page    = window.location.pathname.split('/').pop().replace('.html','').replace(/[^a-z0-9_]/gi,'_').toLowerCase();
+
+  // Not logged in → go to login
+  if (!session || !session.user) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  const role     = String(session.user.role || '').toLowerCase();
+  // Only Angel has unrestricted access to everything
+  const username = String(session.user.username || '').toLowerCase();
+  if (username === 'angel') return;
+
+  // Get user's regions (may be multi e.g. "CLE, IND")
+  const userRegionsRaw = String(session.user.region || session.user.regions || '').toUpperCase();
+  const userRegions    = userRegionsRaw.split(/[,\s]+/).filter(Boolean);
+  const hasAllRegions  = userRegions.includes('ALL') || userRegions.length === 0;
+
+  // Check explicit page access flag
+  if (session.user[page] === 'false') {
+    window.location.href = 'index.html';
+    return;
+  }
+
+  // Check hub page region access
+  const hubRegion = HUB_PAGE_REGIONS[page];
+  if (hubRegion && !hasAllRegions) {
+    const required = REGION_ABBR[hubRegion];
+    if (!userRegions.includes(required)) {
+      window.location.href = 'index.html';
+      return;
+    }
+  }
+
+  // Check region-specific pages (compliance, fleet, etc.) via URL param
+  const urlRegion = new URLSearchParams(window.location.search).get('region');
+  if (urlRegion && !hasAllRegions) {
+    const required = REGION_ABBR[urlRegion.toLowerCase()];
+    if (required && !userRegions.includes(required)) {
+      window.location.href = 'index.html';
+      return;
+    }
+  }
+})();
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Documents Admin — Elite Hub</title>
@@ -236,7 +302,7 @@ function toggleDarkMode(){
 </footer>
 
 <script>
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec';
 
 const REGIONS = {
   cleveland:    'Cleveland',    phoenix:      'Phoenix',
