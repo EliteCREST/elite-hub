@@ -1,86 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-// ── AUTH GUARD ───────────────────────────────────────────────
-(function() {
-  function getSession() {
-    try { return JSON.parse(localStorage.getItem('elite_session') || 'null'); } catch { return null; }
-  }
-
-  const REGION_ABBR = {
-    cleveland:'CLE', phoenix:'PHX', chicago:'CHI', stlouis:'STL',
-    minneapolis:'MSP', milwaukee:'MKE', indianapolis:'IND',
-    pittsburgh:'PIT', albuquerque:'ABQ'
-  };
-
-  const HUB_PAGE_REGIONS = {
-    'hub_cleveland':'cleveland','hub_phoenix':'phoenix','hub_chicago':'chicago',
-    'hub_stlouis':'stlouis','hub_minneapolis':'minneapolis','hub_milwaukee':'milwaukee',
-    'hub_indianapolis':'indianapolis','hub_pittsburgh':'pittsburgh','hub_albuquerque':'albuquerque'
-  };
-
-  const session = getSession();
-  const page    = window.location.pathname.split('/').pop().replace('.html','').replace(/[^a-z0-9_]/gi,'_').toLowerCase();
-
-  // Not logged in → go to login
-  if (!session || !session.user) {
-    window.location.href = 'login.html';
-    return;
-  }
-
-  const role     = String(session.user.role || '').toLowerCase();
-  // Only Angel has unrestricted access to everything
-  const username = String(session.user.username || '').toLowerCase();
-  if (username === 'angel') return;
-
-  // Normalize region — handles both 'cleveland' and 'CLE'
-  const NAME_TO_ABBR = {
-    cleveland:'CLE', phoenix:'PHX', chicago:'CHI', stlouis:'STL',
-    minneapolis:'MSP', milwaukee:'MKE', indianapolis:'IND',
-    pittsburgh:'PIT', albuquerque:'ABQ'
-  };
-  const rawRegion  = String(session.user.region || session.user.regions || '');
-  const parts      = rawRegion.split(/[,\s]+/).filter(Boolean);
-  // Convert each part to an abbreviation
-  const userAbbrs  = parts.map(p => {
-    const upper = p.trim().toUpperCase();
-    const lower = p.trim().toLowerCase();
-    return NAME_TO_ABBR[lower] || upper; // if it's already an abbr like CLE, keep it
-  });
-  const hasAllRegions = userAbbrs.includes('ALL') || userAbbrs.length === 0;
-
-  // Check hub page region access
-  const hubRegion = HUB_PAGE_REGIONS[page];
-  if (hubRegion && !hasAllRegions) {
-    const required = REGION_ABBR[hubRegion];
-    if (!userAbbrs.includes(required)) {
-      window.location.href = 'index.html';
-      return;
-    }
-    // Hub region passed — no further checks needed
-  } else {
-    // Check region-specific pages (compliance, fleet, etc.) via URL param
-    const urlRegion = new URLSearchParams(window.location.search).get('region');
-    if (urlRegion && !hasAllRegions) {
-      const required = REGION_ABBR[urlRegion.toLowerCase()];
-      if (required && !userAbbrs.includes(required)) {
-        window.location.href = 'index.html';
-        return;
-      }
-      // URL region passed — no further checks needed for regional pages
-    } else {
-      // Non-regional page — check explicit page access flag
-      const pageVal = String(session.user[page] || 'true').toLowerCase();
-      if (pageVal === 'false') {
-        window.location.href = 'index.html';
-        return;
-      }
-    }
-  }
-})();
-</script>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Documents — Elite Hub</title>
@@ -536,18 +456,6 @@
   /* Header stays dark */
   body.dark .elite-header { background: #0F172A !important; }
 
-  /* ══ DOCUMENTS DARK MODE EXTRAS ══════════════════════════ */
-  body.dark .folder-card { background: #1F2937 !important; border-color: #374151 !important; }
-  body.dark .folder-name { color: #F1F5F9 !important; }
-  body.dark .folder-count { color: #9CA3AF !important; }
-  body.dark .file-item { background: #111827 !important; border-color: #374151 !important; }
-  body.dark .file-name { color: #F1F5F9 !important; }
-  body.dark .file-date { color: #9CA3AF !important; }
-  body.dark .file-browser { background: #1F2937 !important; border-color: #374151 !important; }
-  body.dark .breadcrumb-nav { background: #111827 !important; border-color: #374151 !important; }
-  body.dark .search-box { background: #111827 !important; border-color: #374151 !important; }
-  body.dark .search-box input { color: #F1F5F9 !important; }
-
 
 
   /* Documents dark mode */
@@ -571,31 +479,6 @@
   }
   .dark-toggle:hover { border-color: rgba(255,255,255,.75); color: white; }
 
-
-  /* ══ STICKY TOOL NAV + BACK NAV ═════════════════════════ */
-  .sub-bar {
-    position: sticky;
-    top: 68px; /* flush under header */
-    z-index: 192;
-  }
-  .tool-nav {
-    position: sticky;
-    top: 71px; /* header(68) + sub-bar(3) */
-    z-index: 191;
-    background: var(--navy) !important; /* solid — no bleed-through */
-    margin: 0 !important;
-    padding-top: 2px !important;
-    padding-bottom: 2px !important;
-  }
-  .back-nav {
-    position: sticky;
-    top: 109px; /* header(68) + sub-bar(3) + tool-nav(38) */
-    z-index: 190;
-    background: var(--navy) !important;
-    box-shadow: 0 3px 8px rgba(27,42,74,.35);
-    margin: 0 !important;
-  }
-  html { scroll-padding-top: 145px; }
 </style>
 </head>
 <body>
@@ -775,7 +658,7 @@ function toggleDarkMode() {
 /* ══════════════════════════════════════════════════════════════
    CONFIGURATION
 ══════════════════════════════════════════════════════════════ */
-const BACKEND_URL  = 'https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec'; // ← paste GAS Web App URL
+const BACKEND_URL  = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec'; // ← paste GAS Web App URL
 const MAIN_HUB_URL = 'https://elitecrest.github.io/elite-hub/index.html'; // ← paste Main Hub URL
 
 /* ── FOLDER DEFINITIONS ────────────────────────────────────────
