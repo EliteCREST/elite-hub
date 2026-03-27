@@ -489,6 +489,24 @@
   /* Header stays dark */
   body.dark .elite-header { background: #0F172A !important; }
 
+  /* ══ ADMIN/SCORING DARK MODE EXTRAS ══════════════════════ */
+  body.dark .admin-card { background: #1F2937 !important; border-color: #374151 !important; }
+  body.dark .ac-name { color: #F1F5F9 !important; }
+  body.dark .ac-desc { color: #9CA3AF !important; }
+  body.dark .rule-row { background: #1F2937 !important; border-color: #374151 !important; }
+  body.dark .rule-label { color: #F1F5F9 !important; }
+  body.dark .rule-desc { color: #9CA3AF !important; }
+  body.dark .table-card { background: #1F2937 !important; border-color: #374151 !important; }
+  body.dark .table-header { background: #0F172A !important; }
+  body.dark .search-box { background: #111827 !important; border-color: #374151 !important; }
+  body.dark .search-box input { color: #F1F5F9 !important; }
+  body.dark .notif-card { background: #1F2937 !important; border-color: #374151 !important; }
+  body.dark .notif-title { color: #F1F5F9 !important; }
+  body.dark .notif-meta { color: #9CA3AF !important; }
+  body.dark .modal { background: #1F2937 !important; }
+  body.dark .modal-body { background: #1F2937 !important; }
+  body.dark .modal-footer { background: #1F2937 !important; border-color: #374151 !important; }
+
 
   .dark-toggle {
     background: none; border: 1.5px solid rgba(255,255,255,.2);
@@ -498,6 +516,31 @@
   }
   .dark-toggle:hover { border-color: rgba(255,255,255,.75); color: white; }
 
+
+  /* ══ STICKY TOOL NAV + BACK NAV ═════════════════════════ */
+  .sub-bar {
+    position: sticky;
+    top: 68px; /* flush under header */
+    z-index: 192;
+  }
+  .tool-nav {
+    position: sticky;
+    top: 71px; /* header(68) + sub-bar(3) */
+    z-index: 191;
+    background: var(--navy) !important; /* solid — no bleed-through */
+    margin: 0 !important;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+  }
+  .back-nav {
+    position: sticky;
+    top: 109px; /* header(68) + sub-bar(3) + tool-nav(38) */
+    z-index: 190;
+    background: var(--navy) !important;
+    box-shadow: 0 3px 8px rgba(27,42,74,.35);
+    margin: 0 !important;
+  }
+  html { scroll-padding-top: 145px; }
 </style>
 </head>
 <body>

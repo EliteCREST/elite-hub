@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Elite Hub — Main Command Center</title>
@@ -193,21 +195,21 @@
   .region-card:hover .rc-arrow { color: var(--blue); right: 16px; }
 
   .rc-top {
-    padding:  12px 16px 10px;
+    padding: 20px 20px 16px;
     display: flex; align-items: flex-start; gap: 14px;
     border-bottom: 1px solid var(--gray-200);
   }
   .rc-icon {
-    width:  36px; height: 36px; border-radius: 10px;
+    width: 46px; height: 46px; border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    font-size:  17px; flex-shrink: 0;
+    font-size: 20px; flex-shrink: 0;
     background: var(--blue-pale); color: var(--blue);
   }
   .rc-identity { flex: 1; }
-  .rc-city  { font-size:  14px; font-weight: 700; color: var(--navy); }
+  .rc-city  { font-size: 16px; font-weight: 700; color: var(--navy); }
   .rc-state { font-size: 11px; color: var(--gray-400); margin-top: 2px; letter-spacing: .3px; }
   .rc-brands {
-    margin-top:  3px; display: flex; flex-wrap: wrap; gap: 4px;
+    margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px;
   }
   .brand-chip {
     font-size: 10px; font-weight: 700; letter-spacing: .5px;
@@ -216,7 +218,7 @@
   }
 
   .rc-score-bar {
-    padding:  8px 16px;
+    padding: 14px 20px;
     border-bottom: 1px solid var(--gray-200);
   }
   .rc-score-row {
@@ -224,20 +226,20 @@
     margin-bottom: 6px;
   }
   .rc-score-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-400); }
-  .rc-score-val   { font-size:  15px; font-weight: 700; }
+  .rc-score-val   { font-size: 18px; font-weight: 700; }
   .rc-bar-track { height: 6px; background: var(--gray-200); border-radius: 3px; }
   .rc-bar-fill  { height: 100%; border-radius: 3px; transition: width .7s ease; }
 
   .rc-stats {
-    padding:  8px 16px;
+    padding: 14px 20px;
     display: grid; grid-template-columns: repeat(3, 1fr);
-    gap:  4px;
+    gap: 8px;
   }
-  .rc-stat .rs-val { font-size:  13px; font-weight: 700; color: var(--navy); }
+  .rc-stat .rs-val { font-size: 15px; font-weight: 700; color: var(--navy); }
   .rc-stat .rs-lbl { font-size: 10px; color: var(--gray-400); letter-spacing: .3px; text-transform: uppercase; margin-top: 1px; }
 
   .rc-footer {
-    padding:  7px 16px;
+    padding: 10px 20px;
     background: var(--gray-50);
     display: flex; align-items: center; justify-content: space-between;
     border-top: 1px solid var(--gray-200);
@@ -277,7 +279,7 @@
   .footer-links a:hover { color: rgba(255,255,255,.75); }
 
   /* ══ BUILD BANNER ══════════════════════════════════ */
-  .build-banner {
+  .build-banner { display: none !important; /* disabled */
     background: linear-gradient(90deg, #92400E 0%, #B45309 100%);
     color: white; font-size: 11px; font-weight: 700;
     letter-spacing: 1.2px; text-transform: uppercase;
@@ -318,12 +320,23 @@
     .lb-header span:nth-child(n+5),
     .lb-row > *:nth-child(n+5) { display: none; }
   }
+
+  .region-card.locked {
+    opacity: .35;
+    cursor: not-allowed;
+  }
+  .region-card.locked .rc-arrow { display: none; }
+  .podium-card.locked {
+    opacity: .35;
+    cursor: not-allowed;
+  }
+
 </style>
 </head>
 <body>
 
 <!-- BUILD MODE BANNER -->
-<div class="build-banner" id="buildBanner">
+<div class="build-banner" id="buildBanner" style="display:none;">
   <div class="build-dot"></div>
   BUILD MODE — Access control disabled &nbsp;·&nbsp; All regions unlocked
   <button onclick="this.closest('.build-banner').style.display='none'">✕</button>
@@ -356,11 +369,12 @@
     <div class="hdr-divider"></div>
     <div class="meta-item">
       <div class="meta-label">User</div>
-      <div class="meta-val" id="userDisplay">Admin</div>
+      <div class="meta-val" id="userDisplay">—</div>
     </div>
     <div class="hdr-divider"></div>
-    <a class="admin-btn" href="https://elitecrest.github.io/elite-hub/admin.html">⚙ Admin</a>
-  </div>
+    <a class="admin-btn" id="adminBtn" href="https://elitecrest.github.io/elite-hub/admin.html" style="display:none;">⚙ Admin</a>
+    <button onclick="logout()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);padding:6px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.5px;" onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">Sign Out</button>
+</div>
 </header>
 <div class="sub-bar"></div>
 
@@ -414,8 +428,8 @@
    ELITE HUB — CONFIGURATION
 ══════════════════════════════════════════════════════ */
 
-const BUILD_MODE  = true;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec'; // Paste GAS Web App URL here
+const BUILD_MODE  = false;
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec'; // Paste GAS Web App URL here
 
 /* ── REGION REGISTRY ─────────────────────────────────
    Add/remove regions here only. Everything else auto-builds.
@@ -585,7 +599,7 @@ function buildPodium() {
           </div>
           <div class="pc-stats">
             <div class="pc-stat"><div class="ps-val">${r.compliance !== null ? r.compliance + '%' : '—'}</div><div class="ps-lbl">Compliance</div></div>
-            <div class="pc-stat"><div class="ps-val">${r.fleet !== null ? r.fleet : '—'}</div><div class="ps-lbl">Fleet</div></div>
+            <div class="pc-stat"><div class="ps-val">${r.fleet !== null ? r.fleet + '/500' : '—'}</div><div class="ps-lbl">Fleet Score</div></div>
             <div class="pc-stat"><div class="ps-val">${r.reviews !== null ? r.reviews : '—'}</div><div class="ps-lbl">Reviews</div></div>
           </div>
         </div>
@@ -603,7 +617,7 @@ function buildRegionCards() {
     const dotCls = sc === 'excellent' || sc === 'good' ? 'dot-green' : sc === 'fair' ? 'dot-yellow' : d.score === null ? 'dot-yellow' : 'dot-red';
 
     return `
-      <div class="region-card" onclick="openRegion('${r.key}')">
+      <div class="region-card" data-key="${r.key}" onclick="openRegion('${r.key}')">
         <div class="rc-top">
           <div class="rc-icon">${r.icon}</div>
           <div class="rc-identity">
@@ -629,8 +643,8 @@ function buildRegionCards() {
             <div class="rs-lbl">Compliance</div>
           </div>
           <div class="rc-stat">
-            <div class="rs-val">${d.fleet !== null ? d.fleet : '—'}</div>
-            <div class="rs-lbl">Fleet</div>
+            <div class="rs-val">${d.fleet !== null ? d.fleet + '/500' : '—'}</div>
+            <div class="rs-lbl">Fleet Score</div>
           </div>
           <div class="rc-stat">
             <div class="rs-val">${d.reviews !== null ? d.reviews : '—'}</div>
@@ -650,23 +664,65 @@ function buildRegionCards() {
 /* ══════════════════════════════════════════════════════
    NAVIGATION
 ══════════════════════════════════════════════════════ */
+// Maps both directions: key→abbr and name→abbr
+const REGION_ABBR_MAP = {
+  cleveland:'CLE', phoenix:'PHX', chicago:'CHI', stlouis:'STL',
+  minneapolis:'MSP', milwaukee:'MKE', indianapolis:'IND',
+  pittsburgh:'PIT', albuquerque:'ABQ'
+};
+
+function getUserRegions() {
+  try {
+    const s = JSON.parse(localStorage.getItem('elite_session') || 'null');
+    if (!s || !s.user) return { all: false, keys: [] };
+    const username = String(s.user.username || '').toLowerCase();
+    if (username === 'angel') return { all: true, keys: [] };
+    // Region may be normalized name like 'cleveland' or abbr like 'CLE'
+    const raw = String(s.user.region || s.user.regions || '').toLowerCase().trim();
+    if (!raw || raw === 'all') return { all: raw === 'all', keys: [] };
+    // Split on comma/space
+    const parts = raw.split(/[,\s]+/).filter(Boolean);
+    // Convert everything to region keys (matching REGIONS array keys like 'cleveland')
+    const NAME_TO_KEY = {
+      'cle':'cleveland','phx':'phoenix','chi':'chicago','stl':'stlouis',
+      'msp':'minneapolis','mke':'milwaukee','ind':'indianapolis',
+      'pit':'pittsburgh','abq':'albuquerque','aqe':'albuquerque',
+      'cleveland':'cleveland','phoenix':'phoenix','chicago':'chicago',
+      'stlouis':'stlouis','minneapolis':'minneapolis','milwaukee':'milwaukee',
+      'indianapolis':'indianapolis','pittsburgh':'pittsburgh','albuquerque':'albuquerque'
+    };
+    const keys = parts.map(p => NAME_TO_KEY[p]).filter(Boolean);
+    return { all: false, keys };
+  } catch(e) { return { all: false, keys: [] }; }
+}
+
+function canAccessRegion(key) {
+  const { all, keys } = getUserRegions();
+  if (all) return true;
+  return keys.includes(key);
+}
+
+function applyRegionLocks() {
+  document.querySelectorAll('.region-card[data-key], .podium-card[data-key]').forEach(card => {
+    const key = card.getAttribute('data-key');
+    if (!key) return;
+    if (canAccessRegion(key)) {
+      card.classList.remove('locked');
+      card.style.opacity = '1';
+    } else {
+      card.classList.add('locked');
+      card.style.opacity = '0.35';
+    }
+  });
+}
+
 function openRegion(key) {
   const region = REGIONS.find(r => r.key === key);
   if (!region) return;
-
-  if (!BUILD_MODE) {
-    const userRegion = localStorage.getItem('eliteUserRegion');
-    const userRole   = localStorage.getItem('eliteUserRole');
-    if (userRole !== 'admin' && userRegion !== key) {
-      showToast(`Access restricted — you are assigned to ${userRegion || 'no region'}.`, 'error');
-      return;
-    }
-  }
-
   if (region.url) {
     window.location.href = region.url;
   } else {
-    showToast(`${region.city} Hub not yet deployed. Paste its GAS URL into REGIONS['${key}'].url`, 'warn');
+    showToast(region.city + ' Hub not yet deployed.', 'warn');
   }
 }
 
@@ -734,6 +790,34 @@ buildLeaderboard();
 buildRegionCards();
 refreshData();
 setInterval(refreshData, 300000); // auto-refresh every 5 min
+
+function logout() {
+  localStorage.removeItem('elite_session');
+  window.location.href = 'login.html';
+}
+
+
+// Show logged-in username, admin button, and region locks
+window.addEventListener('load', function() {
+  try {
+    var sessionData = localStorage.getItem('elite_session');
+    if (!sessionData) return;
+    var u = JSON.parse(sessionData).user;
+    if (!u) return;
+
+    // Username
+    var el = document.getElementById('userDisplay');
+    if (el) el.textContent = u.username || '?';
+
+    // Admin button — Angel only
+    var adminBtn = document.getElementById('adminBtn');
+    if (adminBtn) adminBtn.style.display = (u.username||'').toLowerCase() === 'angel' ? '' : 'none';
+
+    // Region locks
+    setTimeout(applyRegionLocks, 200);
+  } catch(e) {}
+});
 </script>
+
 </body>
 </html>
