@@ -744,7 +744,7 @@ function initPage() {
     `<strong>${region.city} Documents</strong> — Upload and manage files for the ${region.city} office. Click a folder to open it, then drag &amp; drop or click Upload. All files are stored securely in Google Drive and are view-only once uploaded.`;
 
   const hubUrl = region.hubUrl || MAIN_HUB_URL || '#';
-  document.getElementById('backToHub').href    = hubUrl;
+  document.getElementById('hubNavBtn').href = hubUrl;
   document.getElementById('footerHubLink').href= hubUrl;
 
   buildFolderGrid();

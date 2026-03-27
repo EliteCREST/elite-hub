@@ -533,7 +533,7 @@ document.getElementById('hdrPageName').textContent  = region.city + ' — Legal 
 document.getElementById('hdrRegion').textContent    = region.city;
 document.getElementById('hdrAbbr').textContent      = region.abbr;
 document.getElementById('footerRegion').textContent = region.city;
-document.getElementById('backToHub').href           = region.hubUrl;
+document.getElementById('hubNavBtn').href = region.hubUrl;
 document.getElementById('footerHubLink').href       = region.hubUrl;
 document.getElementById('pageCallout').innerHTML    =
   `<strong>${region.city} — Legal & Complaints</strong> — Lawsuits, AG complaints, BBB complaints, ROC complaints, and liens for the ${region.city} region. Data synced from Google Sheets.`;

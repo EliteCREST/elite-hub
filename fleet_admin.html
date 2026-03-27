@@ -930,9 +930,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setText('hdrPageName',  'Fleet Admin — All Regions');
   setText('hdrRegion',    'All Regions');
   setText('hdrAbbr',      'ALL');
-  setText('navRegion',    'All Regions');
   setText('footerRegion', 'All Regions');
-  setHref('backToHub',    'https://elitecrest.github.io/elite-hub/admin.html');
+  document.getElementById('hubNavBtn').href = 'https://elitecrest.github.io/elite-hub/admin.html');
   setHref('footerHubLink','https://elitecrest.github.io/elite-hub/admin.html');
   setHTML('pageCallout',  '<strong>Fleet Management — All Regions</strong> — Vehicle tracking, GeoTab health, registration, and maintenance across all regions. Data synced from Google Sheets (<strong>Fleet_Data</strong> tab).');
 });

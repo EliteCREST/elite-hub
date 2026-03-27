@@ -1178,7 +1178,7 @@ function initPage() {
   document.getElementById('hdrAbbr').textContent      = region.abbr;
   document.getElementById('footerRegion').textContent = region.city;
   const hubUrl = region.hubUrl || '#';
-  document.getElementById('backToHub').href     = hubUrl;
+  document.getElementById('hubNavBtn').href = hubUrl;
   document.getElementById('footerHubLink').href = hubUrl;
   document.getElementById('fDate').value        = new Date().toISOString().split('T')[0];
 
