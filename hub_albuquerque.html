@@ -688,6 +688,7 @@ const PAGE_REGISTRY = [
   },
   {
     key:    'upt',
+    hidden: true,
     name:   'Unified Pricing Tool',
     desc:   'Master pricing, SPAR tracker, invoice management',
     icon:   '🏷️',
@@ -698,6 +699,7 @@ const PAGE_REGISTRY = [
   },
   {
     key:    'cfb',
+    hidden: true,
     name:   'Contract Financial Breakdown',
     desc:   'RCV summaries, Tax & O&P calculator, pre/post-tax',
     icon:   '📊',
@@ -718,6 +720,7 @@ const PAGE_REGISTRY = [
   },
   {
     key:    'invoice-parser',
+    hidden: true,
     name:   'Invoice Parser',
     desc:   '5-step invoice reconciliation wizard',
     icon:   '🔍',
@@ -788,7 +791,7 @@ function initRegion() {
 ══════════════════════════════════════════════════════ */
 function buildTiles() {
   const grid = document.getElementById('tilesGrid');
-  grid.innerHTML = PAGE_REGISTRY.map(p => `
+  grid.innerHTML = PAGE_REGISTRY.filter(p => !p.hidden).map(p => `
     <div class="page-tile" onclick="openPage('${p.key}')">
       <div class="pt-domain-bar d-${p.domain}-bar"></div>
       <div class="pt-header">
