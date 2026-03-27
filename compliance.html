@@ -1,6 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+// ── AUTH GUARD ───────────────────────────────────────────────
+(function() {
+  function getSession() {
+    try { return JSON.parse(localStorage.getItem('elite_session') || 'null'); } catch { return null; }
+  }
+
+  const REGION_ABBR = {
+    cleveland:'CLE', phoenix:'PHX', chicago:'CHI', stlouis:'STL',
+    minneapolis:'MSP', milwaukee:'MKE', indianapolis:'IND',
+    pittsburgh:'PIT', albuquerque:'ABQ'
+  };
+
+  const HUB_PAGE_REGIONS = {
+    'hub_cleveland':'cleveland','hub_phoenix':'phoenix','hub_chicago':'chicago',
+    'hub_stlouis':'stlouis','hub_minneapolis':'minneapolis','hub_milwaukee':'milwaukee',
+    'hub_indianapolis':'indianapolis','hub_pittsburgh':'pittsburgh','hub_albuquerque':'albuquerque'
+  };
+
+  const session = getSession();
+  const page    = window.location.pathname.split('/').pop().replace('.html','').replace(/[^a-z0-9_]/gi,'_').toLowerCase();
+
+  // Not logged in → go to login
+  if (!session || !session.user) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // Only Angel has unrestricted access to everything
+  const username = String(session.user.username || '').toLowerCase();
+  if (username === 'angel') return;
+
+  // Get user regions — check regions (abbr e.g. "CLE") first, then region (city name)
+  const userRegionsRaw = String(session.user.regions || session.user.region || '').toUpperCase();
+  const userRegions    = userRegionsRaw.split(/[,;\s]+/).filter(Boolean);
+  const hasAllRegions  = userRegions.includes('ALL') || userRegions.length === 0;
+
+  // Hub page → region check only, then done
+  const hubRegion = HUB_PAGE_REGIONS[page];
+  if (hubRegion) {
+    if (!hasAllRegions) {
+      const required = REGION_ABBR[hubRegion];
+      if (!userRegions.includes(required)) { window.location.href = 'index.html'; return; }
+    }
+    return; // passed
+  }
+
+  // Regional page (?region=X) → region check only, NO page flag check
+  const urlRegion = new URLSearchParams(window.location.search).get('region');
+  if (urlRegion) {
+    if (!hasAllRegions) {
+      const required = REGION_ABBR[urlRegion.toLowerCase()];
+      if (required && !userRegions.includes(required)) { window.location.href = 'index.html'; return; }
+    }
+    return; // passed
+  }
+
+  // Non-regional page → page flag check
+  if (session.user[page] === 'false') {
+    window.location.href = 'index.html';
+    return;
+  }
+})();
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Contractor Compliance — Elite Hub</title>
@@ -42,7 +107,7 @@
   body {
     font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
     background: var(--gray-100); color: var(--text);
-    min-height: 100vh; display: flex; flex-direction: column; padding-left: 48px;
+    min-height: 100vh; display: flex; flex-direction: column;
   }
 
   /* ══ HEADER ══════════════════════════════════════════════════ */
@@ -124,9 +189,10 @@
     content:''; position:absolute; top:0; left:0; right:0; height:3px;
     background: var(--blue);
   }
-  .kpi-card.alert-card::before { background: var(--blue); }
-  .kpi-card.warn-card::before  { background: var(--blue); }
-  .kpi-card.good-card::before  { background: var(--blue); }
+  .kpi-card.alert-card::before { background: var(--red); }
+  .kpi-card.warn-card::before  { background: #F97316; }
+  .kpi-card.good-card::before  { background: var(--green); }
+  .kpi-card.missing-card::before { background: var(--red); }
   .kpi-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-400); margin-bottom: 8px; }
   .kpi-value { font-size: 28px; font-weight: 700; color: var(--navy); line-height: 1; }
   .kpi-value .unit { font-size: 12px; font-weight: 400; color: var(--gray-400); }
@@ -230,7 +296,7 @@
   .badge-compliant  { background: var(--green-pale);  color: var(--green); }
   .badge-expired    { background: var(--red-pale);    color: var(--red); }
   .badge-expiring30 { background: var(--red-pale);    color: var(--red); }
-  .badge-expiring60 { background: var(--yellow-pale); color: var(--yellow); }
+  .badge-expiring60 { background: #FFF7ED; color: #F97316; }
   .badge-missing    { background: var(--gray-200);    color: var(--gray-600); }
   .badge-active     { background: var(--green-pale);  color: var(--green); }
   .badge-inactive   { background: var(--gray-200);    color: var(--gray-600); }
@@ -241,7 +307,7 @@
   .expiry-date { font-size: 12px; font-weight: 600; }
   .expiry-date.expired    { color: var(--red); }
   .expiry-date.expiring30 { color: var(--red); }
-  .expiry-date.expiring60 { color: var(--yellow); }
+  .expiry-date.expiring60 { color: #F97316; }
   .expiry-date.ok         { color: var(--green); }
   .expiry-date.missing    { color: var(--gray-400); font-style: italic; }
 
@@ -388,47 +454,34 @@
   }
 
   /* ══ TOOL NAV BAR ══════════════════════════════════════════ */
-/* ══ SIDEBAR NAV ═══════════════════════════════════════ */
   .tool-nav {
-    position: fixed;
-    top: 71px; /* below sticky header (68px) + sub-bar (3px) */
-    left: 0;
-    bottom: 0;
-    width: 48px;
     background: var(--navy);
-    border-right: 1px solid rgba(255,255,255,.08);
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 2px;
-    padding: 10px 0;
-    z-index: 190;
-    overflow: hidden;
-    transition: width .22s cubic-bezier(.4,0,.2,1);
-    box-shadow: 2px 0 12px rgba(0,0,0,.18);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    padding: 0 22px;
+    display: flex; align-items: center; gap: 4px;
+    overflow-x: auto; white-space: nowrap;
+    scrollbar-width: none;
   }
-  .tool-nav:hover {
-    width: 160px;
+  .tool-nav::-webkit-scrollbar { display: none; }
+  .tool-nav-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: rgba(255,255,255,.3);
+    padding-right: 10px; border-right: 1px solid rgba(255,255,255,.1);
+    margin-right: 6px; flex-shrink: 0;
   }
-  .tool-nav-label { display: none; }
   .tn-btn {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 0 9px 14px;
-    font-size: 11px; font-weight: 700; letter-spacing: .3px;
-    text-decoration: none; color: rgba(255,255,255,.65);
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 11px; border-radius: 5px;
+    font-size: 10px; font-weight: 700; letter-spacing: .3px;
+    text-decoration: none; color: rgba(255,255,255,.75);
     transition: background .15s, color .15s;
     border: none; background: none; cursor: pointer;
-    font-family: Arial, sans-serif;
-    white-space: nowrap; overflow: hidden;
-    flex-shrink: 0; width: 100%;
-    text-align: left;
+    font-family: Arial, sans-serif; flex-shrink: 0;
+    white-space: nowrap;
   }
   .tn-btn:hover  { background: rgba(255,255,255,.08); color: white; }
-  .tn-btn.active { background: rgba(255,255,255,.13); color: white; border-left: 3px solid var(--page-color, #1F5FAD); padding-left: 11px; }
-  .tn-btn .tn-icon { font-size: 15px; flex-shrink: 0; width: 20px; text-align: center; }
-  .tn-btn .tn-label { opacity: 0; transition: opacity .15s .05s; white-space: nowrap; }
-  .tool-nav:hover .tn-btn .tn-label { opacity: 1; }
-  body.dark .tool-nav { background: #0F172A; border-right-color: rgba(255,255,255,.06); }
+  .tn-btn.active { background: rgba(255,255,255,.12); color: white; }
+  .tn-btn .tn-icon { font-size: 12px; }
 
 
   /* ══ DARK MODE ════════════════════════════════════════════ */
@@ -510,6 +563,78 @@
   /* Header stays dark */
   body.dark .elite-header { background: #0F172A !important; }
 
+  /* Table card */
+  body.dark .table-card { background: #1F2937 !important; border-color: #374151 !important; }
+  body.dark .table-header { background: #0F172A !important; }
+  body.dark .comp-table tr td { background: #1F2937 !important; }
+  body.dark .comp-table tr:nth-child(even) td { background: #1a2535 !important; }
+  body.dark .contractor-name { color: #F1F5F9 !important; }
+  body.dark .contractor-trade { color: #9CA3AF !important; }
+
+  /* Row buttons */
+  body.dark .row-btn { background: #374151 !important; color: #D1D5DB !important; border-color: #4B5563 !important; }
+  body.dark .row-btn:hover { background: #1E3A5F !important; color: #93C5FD !important; border-color: #3B82F6 !important; }
+
+  /* Crew count button */
+  body.dark .crew-count-btn { background: #1E3A5F !important; color: #93C5FD !important; border-color: #3B82F6 !important; }
+  body.dark .crew-count-btn.zero { background: #374151 !important; color: #9CA3AF !important; border-color: #4B5563 !important; }
+
+  /* OK / Attn badges */
+  body.dark .badge-ok   { background: #064E3B !important; color: #6EE7B7 !important; }
+  body.dark .badge-attn { background: #7F1D1D !important; color: #FCA5A5 !important; }
+
+  /* Alert banner */
+  body.dark .alert-banner { background: #1E3A5F !important; border-color: #3B82F6 !important; }
+  body.dark .alert-chip { background: #374151 !important; color: #F1F5F9 !important; border-color: #4B5563 !important; }
+
+  /* Search box */
+  body.dark .search-box { background: #111827 !important; border-color: #374151 !important; }
+  body.dark .search-box input { color: #F1F5F9 !important; }
+
+  /* Modals & panels */
+  body.dark .modal { background: #1F2937 !important; }
+  body.dark .modal-body { background: #1F2937 !important; }
+  body.dark .modal-footer { background: #1F2937 !important; border-color: #374151 !important; }
+  body.dark .detail-section-title { color: #9CA3AF !important; border-color: #374151 !important; }
+  body.dark .detail-save-bar { background: #1F2937 !important; border-color: #374151 !important; }
+  body.dark .btn-cancel-detail { background: #374151 !important; color: #D1D5DB !important; border-color: #4B5563 !important; }
+  body.dark .btn-save-detail { background: #1F5FAD !important; }
+
+  /* Slide-out panels */
+  body.dark .history-panel,
+  body.dark .crew-panel,
+  body.dark .docs-panel { background: #1F2937 !important; }
+  body.dark .history-entry { background: #111827 !important; border-color: #374151 !important; }
+  body.dark .he-header { background: #0F172A !important; border-color: #374151 !important; }
+  body.dark .he-date { color: #F1F5F9 !important; }
+  body.dark .he-val { color: #D1D5DB !important; }
+  body.dark .he-label { color: #9CA3AF !important; }
+  body.dark .crew-item { background: #111827 !important; border-color: #374151 !important; }
+  body.dark .crew-name { color: #F1F5F9 !important; }
+  body.dark .crew-meta { color: #9CA3AF !important; }
+  body.dark .cp-add-form { background: #111827 !important; border-color: #374151 !important; }
+  body.dark .cp-add-title { color: #F1F5F9 !important; }
+  body.dark .cp-field input { background: #1F2937 !important; color: #F1F5F9 !important; border-color: #374151 !important; }
+  body.dark .cp-add-btn { background: #1F5FAD !important; }
+  body.dark .dp-file-item { background: #111827 !important; border-color: #374151 !important; }
+  body.dark .dp-file-name { color: #F1F5F9 !important; }
+  body.dark .dp-file-date { color: #9CA3AF !important; }
+  body.dark .dp-empty { color: #9CA3AF !important; }
+  body.dark .hp-body { background: #1F2937 !important; }
+  body.dark .cp-body { background: #1F2937 !important; }
+  body.dark .dp-body { background: #1F2937 !important; }
+
+  /* Upload zone */
+  body.dark .upload-zone { background: #111827 !important; border-color: #374151 !important; }
+  body.dark .upload-zone .uz-title { color: #F1F5F9 !important; }
+  body.dark .upload-zone .uz-sub { color: #9CA3AF !important; }
+  body.dark .doc-item { background: #111827 !important; border-color: #374151 !important; }
+  body.dark .doc-name { color: #F1F5F9 !important; }
+
+  /* Offboard section */
+  body.dark #offboardReasonWrap { background: #3B0A0A !important; border-color: #7F1D1D !important; }
+  body.dark #offboardReason { background: #1F2937 !important; color: #F1F5F9 !important; border-color: #7F1D1D !important; }
+
 
   .dark-toggle {
     background: none; border: 1.5px solid rgba(255,255,255,.2);
@@ -519,6 +644,259 @@
   }
   .dark-toggle:hover { border-color: rgba(255,255,255,.75); color: white; }
 
+
+  /* ══ HISTORY PANEL ═══════════════════════════════════════════ */
+  .history-overlay {
+    position: fixed; inset: 0; z-index: 400;
+    background: rgba(27,42,74,.5); backdrop-filter: blur(3px);
+    display: none;
+  }
+  .history-overlay.open { display: block; }
+  .history-panel {
+    position: fixed; top: 0; right: -520px; width: 520px; height: 100vh;
+    background: white; z-index: 401; box-shadow: -8px 0 32px rgba(27,42,74,.2);
+    display: flex; flex-direction: column;
+    transition: right .3s ease;
+  }
+  .history-panel.open { right: 0; }
+  .hp-header {
+    background: var(--navy); padding: 18px 22px;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .hp-title { color: white; font-size: 15px; font-weight: 700; }
+  .hp-sub   { color: rgba(255,255,255,.5); font-size: 11px; margin-top: 3px; }
+  .hp-close {
+    background: none; border: none; color: rgba(255,255,255,.6);
+    font-size: 20px; cursor: pointer; padding: 0; line-height: 1;
+    transition: color .15s;
+  }
+  .hp-close:hover { color: white; }
+  .hp-body { flex: 1; overflow-y: auto; padding: 20px; }
+  .hp-empty { text-align: center; padding: 48px 20px; color: var(--gray-400); font-size: 13px; }
+  .history-entry {
+    border: 1px solid var(--gray-200); border-radius: var(--radius-lg);
+    margin-bottom: 16px; overflow: hidden;
+  }
+  .he-header {
+    background: var(--gray-50); padding: 10px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .he-date   { font-size: 12px; font-weight: 700; color: var(--navy); }
+  .he-badge  { font-size: 10px; font-weight: 700; letter-spacing: .5px;
+               text-transform: uppercase; padding: 3px 8px; border-radius: 20px;
+               background: var(--blue-pale); color: var(--blue); }
+  .he-body   { padding: 12px 16px; }
+  .he-section { margin-bottom: 10px; }
+  .he-section-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--gray-400); margin-bottom: 6px; padding-bottom: 4px;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .he-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .he-field { font-size: 11px; }
+  .he-label { color: var(--gray-400); margin-bottom: 1px; }
+  .he-val   { color: var(--navy); font-weight: 600; }
+  .he-val.expired { color: var(--red); }
+  .he-val.ok      { color: var(--green); }
+
+
+  .badge-ok   { background:#DCFCE7;color:#16A34A;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap; }
+  .badge-attn { background:#FEE2E2;color:#DC2626;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap; }
+
+
+  /* ══ CREW PANEL ══════════════════════════════════════════════ */
+  .crew-overlay { position:fixed;inset:0;z-index:400;background:rgba(27,42,74,.5);backdrop-filter:blur(3px);display:none; }
+  .crew-overlay.open { display:block; }
+  .crew-panel {
+    position:fixed;top:0;right:-480px;width:480px;height:100vh;
+    background:white;z-index:401;box-shadow:-8px 0 32px rgba(27,42,74,.2);
+    display:flex;flex-direction:column;transition:right .3s ease;
+  }
+  .crew-panel.open { right:0; }
+  .cp-header { background:var(--navy);padding:18px 22px;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0; }
+  .cp-title  { color:white;font-size:15px;font-weight:700; }
+  .cp-sub    { color:rgba(255,255,255,.5);font-size:11px;margin-top:3px; }
+  .cp-close  { background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;padding:0; }
+  .cp-close:hover { color:white; }
+  .cp-body   { flex:1;overflow-y:auto;padding:20px; }
+  .cp-add-form {
+    background:var(--gray-100);border:1px solid var(--gray-200);
+    border-radius:10px;padding:16px;margin-bottom:20px;
+  }
+  .cp-add-title { font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--navy);margin-bottom:12px; }
+  .cp-field  { margin-bottom:10px; }
+  .cp-field label { display:block;font-size:10px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--gray-400);margin-bottom:4px; }
+  .cp-field input { width:100%;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:6px;font-size:12px;color:var(--navy);font-family:Arial,sans-serif;outline:none; }
+  .cp-field input:focus { border-color:var(--blue); }
+  .cp-add-btn { width:100%;padding:9px;background:var(--navy);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-top:4px; }
+  .cp-add-btn:hover { background:var(--blue); }
+  .crew-list { display:flex;flex-direction:column;gap:10px; }
+  .crew-item {
+    background:white;border:1px solid var(--gray-200);border-radius:10px;
+    padding:14px 16px;display:flex;align-items:flex-start;gap:12px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);
+  }
+  .crew-icon  { font-size:22px;flex-shrink:0;margin-top:2px; }
+  .crew-info  { flex:1;min-width:0; }
+  .crew-name  { font-size:13px;font-weight:700;color:var(--navy); }
+  .crew-meta  { font-size:11px;color:var(--gray-400);margin-top:3px;line-height:1.6; }
+  .crew-del   { background:none;border:none;color:var(--gray-300);cursor:pointer;font-size:16px;padding:0;line-height:1;flex-shrink:0; }
+  .crew-del:hover { color:var(--red); }
+  .cp-empty   { text-align:center;padding:32px;color:var(--gray-400);font-size:13px; }
+  .crew-count-btn {
+    background:var(--blue-pale);color:var(--blue);
+    border:1.5px solid var(--blue);border-radius:6px;
+    font-size:11px;font-weight:700;padding:3px 8px;
+    cursor:pointer;white-space:nowrap;
+  }
+  .crew-count-btn:hover { background:var(--blue);color:white; }
+  .crew-count-btn.zero { background:var(--gray-100);color:var(--gray-400);border-color:var(--gray-200); }
+
+
+  .upload-note-box {
+    margin-bottom: 10px;
+  }
+  .upload-note-box label {
+    display: block; font-size: 10px; font-weight: 700;
+    letter-spacing: .5px; text-transform: uppercase;
+    color: var(--gray-400); margin-bottom: 5px;
+  }
+  .upload-note-box textarea {
+    width: 100%; padding: 8px 10px;
+    border: 1.5px solid var(--gray-200); border-radius: 8px;
+    font-size: 12px; color: var(--navy); font-family: Arial, sans-serif;
+    resize: vertical; min-height: 60px; outline: none;
+    transition: border-color .15s;
+  }
+  .upload-note-box textarea:focus { border-color: var(--blue); }
+  .upload-note-box .note-hint { font-size: 10px; color: var(--gray-400); margin-top: 4px; }
+
+
+  /* ══ READONLY FIELDS ════════════════════════════════════════ */
+  .field-readonly input,
+  .field-readonly select,
+  .field-readonly textarea {
+    background: var(--gray-100) !important;
+    color: var(--gray-400) !important;
+    cursor: not-allowed !important;
+    border-color: var(--gray-200) !important;
+    pointer-events: none;
+  }
+  .field-readonly label::after {
+    content: ' (view only)';
+    font-size: 9px;
+    color: var(--gray-400);
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .section-locked {
+    opacity: .7;
+    position: relative;
+  }
+  .section-locked::after {
+    content: '🔒 View Only';
+    position: absolute;
+    top: 12px; right: 14px;
+    font-size: 10px; font-weight: 700;
+    color: var(--gray-400);
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+
+
+  /* ══ INLINE EDIT FIELDS ══════════════════════════════════════ */
+  .di-input {
+    width: 100%; padding: 5px 8px;
+    border: 1.5px solid var(--gray-200); border-radius: 6px;
+    font-size: 13px; font-weight: 600; color: var(--navy);
+    font-family: Arial, sans-serif; background: white;
+    outline: none; transition: border-color .15s;
+    margin-top: 2px;
+  }
+  .di-input:focus { border-color: var(--blue); }
+  .di-input:disabled { background: var(--gray-100); color: var(--gray-400); cursor: not-allowed; border-color: var(--gray-200); }
+  .detail-save-bar {
+    position: sticky; bottom: 0; background: white;
+    border-top: 1px solid var(--gray-200); padding: 12px 20px;
+    display: flex; justify-content: flex-end; gap: 10px;
+    box-shadow: 0 -4px 12px rgba(0,0,0,.08);
+  }
+  .btn-save-detail {
+    background: var(--navy); color: white; border: none;
+    padding: 10px 24px; border-radius: var(--radius);
+    font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .btn-save-detail:hover { background: var(--blue); }
+  .btn-cancel-detail {
+    background: white; color: var(--gray-600);
+    border: 1.5px solid var(--gray-200);
+    padding: 10px 20px; border-radius: var(--radius);
+    font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .di-readonly-label::after {
+    content: ' 🔒'; font-size: 10px; opacity: .5;
+  }
+
+
+  /* ══ DOCS PANEL ══════════════════════════════════════════════ */
+  .docs-overlay { position:fixed;inset:0;z-index:400;background:rgba(27,42,74,.5);backdrop-filter:blur(3px);display:none; }
+  .docs-overlay.open { display:block; }
+  .docs-panel {
+    position:fixed;top:0;right:-500px;width:500px;height:100vh;
+    background:white;z-index:401;box-shadow:-8px 0 32px rgba(27,42,74,.2);
+    display:flex;flex-direction:column;transition:right .3s ease;
+  }
+  .docs-panel.open { right:0; }
+  .dp-header { background:var(--navy);padding:18px 22px;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0; }
+  .dp-title  { color:white;font-size:15px;font-weight:700; }
+  .dp-sub    { color:rgba(255,255,255,.5);font-size:11px;margin-top:3px; }
+  .dp-close  { background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;padding:0; }
+  .dp-close:hover { color:white; }
+  .dp-body   { flex:1;overflow-y:auto;padding:20px; }
+  .dp-file-list { display:flex;flex-direction:column;gap:10px; }
+  .dp-file-item {
+    background:white;border:1px solid var(--gray-200);border-radius:10px;
+    padding:14px 16px;display:flex;align-items:center;gap:12px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);transition:box-shadow .15s;
+  }
+  .dp-file-item:hover { box-shadow:0 4px 12px rgba(0,0,0,.1); }
+  .dp-file-icon { font-size:24px;flex-shrink:0; }
+  .dp-file-info { flex:1;min-width:0; }
+  .dp-file-name { font-size:13px;font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+  .dp-file-date { font-size:11px;color:var(--gray-400);margin-top:2px; }
+  .dp-file-btn  { font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;background:var(--blue-pale);color:var(--blue);border:1.5px solid var(--blue);text-decoration:none;white-space:nowrap;flex-shrink:0; }
+  .dp-file-btn:hover { background:var(--blue);color:white; }
+  .dp-empty  { text-align:center;padding:48px 20px;color:var(--gray-400);font-size:13px; }
+  .dp-empty-icon { font-size:40px;margin-bottom:12px; }
+
+
+  /* ══ STICKY TOOL NAV + BACK NAV ═════════════════════════ */
+  .sub-bar {
+    position: sticky;
+    top: 68px;
+    z-index: 192;
+  }
+  .tool-nav {
+    position: sticky;
+    top: 71px; /* header(68) + sub-bar(3) */
+    z-index: 191;
+    background: var(--navy) !important;
+    margin: 0 !important;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+  }
+  .back-nav {
+    position: sticky;
+    top: 109px; /* header(68) + sub-bar(3) + tool-nav(38) */
+    z-index: 190;
+    background: var(--navy) !important;
+    box-shadow: 0 3px 8px rgba(27,42,74,.35);
+    margin: 0 !important;
+  }
+  html { scroll-padding-top: 145px; }
 </style>
 </head>
 <body>
@@ -577,7 +955,7 @@ function toggleDarkMode() {
   </div>
 </header>
 <div class="sub-bar"></div>
-<nav class="tool-nav"><span class="tool-nav-label">Tools</span><a class="tn-btn tn-hub-btn" id="hubNavBtn" href="#"><span class="tn-icon">🏠</span><span class="tn-label">Hub</span></a><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/index.html"><span class="tn-icon">🌐</span><span class="tn-label">Elite Hub</span></a><a class="tn-btn tn-dynamic" data-file="fleet.html"><span class="tn-icon">🚗</span><span class="tn-label">Fleet</span></a><a class="tn-btn active tn-dynamic" data-file="compliance.html"><span class="tn-icon">📋</span><span class="tn-label">Compliance</span></a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">⚖️</span><span class="tn-label">Licensing</span></span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🏷️</span><span class="tn-label">Pricing</span></span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">📊</span><span class="tn-label">CFB</span></span><a class="tn-btn tn-dynamic" data-file="reviews.html"><span class="tn-icon">⭐</span><span class="tn-label">Reviews</span></a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🔍</span><span class="tn-label">Invoices</span></span><a class="tn-btn tn-dynamic" data-file="documents.html"><span class="tn-icon">📁</span><span class="tn-label">Documents</span></a></nav><script>
+<nav class="tool-nav"><span class="tool-nav-label">Tools</span><a class="tn-btn tn-dynamic" data-file="fleet.html"><span class="tn-icon">🚗</span>Fleet</a><a class="tn-btn active tn-dynamic" data-file="compliance.html"><span class="tn-icon">📋</span>Compliance</a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">⚖️</span>Licensing</span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🏷️</span>Pricing</span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">📊</span>CFB</span><a class="tn-btn tn-dynamic" data-file="reviews.html"><span class="tn-icon">⭐</span>Reviews</a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🔍</span>Invoices</span><a class="tn-btn tn-dynamic" data-file="documents.html"><span class="tn-icon">📁</span>Documents</a></nav><script>
 (function(){
   var rk = new URLSearchParams(window.location.search).get('region') || 'cleveland';
   document.querySelectorAll('.tn-dynamic').forEach(function(a){
@@ -586,9 +964,14 @@ function toggleDarkMode() {
 })();
 </script>
 
+<!-- BACK NAV -->
+<nav class="back-nav">
+  <a id="backToHub" href="#">← <span id="navRegion">Region</span> Hub &rsaquo; Contractor Compliance</a>
+</nav>
+
 <main>
   <div class="callout" id="pageCallout">
-    <strong>Contractor Compliance</strong> — Track GL and WC insurance, licensing, contract status, and trades for all contractors in this region. Alerts fire at 60 days, 30 days, and on expiration. Upload insurance docs directly to each contractor record.
+    <strong>Contractor Compliance</strong> — Track GL and WC insurance, licensing, contract status, and trades for all contractors in this region. Alerts fire at 10 days, 5 days, and on expiration. Upload insurance docs directly to each contractor record.
   </div>
 
   <!-- ALERT BANNER -->
@@ -609,9 +992,9 @@ function toggleDarkMode() {
     <div class="kpi-card good-card"><div class="kpi-icon">✅</div><div class="kpi-label">Total Contractors</div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-sub">This region</div></div>
     <div class="kpi-card good-card"><div class="kpi-icon">🟢</div><div class="kpi-label">Fully Compliant</div><div class="kpi-value" id="kpiCompliant">—</div><div class="kpi-sub" id="kpiCompliantPct">—</div></div>
     <div class="kpi-card alert-card"><div class="kpi-icon">🔴</div><div class="kpi-label">Expired</div><div class="kpi-value" id="kpiExpired">—</div><div class="kpi-sub">GL or WC expired</div></div>
-    <div class="kpi-card alert-card"><div class="kpi-icon">⚠️</div><div class="kpi-label">Expiring 30 Days</div><div class="kpi-value" id="kpiExp30">—</div><div class="kpi-sub">Immediate action</div></div>
-    <div class="kpi-card warn-card"><div class="kpi-icon">🕐</div><div class="kpi-label">Expiring 60 Days</div><div class="kpi-value" id="kpiExp60">—</div><div class="kpi-sub">Monitor closely</div></div>
-    <div class="kpi-card"><div class="kpi-icon">📄</div><div class="kpi-label">Missing Docs</div><div class="kpi-value" id="kpiMissing">—</div><div class="kpi-sub">No GL or WC on file</div></div>
+    <div class="kpi-card alert-card"><div class="kpi-icon">⚠️</div><div class="kpi-label">Expiring 5 Days</div><div class="kpi-value" id="kpiExp30">—</div><div class="kpi-sub">Immediate action</div></div>
+    <div class="kpi-card warn-card"><div class="kpi-icon">🕐</div><div class="kpi-label">Expiring 10 Days</div><div class="kpi-value" id="kpiExp60">—</div><div class="kpi-sub">Monitor closely</div></div>
+    <div class="kpi-card missing-card"><div class="kpi-icon">📄</div><div class="kpi-label">Missing Docs</div><div class="kpi-value" id="kpiMissing">—</div><div class="kpi-sub">No GL or WC on file</div></div>
     <div class="kpi-card"><div class="kpi-icon">🏠</div><div class="kpi-label">Active Contracts</div><div class="kpi-value" id="kpiActive">—</div><div class="kpi-sub">Contract status active</div></div>
     <div class="kpi-card"><div class="kpi-icon">✈️</div><div class="kpi-label">Will Travel</div><div class="kpi-value" id="kpiTravel">—</div><div class="kpi-sub">Available for travel</div></div>
   </div>
@@ -620,13 +1003,13 @@ function toggleDarkMode() {
   <div class="filter-bar">
     <div class="search-box">
       <span style="color:var(--gray-400);">🔍</span>
-      <input type="text" id="searchInput" placeholder="Search contractors, trade, market..." oninput="applyFilters()">
+      <input type="text" id="searchInput" placeholder="Search contractors, trade, supervisor..." oninput="applyFilters()">
     </div>
     <div class="filter-divider"></div>
     <button class="filter-pill active" onclick="setStatusFilter('all',this)">All</button>
     <button class="filter-pill red-pill" onclick="setStatusFilter('expired',this)">Expired</button>
-    <button class="filter-pill red-pill" onclick="setStatusFilter('expiring30',this)">30 Days</button>
-    <button class="filter-pill yellow-pill" onclick="setStatusFilter('expiring60',this)">60 Days</button>
+    <button class="filter-pill red-pill" onclick="setStatusFilter('expiring30',this)">5 Days</button>
+    <button class="filter-pill yellow-pill" onclick="setStatusFilter('expiring60',this)">10 Days</button>
     <button class="filter-pill green-pill" onclick="setStatusFilter('compliant',this)">Compliant</button>
     <button class="filter-pill" onclick="setStatusFilter('missing',this)">Missing Docs</button>
     <div class="filter-divider"></div>
@@ -663,12 +1046,14 @@ function toggleDarkMode() {
           <tr>
             <th class="sortable" onclick="sortBy('name')">Contractor ↕</th>
             <th class="sortable" onclick="sortBy('trade')">Trade ↕</th>
-            <th class="sortable" onclick="sortBy('market')">Market / Brand</th>
+            <th>Crews</th>
             <th class="sortable" onclick="sortBy('gl_status')">GL Status ↕</th>
             <th class="sortable" onclick="sortBy('wc_status')">WC Status ↕</th>
             <th class="sortable" onclick="sortBy('gl_expiry')">GL Expiry ↕</th>
             <th class="sortable" onclick="sortBy('wc_expiry')">WC Expiry ↕</th>
             <th>Contract</th>
+            <th>Paylocity</th>
+            <th>Blaze</th>
             <th>Travel</th>
             <th>Actions</th>
           </tr>
@@ -699,21 +1084,39 @@ function toggleDarkMode() {
         <div class="mh-title" id="detailName">—</div>
         <div class="mh-sub" id="detailSub">—</div>
       </div>
-      <button onclick="closeDetailModal()">✕</button>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div id="offboardStatusDisplay" style="font-size:12px;"></div>
+        <label id="offboardRequestForm" style="display:flex;align-items:center;gap:6px;cursor:pointer;color:rgba(255,255,255,.7);font-size:12px;font-weight:600;">
+          <input type="checkbox" id="offboardCheck" onchange="toggleOffboardForm(this.checked)"
+            style="width:14px;height:14px;accent-color:#EF4444;cursor:pointer;">
+          Request Offboarding
+        </label>
+        <button onclick="closeDetailModal()" style="color:rgba(255,255,255,.6);background:none;border:none;font-size:20px;cursor:pointer;padding:0;line-height:1;">✕</button>
+      </div>
+    </div>
+    <!-- Offboard reason (slides in below header when checked) -->
+    <div id="offboardReasonWrap" style="display:none;background:#FEF2F2;padding:10px 24px;border-bottom:1px solid #FECACA;">
+      <label style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#DC2626;display:block;margin-bottom:4px;">Reason for Offboarding</label>
+      <textarea id="offboardReason" rows="2" placeholder="Enter reason..."
+        style="width:100%;padding:6px 10px;border:1.5px solid #FECACA;border-radius:6px;font-size:12px;font-family:Arial,sans-serif;outline:none;resize:none;background:white;"></textarea>
     </div>
     <div class="modal-body">
       <!-- Contact -->
       <div class="detail-section">
         <div class="detail-section-title">Contact Information</div>
         <div class="detail-grid">
-          <div class="detail-item"><div class="di-label">Full Name</div><div class="di-val" id="dContact">—</div></div>
-          <div class="detail-item"><div class="di-label">Full Name 2</div><div class="di-val" id="dContact2">—</div></div>
-          <div class="detail-item"><div class="di-label">Phone</div><div class="di-val" id="dPhone">—</div></div>
-          <div class="detail-item"><div class="di-label">Email</div><div class="di-val" id="dEmail">—</div></div>
-          <div class="detail-item"><div class="di-label">Email 2</div><div class="di-val" id="dEmail2">—</div></div>
-          <div class="detail-item"><div class="di-label">Supervisor</div><div class="di-val" id="dSupervisor">—</div></div>
-          <div class="detail-item"><div class="di-label">Region</div><div class="di-val" id="dRegion">—</div></div>
-          <div class="detail-item"><div class="di-label">Address</div><div class="di-val" id="dAddress">—</div></div>
+          <div class="detail-item"><div class="di-label">Full Name</div><input class="di-input" id="dContact" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Full Name 2</div><input class="di-input" id="dContact2" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Phone</div><input class="di-input" id="dPhone" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Email</div><input class="di-input" type="email" id="dEmail" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Orders Email</div><input class="di-input" type="email" id="dEmail2" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Supervisor</div><input class="di-input" id="dSupervisor" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label di-readonly-label">Region</div><div class="di-val" id="dRegion">—</div></div>
+          <div class="detail-item"><div class="di-label di-readonly-label">Onboarded</div><div class="di-val" id="dOnboarded">—</div></div>
+          <div class="detail-item"><div class="di-label">Address</div><input class="di-input" id="dAddress" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">City</div><input class="di-input" id="dCity" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">State</div><input class="di-input" id="dState" placeholder="—" style="max-width:80px;"></div>
+          <div class="detail-item"><div class="di-label">Zip</div><input class="di-input" id="dZip" placeholder="—" style="max-width:100px;"></div>
         </div>
       </div>
       <!-- GL Insurance -->
@@ -748,19 +1151,36 @@ function toggleDarkMode() {
       <div class="detail-section">
         <div class="detail-section-title">Trades & Contract</div>
         <div class="detail-grid">
-          <div class="detail-item"><div class="di-label">Trade 1</div><div class="di-val" id="dTrade1">—</div></div>
-          <div class="detail-item"><div class="di-label">Trade 2</div><div class="di-val" id="dTrade2">—</div></div>
-          <div class="detail-item"><div class="di-label">Trade 3</div><div class="di-val" id="dTrade3">—</div></div>
-          <div class="detail-item"><div class="di-label">Trade 4</div><div class="di-val" id="dTrade4">—</div></div>
-          <div class="detail-item"><div class="di-label">Contract Status</div><div class="di-val" id="dContractStatus">—</div></div>
-          <div class="detail-item"><div class="di-label">Will Travel</div><div class="di-val" id="dTravel">—</div></div>
-          <div class="detail-item"><div class="di-label">Travel Distance</div><div class="di-val" id="dTravelDist">—</div></div>
+          <div class="detail-item"><div class="di-label">Trade 1</div><input class="di-input" id="dTrade1" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Trade 2</div><input class="di-input" id="dTrade2" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Trade 3</div><input class="di-input" id="dTrade3" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Trade 4</div><input class="di-input" id="dTrade4" placeholder="—"></div>
+          <div class="detail-item"><div class="di-label">Contract Status</div>
+            <select class="di-input" id="dContractStatus">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
+          <div class="detail-item"><div class="di-label">Will Travel</div>
+            <select class="di-input" id="dTravel">
+              <option value="">—</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div class="detail-item"><div class="di-label">Travel Distance (miles)</div><input class="di-input" id="dTravelDist" placeholder="—" type="number"></div>
         </div>
       </div>
       <!-- Document Upload -->
       <div class="detail-section">
         <div class="detail-section-title">Insurance Documents</div>
         <div class="doc-list" id="docList"></div>
+        <div class="upload-note-box">
+          <label>📝 Note (optional)</label>
+          <textarea id="uploadNote" placeholder="Add a note about this document (e.g. 'Updated GL policy for 2026', 'Renewal certificate')..."></textarea>
+          <div class="note-hint">Note will be saved to Admin Notes for this contractor</div>
+        </div>
         <div class="upload-zone" id="uploadZone"
              ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)"
              onclick="document.getElementById('docFileInput').click()">
@@ -772,57 +1192,93 @@ function toggleDarkMode() {
         <div id="uploadStatus" style="margin-top:8px;font-size:12px;color:var(--gray-400);"></div>
       </div>
     </div>
+    <div class="detail-save-bar">
+      <button class="btn-cancel-detail" onclick="closeDetailModal()">Cancel</button>
+      <button class="btn-save-detail" onclick="saveDetailChanges()">💾 Save Changes</button>
+    </div>
   </div>
 </div>
 
 <!-- ADD CONTRACTOR MODAL -->
 <div class="modal-overlay" id="addModal" onclick="if(event.target===this)closeAddModal()">
-  <div class="modal">
+  <div class="modal" style="max-width:640px;">
     <div class="modal-header">
-      <div><div class="mh-title">Add Contractor</div></div>
-      <button onclick="closeAddModal()">✕</button>
+      <div><div class="mh-title">Add Contractor</div><div class="mh-sub">New subcontractor record</div></div>
+      <button onclick="closeAddModal()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;">✕</button>
     </div>
     <div class="modal-body">
+
+      <!-- Contact Info -->
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gray-400);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--gray-200);">🏢 Company & Contact</div>
       <div class="form-row">
         <div class="form-group"><label>Company Name *</label><input type="text" id="fCompany" placeholder="ABC Roofing LLC"></div>
-        <div class="form-group"><label>Contact Name</label><input type="text" id="fContact" placeholder="John Smith"></div>
+        <div class="form-group"><label>Pay ID</label><input type="text" id="fPayId" placeholder="Paylocity ID"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Phone</label><input type="text" id="fPhone" placeholder="555-000-0000"></div>
+        <div class="form-group"><label>Full Name (Contact 1)</label><input type="text" id="fContact" placeholder="John Smith"></div>
+        <div class="form-group"><label>Full Name 2 (Contact 2)</label><input type="text" id="fContact2" placeholder="Jane Smith"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Phone</label><input type="text" id="fPhone" placeholder="(555) 000-0000"></div>
         <div class="form-group"><label>Email</label><input type="email" id="fEmail" placeholder="john@example.com"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Market / Brand</label><input type="text" id="fMarket" placeholder="ASP Cleveland"></div>
-        <div class="form-group"><label>Contract Status</label>
-          <select id="fContract"><option value="Active">Active</option><option value="Inactive">Inactive</option><option value="Pending">Pending</option></select>
-        </div>
+        <div class="form-group"><label>Orders Email</label><input type="email" id="fEmail2" placeholder="orders@example.com"></div>
+        <div class="form-group"><label>Supervisor</label><input type="text" id="fSupervisor" placeholder="Supervisor name"></div>
       </div>
+      <div class="form-row">
+        <div class="form-group"><label>Address</label><input type="text" id="fAddress" placeholder="123 Main St"></div>
+        <div class="form-group"><label>City</label><input type="text" id="fCity" placeholder="Cleveland"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>State</label><input type="text" id="fState" placeholder="OH" style="max-width:80px;"></div>
+        <div class="form-group"><label>Zip</label><input type="text" id="fZip" placeholder="44101" style="max-width:100px;"></div>
+      </div>
+
+      <!-- Trades & Contract -->
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gray-400);margin:16px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--gray-200);">🔨 Trades & Contract</div>
       <div class="form-row">
         <div class="form-group"><label>Primary Trade</label>
-          <select id="fTrade1"><option value="">Select...</option><option>Roofing</option><option>Gutters</option><option>Siding</option><option>Windows</option></select>
+          <select id="fTrade1"><option value="">Select...</option><option>ROOFING</option><option>GUTTERS</option><option>SIDING</option><option>WINDOWS</option><option>INSULATION</option><option>PAINTING</option></select>
         </div>
         <div class="form-group"><label>Trade 2</label>
-          <select id="fTrade2"><option value="">None</option><option>Roofing</option><option>Gutters</option><option>Siding</option><option>Windows</option></select>
+          <select id="fTrade2"><option value="">None</option><option>ROOFING</option><option>GUTTERS</option><option>SIDING</option><option>WINDOWS</option><option>INSULATION</option><option>PAINTING</option></select>
         </div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>GL Policy #</label><input type="text" id="fGLPolicy" placeholder="Policy number"></div>
-        <div class="form-group"><label>GL Expiry Date</label><input type="date" id="fGLExpiry"></div>
+        <div class="form-group"><label>Trade 3</label>
+          <select id="fTrade3"><option value="">None</option><option>ROOFING</option><option>GUTTERS</option><option>SIDING</option><option>WINDOWS</option><option>INSULATION</option><option>PAINTING</option></select>
+        </div>
+        <div class="form-group"><label>Trade 4</label>
+          <select id="fTrade4"><option value="">None</option><option>ROOFING</option><option>GUTTERS</option><option>SIDING</option><option>WINDOWS</option><option>INSULATION</option><option>PAINTING</option></select>
+        </div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>WC Policy #</label><input type="text" id="fWCPolicy" placeholder="Policy number"></div>
-        <div class="form-group"><label>WC Expiry Date</label><input type="date" id="fWCExpiry"></div>
-      </div>
-      <div class="form-row">
+        <div class="form-group"><label>Contract Status</label>
+          <select id="fContract"><option value="Active">Active</option><option value="Pending">Pending</option><option value="Inactive">Inactive</option></select>
+        </div>
         <div class="form-group"><label>Will Travel</label>
           <select id="fTravel"><option value="No">No</option><option value="Yes">Yes</option></select>
         </div>
-        <div class="form-group"><label>Travel Distance (miles)</label><input type="number" id="fTravelDist" placeholder="e.g. 50"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Notes</label><input type="text" id="fNotes" placeholder="Optional notes..."></div>
+        <div class="form-group"><label>Travel Distance (miles)</label><input type="number" id="fTravelDist" placeholder="e.g. 50"></div>
         <div class="form-group"></div>
       </div>
+
+      <!-- GL/WC - admin only -->
+      <div id="addGLWCSection">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gray-400);margin:16px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--gray-200);">🛡 Insurance (Admin Only)</div>
+        <div class="form-row">
+          <div class="form-group"><label>GL Policy #</label><input type="text" id="fGLPolicy" placeholder="Policy number"></div>
+          <div class="form-group"><label>GL Expiry Date</label><input type="date" id="fGLExpiry"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>WC Policy #</label><input type="text" id="fWCPolicy" placeholder="Policy number"></div>
+          <div class="form-group"><label>WC Expiry Date</label><input type="date" id="fWCExpiry"></div>
+        </div>
+      </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
@@ -835,7 +1291,7 @@ function toggleDarkMode() {
 /* ══════════════════════════════════════════════════════════════
    CONFIGURATION
 ══════════════════════════════════════════════════════════════ */
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec';
 
 const REGION_MAP = {
   cleveland:    { city: 'Cleveland',    abbr: 'CLE', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_cleveland.html' },
@@ -872,8 +1328,8 @@ function getExpiryStatus(dateStr) {
   const now  = new Date();
   const days = Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
   if (days < 0)   return 'expired';
-  if (days <= 30) return 'expiring30';
-  if (days <= 60) return 'expiring60';
+  if (days <= 5)  return 'expiring30';
+  if (days <= 10) return 'expiring60';
   return 'ok';
 }
 
@@ -902,8 +1358,8 @@ function statusBadge(status) {
   const map = {
     compliant:  ['badge-compliant',  '✓ Compliant'],
     expired:    ['badge-expired',    '✗ Expired'],
-    expiring30: ['badge-expiring30', '⚠ 30 Days'],
-    expiring60: ['badge-expiring60', '⏰ 60 Days'],
+    expiring30: ['badge-expiring30', '⚠ 5 Days'],
+    expiring60: ['badge-expiring60', '⏰ 10 Days'],
     missing:    ['badge-missing',    '— Missing'],
     ok:         ['badge-compliant',  '✓ OK'],
   };
@@ -996,6 +1452,12 @@ function normalizeContractor(r) {
     exempt:          r['exempt']           || '',
     wc_policy:       r['wc_policy']       || '',
     wc_expiry:       r['wc_expiry']       || '',
+    gl_renewal:           r['gl_renewal']           || '',
+    wc_renewal:           r['wc_renewal']           || '',
+    onboarded:            r['onboarded']            || '',
+    offboard_status:      r['offboard_status']      || '',
+    offboard_reason:      r['offboard_reason']      || '',
+    offboard_requested_by:r['offboard_requested_by']|| '',
     wc_ins_co:       r['wc_ins_co']       || '',
     wc_ins_contact:  r['wc_ins_contact']  || '',
     wc_ins_phone:    r['wc_ins_phone']    || '',
@@ -1081,7 +1543,7 @@ function applyFilters() {
     if (statusFilter !== 'all' && status !== statusFilter) return false;
     if (trade) { const t = trade.toUpperCase(); if (![c.trade, c.trade2, c.trade3, c.trade4].map(x => (x||'').toUpperCase()).includes(t)) return false; }
     if (contract && c.contract_status !== contract)         return false;
-    if (search && ![c.name, c.trade, c.market, c.contact, c.email].join(' ').toLowerCase().includes(search)) return false;
+    if (search && ![c.name, c.trade, c.supervisor, c.contact, c.email].join(' ').toLowerCase().includes(search)) return false;
     return true;
   });
 
@@ -1136,17 +1598,19 @@ function renderTable() {
           <div class="contractor-trade">${c.contact || ''}</div>
         </td>
         <td><span class="badge badge-blue">${c.trade || '—'}</span></td>
-        <td style="font-size:12px;color:var(--gray-600);">${c.market || '—'}</td>
+        <td><button class="crew-count-btn zero" data-crew-contractor="${c.name}" onclick="event.stopPropagation();openCrewPanel('${c.name}')">👷 Crews</button></td>
         <td>${statusBadge(glStatus)}</td>
         <td>${statusBadge(wcStatus)}</td>
         <td>${expiryCell(c.gl_expiry)}</td>
         <td>${expiryCell(c.wc_expiry)}</td>
         <td><span class="badge ${contractBadge}">${c.contract_status || '—'}</span></td>
+        <td>${c.pay_id ? '<span class="badge-ok">✓ OK</span>' : '<span class="badge-attn">✕ Attn</span>'}</td>
+        <td>${c.link ? '<span class="badge-ok">✓ OK</span>' : '<span class="badge-attn">✕ Attn</span>'}</td>
         <td style="font-size:11px;color:var(--gray-600);">${travelStr}</td>
         <td onclick="event.stopPropagation()">
           <div class="row-actions">
-            <button class="row-btn" onclick="openDetail(${JSON.stringify(c).replace(/"/g,'&quot;')})">View</button>
-            <button class="row-btn upload-btn-sm" onclick="openDetailUpload(${JSON.stringify(c).replace(/"/g,'&quot;')})">📎 Docs</button>
+            <button class="row-btn upload-btn-sm" onclick="openDetailUpload(${JSON.stringify(c).replace(/"/g,'&quot;')})">⬆ Upload</button>
+            <button class="row-btn" style="background:var(--blue-pale);color:var(--blue);border-color:var(--blue);" data-contractor="${c.id}" onclick="event.stopPropagation();openDocsPanel(this.dataset.contractor,'${c.name}')">📄 View Docs</button>
           </div>
         </td>
       </tr>`;
@@ -1161,11 +1625,16 @@ function openDetail(c) {
   document.getElementById('detailName').textContent = c.name;
   document.getElementById('detailSub').textContent  = `${c.trade || '—'} · ${c.region || '—'} · ${region.city}`;
 
+  // Helper to set input or div value
   const set = (id, val) => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.textContent   = val || '—';
-    el.className     = 'di-val' + (val ? '' : ' missing');
+    if (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') {
+      el.value = val || '';
+    } else {
+      el.textContent = val || '—';
+      el.className   = 'di-val' + (val ? '' : ' missing');
+    }
   };
 
   set('dPhone',          c.phone);
@@ -1175,7 +1644,28 @@ function openDetail(c) {
   set('dContact2',       c.contact2);
   set('dSupervisor',     c.supervisor);
   set('dRegion',         c.region);
-  set('dAddress',        [c.address, c.city, c.state, c.zip].filter(Boolean).join(', '));
+  // Onboarded date
+  const onbEl = document.getElementById('dOnboarded');
+  if (onbEl) onbEl.textContent = c.onboarded || '—';
+  // Offboard status
+  const offStat  = document.getElementById('offboardStatusDisplay');
+  const offForm  = document.getElementById('offboardRequestForm');
+  const offCheck = document.getElementById('offboardCheck');
+  if (offCheck) offCheck.checked = false;
+  if (document.getElementById('offboardReasonWrap')) document.getElementById('offboardReasonWrap').style.display = 'none';
+  if (offStat) {
+    const st = c.offboard_status || '';
+    if (st === 'Pending') {
+      offStat.innerHTML = '<div style="background:#FEF9C3;border:1px solid #FDE047;border-radius:8px;padding:10px 14px;">⏳ <strong>Offboard Pending</strong> — Requested by ' + (c.offboard_requested_by||'Unknown') + '<br><span style="font-size:11px;color:var(--gray-400);">Reason: ' + (c.offboard_reason||'—') + '</span></div>';
+      if (offForm) offForm.style.display = 'none';
+    } else if (st === 'Denied') {
+      offStat.innerHTML = '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 14px;">✕ <strong>Offboard Request Denied</strong></div>';
+    } else { offStat.innerHTML = ''; }
+  }
+  set('dAddress',        c.address);
+  set('dCity',           c.city);
+  set('dState',          c.state);
+  set('dZip',            c.zip);
   set('dGLPolicy',       c.gl_policy);
   set('dGLExpiry',       c.gl_expiry ? formatDate(c.gl_expiry) : '');
   set('dGLInsCo',        c.gl_ins_co);
@@ -1194,9 +1684,9 @@ function openDetail(c) {
   set('dTrade2',         c.trade2);
   set('dTrade3',         c.trade3);
   set('dTrade4',         c.trade4);
-  set('dContractStatus', c.contract_status);
+  set('dContractStatus', c.contract_status || 'Active');
   set('dTravel',         c.will_travel);
-  set('dTravelDist',     c.travel_distance ? c.travel_distance + ' miles' : '');
+  set('dTravelDist',     c.travel_distance);
 
   // GL/WC status display
   document.getElementById('dGLStatus').innerHTML = statusBadge(getExpiryStatus(c.gl_expiry));
@@ -1204,6 +1694,7 @@ function openDetail(c) {
 
   loadContractorDocs(c.id);
   document.getElementById('detailModal').classList.add('open');
+  applyEditPermissions();
 }
 
 function openDetailUpload(c) {
@@ -1213,6 +1704,70 @@ function openDetailUpload(c) {
   setTimeout(() => {
     document.getElementById('uploadZone').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, 300);
+}
+
+async function saveDetailChanges() {
+  if (!currentContractor) return;
+  const btn = document.querySelector('.btn-save-detail');
+  btn.textContent = 'Saving…'; btn.disabled = true;
+
+  // Handle offboard request
+  const offboardChecked = document.getElementById('offboardCheck')?.checked;
+  const offboardReason  = document.getElementById('offboardReason')?.value.trim();
+  if (offboardChecked) {
+    if (!offboardReason) { showToast('Please enter a reason for offboarding.', 'warn'); btn.textContent = '💾 Save Changes'; btn.disabled = false; return; }
+    const session = getSession();
+    const reqBy   = session?.user?.name || session?.user?.username || 'Unknown';
+    await fetch(BACKEND_URL + '?action=requestOffboard&name=' + encodeURIComponent(currentContractor.name) + '&reason=' + encodeURIComponent(offboardReason) + '&requestedBy=' + encodeURIComponent(reqBy));
+    showToast('Offboard request submitted ✓', 'info');
+    closeDetailModal();
+    btn.textContent = '💾 Save Changes'; btn.disabled = false;
+    return;
+  }
+
+  const g = id => { const el = document.getElementById(id); return el ? el.value || el.textContent || '' : ''; };
+
+  const updates = {
+    name:            currentContractor.name,
+    contact:         g('dContact'),
+    contact2:        g('dContact2'),
+    phone:           g('dPhone'),
+    email:           g('dEmail'),
+    email2:          g('dEmail2'),
+    supervisor:      g('dSupervisor'),
+    address:         g('dAddress'),
+    city:            g('dCity'),
+    state:           g('dState'),
+    zip:             g('dZip'),
+    trade1:          g('dTrade1'),
+    trade2:          g('dTrade2'),
+    trade3:          g('dTrade3'),
+    trade4:          g('dTrade4'),
+    contract_status: g('dContractStatus'),
+    will_travel:     g('dTravel'),
+    travel_distance: g('dTravelDist'),
+  };
+
+  try {
+    const res  = await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'updateContractor', id: currentContractor.id, contractor: updates })
+    });
+    const data = await res.json();
+    if (data.success) {
+      // Update local data
+      const idx = allContractors.findIndex(c => c.id === currentContractor.id);
+      if (idx >= 0) Object.assign(allContractors[idx], updates);
+      showToast('Saved ✓', 'info');
+      closeDetailModal();
+      applyFilters();
+    } else {
+      showToast('Error: ' + (data.error || 'Unknown'), 'error');
+    }
+  } catch(e) {
+    showToast('Connection error', 'error');
+  }
+  btn.textContent = '💾 Save Changes'; btn.disabled = false;
 }
 
 function closeDetailModal() {
@@ -1226,7 +1781,7 @@ async function loadContractorDocs(contractorId) {
   list.innerHTML = '<div style="font-size:12px;color:var(--gray-400);">Loading documents...</div>';
 
   try {
-    const res  = await fetch(`${BACKEND_URL}?action=listFiles&region=${regionKey}&folder=contractor_${contractorId}`);
+    const res  = await fetch(BACKEND_URL + '?action=listFiles&region=' + encodeURIComponent(regionKey) + '&folder=' + encodeURIComponent('contractor_' + contractorId));
     const data = await res.json();
     const files = data.files || [];
 
@@ -1253,10 +1808,12 @@ function handleDrop(e)      { e.preventDefault(); document.getElementById('uploa
 
 async function uploadDocs(files) {
   if (!currentContractor) return;
-  const status = document.getElementById('uploadStatus');
+  const status   = document.getElementById('uploadStatus');
+  const noteText = (document.getElementById('uploadNote')?.value || '').trim();
 
   for (const file of Array.from(files)) {
     status.textContent = `Uploading ${file.name}...`;
+    status.style.color = 'var(--gray-400)';
     try {
       const b64 = await fileToBase64(file);
       const res = await fetch(BACKEND_URL, {
@@ -1264,16 +1821,33 @@ async function uploadDocs(files) {
         body: JSON.stringify({
           action:   'uploadFile',
           region:   regionKey,
-          folder:   `contractor_${currentContractor.id}`,
+          folder:   'contractor_' + currentContractor.id,
           fileName: file.name,
           mimeType: file.type,
           data:     b64,
+          uploadedBy: (getSession()?.user?.name || getSession()?.user?.username || 'Unknown'),
         })
       });
       const result = await res.json();
       if (result.success) {
         status.textContent = `✓ ${file.name} uploaded`;
         status.style.color = 'var(--green)';
+
+        // Save note to admin notes — custom or standard
+        const timestamp  = new Date().toLocaleString();
+        const regionName = region ? region.city : regionKey;
+        const noteEntry  = noteText
+          ? `[${timestamp}] 📎 ${currentContractor.name} — ${file.name}: ${noteText}`
+          : `[${timestamp}] 📎 ${regionName} uploaded document to ${currentContractor.name}`;
+        await fetch(BACKEND_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'saveAdminNote',
+            region: regionKey,
+            note:   noteEntry,
+          })
+        }).catch(() => {});
+        if (noteText) document.getElementById('uploadNote').value = '';
       } else {
         status.textContent = `✗ Failed: ${result.error}`;
         status.style.color = 'var(--red)';
@@ -1305,53 +1879,75 @@ function docIcon(name) {
 }
 
 /* ══ ADD CONTRACTOR ══════════════════════════════════════════ */
-function openAddModal()  { document.getElementById('addModal').classList.add('open'); }
+function openAddModal()  {
+  const glwc = document.getElementById('addGLWCSection');
+  if (glwc) glwc.style.display = isAdmin() ? 'block' : 'none';
+  document.getElementById('addModal').classList.add('open');
+  applyEditPermissions(); }
 function closeAddModal() { document.getElementById('addModal').classList.remove('open'); }
 
 async function saveContractor() {
   const name = document.getElementById('fCompany').value.trim();
   if (!name) { showToast('Please enter a company name.', 'warn'); return; }
 
+  const g = id => document.getElementById(id)?.value.trim() || '';
+
   const contractor = {
-    id:              'new-' + Date.now(),
-    region:          regionKey,
     name,
-    contact_name:    document.getElementById('fContact').value.trim(),
-    phone:           document.getElementById('fPhone').value.trim(),
-    email:           document.getElementById('fEmail').value.trim(),
-    market:          document.getElementById('fMarket').value.trim(),
-    contract_status: document.getElementById('fContract').value,
-    trade1:          document.getElementById('fTrade1').value,
-    trade2:          document.getElementById('fTrade2').value,
-    gl_policy:       document.getElementById('fGLPolicy').value.trim(),
-    gl_expiry:       document.getElementById('fGLExpiry').value,
-    wc_policy:       document.getElementById('fWCPolicy').value.trim(),
-    wc_expiry:       document.getElementById('fWCExpiry').value,
-    will_travel:     document.getElementById('fTravel').value,
-    travel_distance: document.getElementById('fTravelDist').value,
-    notes:           document.getElementById('fNotes').value.trim(),
+    pay_id:          g('fPayId'),
+    region:          region.abbr,
+    contact:         g('fContact'),
+    contact2:        g('fContact2'),
+    phone:           g('fPhone'),
+    email:           g('fEmail'),
+    email2:          g('fEmail2'),
+    supervisor:      g('fSupervisor'),
+    address:         g('fAddress'),
+    city:            g('fCity'),
+    state:           g('fState'),
+    zip:             g('fZip'),
+    trade1:          g('fTrade1'),
+    trade2:          g('fTrade2'),
+    trade3:          g('fTrade3'),
+    trade4:          g('fTrade4'),
+    contract_status: g('fContract') || 'Active',
+    will_travel:     g('fTravel') || 'No',
+    travel_distance: g('fTravelDist'),
+    gl_policy:       g('fGLPolicy'),
+    gl_expiry:       g('fGLExpiry'),
+    wc_policy:       g('fWCPolicy'),
+    wc_expiry:       g('fWCExpiry'),
   };
 
-  allContractors.unshift(normalizeContractor(contractor));
-  closeAddModal();
-  renderAll();
-  showToast(`${name} added.`, 'info');
+  const btn = document.querySelector('#addModal .btn-primary');
+  btn.textContent = 'Saving…'; btn.disabled = true;
 
-  // Save to backend
   try {
-    await fetch(BACKEND_URL, {
+    const res  = await fetch(BACKEND_URL, {
       method: 'POST',
-      body: JSON.stringify({ action: 'writeRow', tab: 'COMPLIANCE_Data', row: Object.values(contractor) })
+      body: JSON.stringify({ action: 'addContractor', contractor })
     });
-  } catch(e) { /* silent */ }
+    const data = await res.json();
+    if (data.success) {
+      allContractors.unshift(normalizeContractor({...contractor, id: contractor.name}));
+      closeAddModal();
+      renderAll();
+      showToast(name + ' added ✓', 'info');
+    } else {
+      showToast('Error: ' + (data.error||'Unknown'), 'error');
+    }
+  } catch(e) {
+    showToast('Connection error', 'error');
+  }
+  btn.textContent = 'Save Contractor'; btn.disabled = false;
 }
 
 /* ══ EXPORT ══════════════════════════════════════════════════ */
 function exportCSV() {
   if (!filtered.length) { showToast('No data to export.', 'warn'); return; }
-  const headers = ['Name','Contact','Phone','Email','Market','Trade','GL Policy','GL Expiry','WC Policy','WC Expiry','Contract Status','Will Travel','Travel Distance','Notes'];
+  const headers = ['Name','Contact','Phone','Email','Supervisor','Trade','GL Policy','GL Expiry','WC Policy','WC Expiry','Contract Status','Will Travel','Travel Distance'];
   const rows = filtered.map(c => [
-    c.name, c.contact, c.phone, c.email, c.market, c.trade,
+    c.name, c.contact, c.phone, c.email, c.supervisor, c.trade,
     c.gl_policy, c.gl_expiry, c.wc_policy, c.wc_expiry,
     c.contract_status, c.will_travel, c.travel_distance, c.notes
   ].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
@@ -1391,8 +1987,9 @@ function initPage() {
   document.getElementById('hdrPageName').textContent  = region.city + ' — Contractor Compliance';
   document.getElementById('hdrRegion').textContent    = region.city;
   document.getElementById('hdrAbbr').textContent      = region.abbr;
+  document.getElementById('navRegion').textContent    = region.city;
   document.getElementById('footerRegion').textContent = region.city;
-  document.getElementById('hubNavBtn').href = region.hubUrl || '#';
+  document.getElementById('backToHub').href           = region.hubUrl || '#';
   document.getElementById('footerHubLink').href       = region.hubUrl || '#';
   document.getElementById('pageCallout').innerHTML    =
     `<strong>${region.city} — Contractor Compliance</strong> — GL and WC insurance tracking, license status, contract management, and document uploads for all contractors in the ${region.city} region. Data synced from Google Sheets (<strong>COMPLIANCE_Data</strong> tab).`;
@@ -1416,6 +2013,284 @@ function setCache(key, data) {
   try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch(e) {}
 }
 
+
+/* ══ CREW PANEL ═══════════════════════════════════════════════ */
+let currentCrewContractor = null;
+let crewCache = {};
+
+async function openCrewPanel(contractorName) {
+  currentCrewContractor = contractorName;
+  document.getElementById('cpTitle').textContent = contractorName;
+  document.getElementById('cpSub').textContent   = 'Crews assigned to this contractor';
+  document.getElementById('cpCrewName').value    = '';
+  document.getElementById('cpCrewPhone').value   = '';
+  document.getElementById('cpCrewLocation').value= '';
+  document.getElementById('crewOverlay').classList.add('open');
+  document.getElementById('crewPanel').classList.add('open');
+  await loadCrews(contractorName);
+}
+
+function closeCrewPanel() {
+  document.getElementById('crewOverlay').classList.remove('open');
+  document.getElementById('crewPanel').classList.remove('open');
+}
+
+async function loadCrews(contractorName) {
+  document.getElementById('crewList').innerHTML = '<div class="cp-empty">Loading…</div>';
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=getCrews&contractor=${encodeURIComponent(contractorName)}`);
+    const data = await res.json();
+    crewCache[contractorName] = data.crews || [];
+    renderCrews(contractorName);
+    updateCrewCount(contractorName, crewCache[contractorName].length);
+  } catch(e) {
+    document.getElementById('crewList').innerHTML = '<div class="cp-empty">Could not load crews.</div>';
+  }
+}
+
+function renderCrews(contractorName) {
+  const list  = document.getElementById('crewList');
+  const crews = crewCache[contractorName] || [];
+  if (!crews.length) {
+    list.innerHTML = '<div class="cp-empty">No crews yet.<br><span style="font-size:11px;">Use the form above to add the first crew.</span></div>';
+    return;
+  }
+  list.innerHTML = crews.map(c => `
+    <div class="crew-item" id="crew-${c['id']}">
+      <div class="crew-icon">👷</div>
+      <div class="crew-info">
+        <div class="crew-name">${c['crew_name']||'—'}</div>
+        <div class="crew-meta">
+          ${c['phone'] ? '📞 ' + c['phone'] + '<br>' : ''}
+          ${c['location'] ? '📍 ' + c['location'] : ''}
+        </div>
+      </div>
+      <button class="crew-del" onclick="deleteCrew('${c['id']}','${contractorName}')" title="Delete crew">✕</button>
+    </div>`).join('');
+}
+
+async function addCrew() {
+  const name     = document.getElementById('cpCrewName').value.trim();
+  const phone    = document.getElementById('cpCrewPhone').value.trim();
+  const location = document.getElementById('cpCrewLocation').value.trim();
+  if (!name) { alert('Crew name is required.'); return; }
+  const btn = document.querySelector('.cp-add-btn');
+  btn.textContent = 'Adding…'; btn.disabled = true;
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=addCrew&contractor=${encodeURIComponent(currentCrewContractor)}&crew_name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&location=${encodeURIComponent(location)}`);
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('cpCrewName').value = '';
+      document.getElementById('cpCrewPhone').value = '';
+      document.getElementById('cpCrewLocation').value = '';
+      await loadCrews(currentCrewContractor);
+    }
+  } catch(e) {}
+  btn.textContent = '+ Add Crew'; btn.disabled = false;
+}
+
+async function deleteCrew(id, contractorName) {
+  if (!confirm('Delete this crew?')) return;
+  await fetch(`${BACKEND_URL}?action=deleteCrew&id=${encodeURIComponent(id)}`);
+  crewCache[contractorName] = (crewCache[contractorName]||[]).filter(c => c['id'] !== id);
+  renderCrews(contractorName);
+  updateCrewCount(contractorName, crewCache[contractorName].length);
+}
+
+function updateCrewCount(contractorName, count) {
+  // Update all crew count buttons for this contractor
+  document.querySelectorAll('[data-crew-contractor]').forEach(el => {
+    if (el.dataset.crewContractor === contractorName) {
+      el.textContent  = count > 0 ? `👷 ${count} Crew${count!==1?'s':''}` : '👷 Crews';
+      el.className    = 'crew-count-btn' + (count === 0 ? ' zero' : '');
+    }
+  });
+}
+
+async function loadAllCrewCounts() {
+  // Batch load crew counts for visible contractors
+  const btns = document.querySelectorAll('[data-crew-contractor]');
+  const names = [...new Set([...btns].map(b => b.dataset.crewContractor))];
+  await Promise.all(names.map(async name => {
+    try {
+      const res  = await fetch(`${BACKEND_URL}?action=getCrews&contractor=${encodeURIComponent(name)}`);
+      const data = await res.json();
+      const count = (data.crews||[]).length;
+      crewCache[name] = data.crews||[];
+      updateCrewCount(name, count);
+    } catch(e) {}
+  }));
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCrewPanel(); });
+
+
+/* ══ SESSION & PERMISSIONS ══════════════════════════════════ */
+function getSession() {
+  try { return JSON.parse(localStorage.getItem('elite_session') || 'null'); } catch { return null; }
+}
+function isAdmin() {
+  const s = getSession();
+  if (!s || !s.user) return true; // if no session, don't restrict
+  const role = String(s.user.role || '').toLowerCase();
+  return role === 'admin' || role === 'administration' || role === 'sr director' || role === 'sr general manager';
+}
+function applyEditPermissions() {
+  if (isAdmin()) return; // admins see everything editable
+  // Lock GL section
+  document.querySelectorAll('.fs-gl').forEach(el => {
+    el.classList.add('section-locked');
+    el.querySelectorAll('input,select,textarea').forEach(f => {
+      f.disabled = true; f.style.pointerEvents = 'none';
+    });
+  });
+  // Lock WC section
+  document.querySelectorAll('.fs-wc').forEach(el => {
+    el.classList.add('section-locked');
+    el.querySelectorAll('input,select,textarea').forEach(f => {
+      f.disabled = true; f.style.pointerEvents = 'none';
+    });
+  });
+  // Lock Region field
+  const fRegion = document.getElementById('fRegion');
+  if (fRegion) {
+    fRegion.disabled = true;
+    fRegion.style.pointerEvents = 'none';
+    fRegion.closest('.form-group')?.classList.add('field-readonly');
+  }
+  // Lock Pay ID field
+  const fPayId = document.getElementById('fPayId');
+  if (fPayId) {
+    fPayId.disabled = true;
+    fPayId.style.pointerEvents = 'none';
+    fPayId.closest('.form-group')?.classList.add('field-readonly');
+  }
+}
+
+
+/* ══ VIEW DOCS PANEL ═════════════════════════════════════════ */
+async function openDocsPanel(contractorId, contractorName) {
+  contractorId = contractorId || '';
+  document.getElementById('dpTitle').textContent = contractorName || 'Documents';
+  document.getElementById('dpSub').textContent   = 'Insurance & compliance documents';
+  document.getElementById('dpBody').innerHTML    = '<div class="dp-empty"><div class="dp-empty-icon">⏳</div>Loading documents…</div>';
+  document.getElementById('docsOverlay').classList.add('open');
+  document.getElementById('docsPanel').classList.add('open');
+
+  try {
+    const url  = BACKEND_URL + '?action=listFiles&region=' + encodeURIComponent(regionKey) + '&folder=' + encodeURIComponent('contractor_' + contractorId);
+    const res  = await fetch(url);
+    const data = await res.json();
+    const files = data.files || [];
+
+    if (data.error) {
+      document.getElementById('dpBody').innerHTML = `<div class="dp-empty"><div class="dp-empty-icon">⚠️</div>Error: ${data.error}</div>`;
+      return;
+    }
+
+    if (!files.length) {
+      document.getElementById('dpBody').innerHTML = '<div class="dp-empty"><div class="dp-empty-icon">📭</div>No documents found.<br><span style="font-size:10px;color:var(--gray-300);">Folder: contractor_' + contractorId + '</span></div>';
+      return;
+    }
+
+    document.getElementById('dpBody').innerHTML = `<div class="dp-file-list">
+      ${files.map(f => {
+        const uploaded = f.uploaded ? new Date(f.uploaded).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+        const uploadedBy = f.uploadedBy || 'Unknown';
+        return `<div class="dp-file-item">
+          <div class="dp-file-icon">${docIcon(f.name)}</div>
+          <div class="dp-file-info">
+            <div class="dp-file-name">${f.name}</div>
+            <div class="dp-file-date">📅 ${uploaded} &nbsp;·&nbsp; 👤 ${uploadedBy}</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <a class="dp-file-btn" href="${f.embedUrl || f.viewUrl}" target="_blank">👁 View</a>
+            <a class="dp-file-btn" href="${f.downloadUrl || f.viewUrl}" target="_blank" style="background:var(--gray-100);color:var(--gray-600);border-color:var(--gray-200);">⬇</a>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  } catch(e) {
+    document.getElementById('dpBody').innerHTML = '<div class="dp-empty"><div class="dp-empty-icon">⚠️</div>Could not load documents.<br><span style="font-size:10px;">' + e.message + '</span></div>';
+  }
+}
+
+function closeDocsPanel() {
+  document.getElementById('docsOverlay').classList.remove('open');
+  document.getElementById('docsPanel').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDocsPanel(); } });
+
+
+function toggleOffboardForm(checked) {
+  const wrap = document.getElementById('offboardReasonWrap');
+  if (wrap) wrap.style.display = checked ? 'block' : 'none';
+}
+
+
+function logout() {
+  localStorage.removeItem('elite_session');
+  window.location.href = 'login.html';
+}
+
 </script>
+
+<!-- HISTORY OVERLAY -->
+<div class="history-overlay" id="historyOverlay" onclick="closeHistory()"></div>
+
+<!-- HISTORY PANEL -->
+<div class="history-panel" id="historyPanel">
+  <div class="hp-header">
+    <div>
+      <div class="hp-title" id="hpTitle">Insurance History</div>
+      <div class="hp-sub" id="hpSub">Historical GL &amp; WC records</div>
+    </div>
+    <button class="hp-close" onclick="closeHistory()">✕</button>
+  </div>
+  <div class="hp-body" id="hpBody">
+    <div class="hp-empty">Select a contractor to view history</div>
+  </div>
+</div>
+
+
+<div class="crew-overlay" id="crewOverlay" onclick="closeCrewPanel()"></div>
+<div class="crew-panel" id="crewPanel">
+  <div class="cp-header">
+    <div>
+      <div class="cp-title" id="cpTitle">Crews</div>
+      <div class="cp-sub"  id="cpSub">Crews for this contractor</div>
+    </div>
+    <button class="cp-close" onclick="closeCrewPanel()">✕</button>
+  </div>
+  <div class="cp-body">
+    <div class="cp-add-form">
+      <div class="cp-add-title">➕ Add New Crew</div>
+      <div class="cp-field"><label>Crew Name</label><input type="text" id="cpCrewName" placeholder="e.g. Crew A"></div>
+      <div class="cp-field"><label>Phone</label><input type="tel" id="cpCrewPhone" placeholder="(555) 000-0000"></div>
+      <div class="cp-field"><label>Location</label><input type="text" id="cpCrewLocation" placeholder="City, State"></div>
+      <button class="cp-add-btn" onclick="addCrew()">+ Add Crew</button>
+    </div>
+    <div class="crew-list" id="crewList">
+      <div class="cp-empty">Loading…</div>
+    </div>
+  </div>
+</div>
+
+
+<div class="docs-overlay" id="docsOverlay" onclick="closeDocsPanel()"></div>
+<div class="docs-panel" id="docsPanel">
+  <div class="dp-header">
+    <div>
+      <div class="dp-title" id="dpTitle">Documents</div>
+      <div class="dp-sub"  id="dpSub">Insurance & compliance documents</div>
+    </div>
+    <button class="dp-close" onclick="closeDocsPanel()">✕</button>
+  </div>
+  <div class="dp-body" id="dpBody">
+    <div class="dp-empty"><div class="dp-empty-icon">📄</div>Loading…</div>
+  </div>
+</div>
+
 </body>
 </html>

@@ -1,6 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+// ── AUTH GUARD ───────────────────────────────────────────────
+(function() {
+  function getSession() {
+    try { return JSON.parse(localStorage.getItem('elite_session') || 'null'); } catch { return null; }
+  }
+
+  const REGION_ABBR = {
+    cleveland:'CLE', phoenix:'PHX', chicago:'CHI', stlouis:'STL',
+    minneapolis:'MSP', milwaukee:'MKE', indianapolis:'IND',
+    pittsburgh:'PIT', albuquerque:'ABQ'
+  };
+
+  const HUB_PAGE_REGIONS = {
+    'hub_cleveland':'cleveland','hub_phoenix':'phoenix','hub_chicago':'chicago',
+    'hub_stlouis':'stlouis','hub_minneapolis':'minneapolis','hub_milwaukee':'milwaukee',
+    'hub_indianapolis':'indianapolis','hub_pittsburgh':'pittsburgh','hub_albuquerque':'albuquerque'
+  };
+
+  const session = getSession();
+  const page    = window.location.pathname.split('/').pop().replace('.html','').replace(/[^a-z0-9_]/gi,'_').toLowerCase();
+
+  // Not logged in → go to login
+  if (!session || !session.user) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  const role     = String(session.user.role || '').toLowerCase();
+  // Only Angel has unrestricted access to everything
+  const username = String(session.user.username || '').toLowerCase();
+  if (username === 'angel') return;
+
+  // Normalize region — handles both 'cleveland' and 'CLE'
+  const NAME_TO_ABBR = {
+    cleveland:'CLE', phoenix:'PHX', chicago:'CHI', stlouis:'STL',
+    minneapolis:'MSP', milwaukee:'MKE', indianapolis:'IND',
+    pittsburgh:'PIT', albuquerque:'ABQ'
+  };
+  const rawRegion  = String(session.user.region || session.user.regions || '');
+  const parts      = rawRegion.split(/[,\s]+/).filter(Boolean);
+  // Convert each part to an abbreviation
+  const userAbbrs  = parts.map(p => {
+    const upper = p.trim().toUpperCase();
+    const lower = p.trim().toLowerCase();
+    return NAME_TO_ABBR[lower] || upper; // if it's already an abbr like CLE, keep it
+  });
+  const hasAllRegions = userAbbrs.includes('ALL') || userAbbrs.length === 0;
+
+  // Check hub page region access
+  const hubRegion = HUB_PAGE_REGIONS[page];
+  if (hubRegion && !hasAllRegions) {
+    const required = REGION_ABBR[hubRegion];
+    if (!userAbbrs.includes(required)) {
+      window.location.href = 'index.html';
+      return;
+    }
+    // Hub region passed — no further checks needed
+  } else {
+    // Check region-specific pages (compliance, fleet, etc.) via URL param
+    const urlRegion = new URLSearchParams(window.location.search).get('region');
+    if (urlRegion && !hasAllRegions) {
+      const required = REGION_ABBR[urlRegion.toLowerCase()];
+      if (required && !userAbbrs.includes(required)) {
+        window.location.href = 'index.html';
+        return;
+      }
+      // URL region passed — no further checks needed for regional pages
+    } else {
+      // Non-regional page — check explicit page access flag
+      const pageVal = String(session.user[page] || 'true').toLowerCase();
+      if (pageVal === 'false') {
+        window.location.href = 'index.html';
+        return;
+      }
+    }
+  }
+})();
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reviews & Reputation — Elite Hub</title>
@@ -40,7 +120,7 @@
   body {
     font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
     background: var(--gray-100); color: var(--text);
-    min-height: 100vh; display: flex; flex-direction: column; padding-left: 48px;
+    min-height: 100vh; display: flex; flex-direction: column;
   }
 
   /* ══ HEADER ══════════════════════════════════════════════════ */
@@ -353,47 +433,34 @@
   }
 
   /* ══ TOOL NAV BAR ══════════════════════════════════════════ */
-/* ══ SIDEBAR NAV ═══════════════════════════════════════ */
   .tool-nav {
-    position: fixed;
-    top: 71px; /* below sticky header (68px) + sub-bar (3px) */
-    left: 0;
-    bottom: 0;
-    width: 48px;
     background: var(--navy);
-    border-right: 1px solid rgba(255,255,255,.08);
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 2px;
-    padding: 10px 0;
-    z-index: 190;
-    overflow: hidden;
-    transition: width .22s cubic-bezier(.4,0,.2,1);
-    box-shadow: 2px 0 12px rgba(0,0,0,.18);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    padding: 0 22px;
+    display: flex; align-items: center; gap: 4px;
+    overflow-x: auto; white-space: nowrap;
+    scrollbar-width: none;
   }
-  .tool-nav:hover {
-    width: 160px;
+  .tool-nav::-webkit-scrollbar { display: none; }
+  .tool-nav-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: rgba(255,255,255,.3);
+    padding-right: 10px; border-right: 1px solid rgba(255,255,255,.1);
+    margin-right: 6px; flex-shrink: 0;
   }
-  .tool-nav-label { display: none; }
   .tn-btn {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 0 9px 14px;
-    font-size: 11px; font-weight: 700; letter-spacing: .3px;
-    text-decoration: none; color: rgba(255,255,255,.65);
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 11px; border-radius: 5px;
+    font-size: 10px; font-weight: 700; letter-spacing: .3px;
+    text-decoration: none; color: rgba(255,255,255,.75);
     transition: background .15s, color .15s;
     border: none; background: none; cursor: pointer;
-    font-family: Arial, sans-serif;
-    white-space: nowrap; overflow: hidden;
-    flex-shrink: 0; width: 100%;
-    text-align: left;
+    font-family: Arial, sans-serif; flex-shrink: 0;
+    white-space: nowrap;
   }
   .tn-btn:hover  { background: rgba(255,255,255,.08); color: white; }
-  .tn-btn.active { background: rgba(255,255,255,.13); color: white; border-left: 3px solid var(--page-color, #1F5FAD); padding-left: 11px; }
-  .tn-btn .tn-icon { font-size: 15px; flex-shrink: 0; width: 20px; text-align: center; }
-  .tn-btn .tn-label { opacity: 0; transition: opacity .15s .05s; white-space: nowrap; }
-  .tool-nav:hover .tn-btn .tn-label { opacity: 1; }
-  body.dark .tool-nav { background: #0F172A; border-right-color: rgba(255,255,255,.06); }
+  .tn-btn.active { background: rgba(255,255,255,.12); color: white; }
+  .tn-btn .tn-icon { font-size: 12px; }
 
 
   /* ══ DARK MODE ════════════════════════════════════════════ */
@@ -473,6 +540,27 @@
   /* Header stays dark */
   body.dark .elite-header { background: #0F172A !important; }
 
+  /* ══ REVIEWS DARK MODE ════════════════════════════════════ */
+  body.dark .summary-card { background: #1F2937 !important; border-color: #374151 !important; }
+  body.dark .summary-table th { background: #0F172A !important; color: #9CA3AF !important; border-color: #374151 !important; }
+  body.dark .summary-table td { border-color: #374151 !important; color: #F1F5F9 !important; background: #1F2937 !important; }
+  body.dark .summary-table tr:hover td { background: #1E3A5F !important; }
+  body.dark .rating-bar-wrap { background: #374151 !important; }
+  body.dark .platform-tabs { border-color: #374151 !important; }
+  body.dark .platform-tab { color: #9CA3AF !important; }
+  body.dark .platform-tab.active { color: #93C5FD !important; border-color: #3B82F6 !important; }
+  body.dark .platform-panel { background: #1F2937 !important; }
+  /* Review cards */
+  body.dark .review-card { background: #1F2937 !important; border-color: #374151 !important; }
+  body.dark .rev-header { border-color: #374151 !important; }
+  body.dark .rev-name { color: #F1F5F9 !important; }
+  body.dark .rev-date { color: #9CA3AF !important; }
+  body.dark .rev-text { color: #D1D5DB !important; }
+  body.dark .rev-footer { background: #111827 !important; border-color: #374151 !important; }
+  body.dark .respond-btn { background: #374151 !important; color: #D1D5DB !important; border-color: #4B5563 !important; }
+  body.dark .search-box { background: #111827 !important; border-color: #374151 !important; }
+  body.dark .search-box input { color: #F1F5F9 !important; }
+
 
   .dark-toggle {
     background: none; border: 1.5px solid rgba(255,255,255,.2);
@@ -482,6 +570,31 @@
   }
   .dark-toggle:hover { border-color: rgba(255,255,255,.75); color: white; }
 
+
+  /* ══ STICKY TOOL NAV + BACK NAV ═════════════════════════ */
+  .sub-bar {
+    position: sticky;
+    top: 68px; /* flush under header */
+    z-index: 192;
+  }
+  .tool-nav {
+    position: sticky;
+    top: 71px; /* header(68) + sub-bar(3) */
+    z-index: 191;
+    background: var(--navy) !important; /* solid — no bleed-through */
+    margin: 0 !important;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+  }
+  .back-nav {
+    position: sticky;
+    top: 109px; /* header(68) + sub-bar(3) + tool-nav(38) */
+    z-index: 190;
+    background: var(--navy) !important;
+    box-shadow: 0 3px 8px rgba(27,42,74,.35);
+    margin: 0 !important;
+  }
+  html { scroll-padding-top: 145px; }
 </style>
 </head>
 <body>
@@ -540,7 +653,7 @@ function toggleDarkMode() {
   </div>
 </header>
 <div class="sub-bar"></div>
-<nav class="tool-nav"><span class="tool-nav-label">Tools</span><a class="tn-btn tn-hub-btn" id="hubNavBtn" href="#"><span class="tn-icon">🏠</span><span class="tn-label">Hub</span></a><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/index.html"><span class="tn-icon">🌐</span><span class="tn-label">Elite Hub</span></a><a class="tn-btn tn-dynamic" data-file="fleet.html"><span class="tn-icon">🚗</span><span class="tn-label">Fleet</span></a><a class="tn-btn tn-dynamic" data-file="compliance.html"><span class="tn-icon">📋</span><span class="tn-label">Compliance</span></a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">⚖️</span><span class="tn-label">Licensing</span></span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🏷️</span><span class="tn-label">Pricing</span></span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">📊</span><span class="tn-label">CFB</span></span><a class="tn-btn active tn-dynamic" data-file="reviews.html"><span class="tn-icon">⭐</span><span class="tn-label">Reviews</span></a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🔍</span><span class="tn-label">Invoices</span></span><a class="tn-btn tn-dynamic" data-file="documents.html"><span class="tn-icon">📁</span><span class="tn-label">Documents</span></a></nav><script>
+<nav class="tool-nav"><span class="tool-nav-label">Tools</span><a class="tn-btn tn-dynamic" data-file="fleet.html"><span class="tn-icon">🚗</span>Fleet</a><a class="tn-btn tn-dynamic" data-file="compliance.html"><span class="tn-icon">📋</span>Compliance</a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">⚖️</span>Licensing</span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🏷️</span>Pricing</span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">📊</span>CFB</span><a class="tn-btn active tn-dynamic" data-file="reviews.html"><span class="tn-icon">⭐</span>Reviews</a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🔍</span>Invoices</span><a class="tn-btn tn-dynamic" data-file="documents.html"><span class="tn-icon">📁</span>Documents</a></nav><script>
 (function(){
   var rk = new URLSearchParams(window.location.search).get('region') || 'cleveland';
   document.querySelectorAll('.tn-dynamic').forEach(function(a){
@@ -548,6 +661,11 @@ function toggleDarkMode() {
   });
 })();
 </script>
+
+<!-- BACK NAV -->
+<nav class="back-nav">
+  <a id="backToHub" href="#">← <span id="navRegion">Region</span> Hub &rsaquo; Reviews &amp; Reputation</a>
+</nav>
 
 <main>
 
@@ -735,7 +853,7 @@ function toggleDarkMode() {
 /* ══════════════════════════════════════════════════════════════
    CONFIGURATION
 ══════════════════════════════════════════════════════════════ */
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzPicrOIwg99xP7WIo1RJBh2o6gvEJrHWTBW-c8GQ_c7HG3zH49U-I93ZWfYlVvA50oOg/exec'; // ← paste GAS backend URL when ready
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec'; // ← paste GAS backend URL when ready
 
 const REGION_MAP = {
   cleveland:    { city: 'Cleveland',    abbr: 'CLE', hubUrl: 'https://elitecrest.github.io/elite-hub/hub_cleveland.html' },
@@ -1176,9 +1294,10 @@ function initPage() {
   document.getElementById('hdrPageName').textContent  = region.city + ' — Reviews & Reputation';
   document.getElementById('hdrRegion').textContent    = region.city;
   document.getElementById('hdrAbbr').textContent      = region.abbr;
+  document.getElementById('navRegion').textContent    = region.city;
   document.getElementById('footerRegion').textContent = region.city;
   const hubUrl = region.hubUrl || '#';
-  document.getElementById('hubNavBtn').href = hubUrl;
+  document.getElementById('backToHub').href     = hubUrl;
   document.getElementById('footerHubLink').href = hubUrl;
   document.getElementById('fDate').value        = new Date().toISOString().split('T')[0];
 
