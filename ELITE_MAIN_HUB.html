@@ -836,6 +836,7 @@ async function refreshData() {
 
     // Load weights + all compliance scores in parallel — single round trip each
     let weights = { compliance: 0.40, fleet: 0.25, reviews: 0.25, licensing: 0.10 };
+    let scoresData = {}, fleetData = {}, reviewsData = {}, legalData = {};
     try {
       const [wRes, scoresRes, fleetRes, reviewsRes, legalRes] = await Promise.all([
         fetch(`${BACKEND_URL}?action=getScoringRules`),
@@ -844,9 +845,13 @@ async function refreshData() {
         fetch(`${BACKEND_URL}?action=allReviewsScores`),
         fetch(`${BACKEND_URL}?action=allLegalScores`)
       ]);
-      const [wData, scoresData, fleetData, reviewsData, legalData] = await Promise.all([
+      const [wData, scoresDataParsed, fleetDataParsed, reviewsDataParsed, legalDataParsed] = await Promise.all([
         wRes.json(), scoresRes.json(), fleetRes.json(), reviewsRes.json(), legalRes.json()
       ]);
+      scoresData = scoresDataParsed;
+      fleetData = fleetDataParsed;
+      reviewsData = reviewsDataParsed;
+      legalData = legalDataParsed;
 
       // Apply weights
       if (wData.rules) {
@@ -918,6 +923,14 @@ async function refreshData() {
         });
       }
     } catch(e) { console.error('Score load error:', e); }
+
+    // DEBUG — remove after confirming scores work
+    console.log('[EliteHub] scoresData:', JSON.stringify(scoresData?.scores || 'undefined'));
+    console.log('[EliteHub] fleetData:', JSON.stringify(fleetData?.scores || 'undefined'));
+    console.log('[EliteHub] reviewsData:', JSON.stringify(reviewsData?.scores || 'undefined'));
+    console.log('[EliteHub] legalData:', JSON.stringify(legalData?.scores || 'undefined'));
+    console.log('[EliteHub] regionData after apply:', regionData.map(r => r.key + ':' + r.score + ' comp=' + r.compliance));
+
 
     // Cache the scores for instant load next time
     try { localStorage.setItem('eliteHubScores', JSON.stringify({ data: regionData, ts: Date.now() })); } catch(e) {}
