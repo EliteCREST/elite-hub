@@ -856,7 +856,42 @@ async function refreshData() {
         weights.licensing  = (wData.rules['wLicensing']  ?? 10) / 100;
       }
 
-      // Apply scores to regionData
+      // Apply fleet scores
+      if (fleetData.scores) {
+        REGIONS.forEach(region => {
+          const fd = fleetData.scores[region.key];
+          const idx = regionData.findIndex(x => x.key === region.key);
+          if (idx >= 0 && fd) {
+            regionData[idx].fleetScore = fd.fleetScore != null ? (fd.fleetScore / 5) : null; // normalize 500→100 scale
+            regionData[idx].fleet      = fd.total ?? null;
+          }
+        });
+      }
+
+      // Apply reviews scores
+      if (reviewsData.scores) {
+        REGIONS.forEach(region => {
+          const rd = reviewsData.scores[region.key];
+          const idx = regionData.findIndex(x => x.key === region.key);
+          if (idx >= 0 && rd) {
+            regionData[idx].reviewsScore = rd.reviewScore ?? null;
+            regionData[idx].reviews      = rd.avgRating   ?? null;
+          }
+        });
+      }
+
+      // Apply legal/licensing scores
+      if (legalData.scores) {
+        REGIONS.forEach(region => {
+          const ld = legalData.scores[region.key];
+          const idx = regionData.findIndex(x => x.key === region.key);
+          if (idx >= 0 && ld) {
+            regionData[idx].licensingScore = ld.legalScore ?? null;
+          }
+        });
+      }
+
+      // Apply compliance scores + compute composite
       if (scoresData.scores) {
         REGIONS.forEach(region => {
           const compData = scoresData.scores[region.key];
