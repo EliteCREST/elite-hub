@@ -777,8 +777,11 @@ function openRegion(key) {
 
   if (!BUILD_MODE) {
     const userRegion = localStorage.getItem('eliteUserRegion');
-    const userRole   = localStorage.getItem('eliteUserRole');
-    if (userRole !== 'admin' && userRegion !== key) {
+    const userRole   = (localStorage.getItem('eliteUserRole') || '').toLowerCase();
+    const adminRoles = ['admin', 'administration', 'sr director'];
+    const isAdmin    = adminRoles.includes(userRole);
+    const regionMatch = userRegion && (userRegion.toLowerCase() === 'all' || userRegion.toLowerCase() === key);
+    if (!isAdmin && !regionMatch) {
       showToast(`Access restricted — you are assigned to ${userRegion || 'no region'}.`, 'error');
       return;
     }
