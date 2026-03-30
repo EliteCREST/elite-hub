@@ -827,13 +827,17 @@ async function refreshData() {
   }
 
   try {
-    // First load HUB_SUMMARY for any manually pushed scores
+    // First load HUB_SUMMARY for status/trend only (scores are computed live below)
     const res  = await fetch(`${BACKEND_URL}?action=allRegionSummaries`);
     const data = await res.json();
     if (data.regions) {
       data.regions.forEach(r => {
         const idx = regionData.findIndex(x => x.key === r.key);
-        if (idx >= 0) regionData[idx] = { ...regionData[idx], ...r };
+        if (idx >= 0) {
+          // Only apply non-score fields — scores are computed live from individual endpoints
+          if (r.trend)  regionData[idx].trend  = r.trend;
+          if (r.status) regionData[idx].status = r.status;
+        }
       });
     }
 
