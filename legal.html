@@ -438,7 +438,7 @@ function toggleDarkMode() {
     var active = p.key === 'legal' ? ' active' : '';
     return url
       ? '<a class="tn-btn'+active+'" href="'+url+'"><span class="tn-icon">'+p.icon+'</span>'+p.name+'</a>'
-      : '<span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">'+p.icon+'</span>'+p.name+'</span>';
+      : '<span class="tn-btn" style="display:none;" title="Coming soon"><span class="tn-icon">'+p.icon+'</span>'+p.name+'</span>';
   }).join('');
   document.querySelector('.sub-bar').insertAdjacentElement('afterend', nav);
 })();
@@ -995,6 +995,22 @@ function showToast(msg, type = 'info') {
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 4000);
 }
+</script>
+<script>
+// Show hidden nav items for Angel
+(function() {
+  try {
+    const sess = JSON.parse(localStorage.getItem('elite_session') || '{}');
+    const u = sess.user || sess;
+    if ((u.username || '').toLowerCase() === 'angel') {
+      document.querySelectorAll('[title="Coming soon"]').forEach(el => {
+        el.style.display = '';
+        el.style.opacity = '.35';
+        el.style.cursor = 'default';
+      });
+    }
+  } catch(e) {}
+})();
 </script>
 </body>
 </html>
