@@ -190,26 +190,26 @@
   .score-hero {
     background: white; border: 1px solid var(--gray-200);
     border-radius: var(--radius-xl); box-shadow: var(--shadow-md);
-    padding: 28px 32px; margin-bottom: 28px;
-    display: flex; align-items: center; gap: 36px;
+    padding: 16px 24px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 24px;
     flex-wrap: wrap;
   }
   .score-dial { text-align: center; flex-shrink: 0; }
-  .score-num  { font-size: 64px; font-weight: 700; line-height: 1; }
-  .score-max  { font-size: 18px; color: var(--gray-400); font-weight: 400; }
-  .score-lbl  { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-400); margin-top: 4px; }
+  .score-num  { font-size: 42px; font-weight: 700; line-height: 1; }
+  .score-max  { font-size: 14px; color: var(--gray-400); font-weight: 400; }
+  .score-lbl  { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-400); margin-top: 2px; }
   .score-track {
     flex: 1; min-width: 260px;
   }
-  .score-bar-wrap { background: var(--gray-200); border-radius: 6px; height: 12px; margin: 10px 0 16px; overflow: hidden; }
-  .score-bar-fill { height: 100%; border-radius: 6px; transition: width .8s ease; }
+  .score-bar-wrap { background: var(--gray-200); border-radius: 4px; height: 8px; margin: 6px 0 10px; overflow: hidden; }
+  .score-bar-fill { height: 100%; border-radius: 4px; transition: width .8s ease; }
   .score-ranges {
     display: flex; justify-content: space-between; font-size: 10px;
     color: var(--gray-400); letter-spacing: .3px;
   }
-  .score-meta { display: flex; flex-wrap: wrap; gap: 24px; }
-  .score-meta-item .sm-val { font-size: 18px; font-weight: 700; color: var(--navy); }
-  .score-meta-item .sm-lbl { font-size: 10px; color: var(--gray-400); letter-spacing: .5px; text-transform: uppercase; margin-top: 2px; }
+  .score-meta { display: flex; flex-wrap: wrap; gap: 16px; }
+  .score-meta-item .sm-val { font-size: 15px; font-weight: 700; color: var(--navy); }
+  .score-meta-item .sm-lbl { font-size: 9px; color: var(--gray-400); letter-spacing: .5px; text-transform: uppercase; margin-top: 1px; }
 
   /* ══ KPI GRID ════════════════════════════════ */
   .kpi-grid {
@@ -550,7 +550,7 @@ function toggleDarkMode() {
   </div>
 </header>
 <div class="sub-bar"></div>
-<nav class="tool-nav"><span class="tool-nav-label">Tools</span><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/fleet.html?region=milwaukee"><span class="tn-icon">🚗</span>Fleet</a><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/compliance.html?region=milwaukee"><span class="tn-icon">📋</span>Compliance</a><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/legal.html?region=milwaukee"><span class="tn-icon">⚖️</span>Legal</a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">⚖️</span>Licensing</span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🏷️</span>Pricing</span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">📊</span>CFB</span><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/reviews.html?region=milwaukee"><span class="tn-icon">⭐</span>Reviews</a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🔍</span>Invoices</span><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/documents.html?region=milwaukee"><span class="tn-icon">📁</span>Documents</a></nav>
+<nav class="tool-nav"><span class="tool-nav-label">Tools</span><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/fleet.html?region=milwaukee"><span class="tn-icon">🚗</span>Fleet</a><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/compliance.html?region=milwaukee"><span class="tn-icon">📋</span>Compliance</a><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/legal.html?region=milwaukee"><span class="tn-icon">⚖️</span>Legal</a><span class="tn-btn" style="display:none;" title="Coming soon"><span class="tn-icon">⚖️</span>Licensing</span><span class="tn-btn" style="display:none;" title="Coming soon"><span class="tn-icon">🏷️</span>Pricing</span><span class="tn-btn" style="display:none;" title="Coming soon"><span class="tn-icon">📊</span>CFB</span><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/reviews.html?region=milwaukee"><span class="tn-icon">⭐</span>Reviews</a><span class="tn-btn" style="display:none;" title="Coming soon"><span class="tn-icon">🔍</span>Invoices</span><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/documents.html?region=milwaukee"><span class="tn-icon">📁</span>Documents</a></nav>
 
 <!-- BACK NAV -->
 <nav class="back-nav">
@@ -583,7 +583,7 @@ function toggleDarkMode() {
       <div class="score-ranges">
         <span>300</span><span>450</span><span>600</span><span>750</span><span>850</span>
       </div>
-      <div class="score-meta" style="margin-top:18px;">
+      <div class="score-meta" style="margin-top:10px;">
         <div class="score-meta-item"><div class="sm-val" id="smCompliance">—</div><div class="sm-lbl">Compliance %</div></div>
         <div class="score-meta-item"><div class="sm-val" id="smFleet">—</div><div class="sm-lbl">Fleet Active</div></div>
         <div class="score-meta-item"><div class="sm-val" id="smSafety">—</div><div class="sm-lbl">Safety Score</div></div>
