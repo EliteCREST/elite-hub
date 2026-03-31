@@ -187,29 +187,34 @@
   .callout strong { font-weight: 700; }
 
   /* ══ HEALTH SCORE HERO ════════════════════════ */
-  .score-hero {
+  .hub-columns {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;
+  }
+  .hub-col { min-width: 0; }
+  .score-panel {
     background: white; border: 1px solid var(--gray-200);
     border-radius: var(--radius-xl); box-shadow: var(--shadow-md);
-    padding: 16px 24px; margin-bottom: 20px;
-    display: flex; align-items: center; gap: 24px;
-    flex-wrap: wrap;
+    padding: 16px 20px; height: 100%; display: flex; flex-direction: column;
   }
-  .score-dial { text-align: center; flex-shrink: 0; }
-  .score-num  { font-size: 42px; font-weight: 700; line-height: 1; }
-  .score-max  { font-size: 14px; color: var(--gray-400); font-weight: 400; }
-  .score-lbl  { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-400); margin-top: 2px; }
-  .score-track {
-    flex: 1; min-width: 260px;
+  .score-panel-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
   }
-  .score-bar-wrap { background: var(--gray-200); border-radius: 4px; height: 8px; margin: 6px 0 10px; overflow: hidden; }
-  .score-bar-fill { height: 100%; border-radius: 4px; transition: width .8s ease; }
-  .score-ranges {
-    display: flex; justify-content: space-between; font-size: 10px;
-    color: var(--gray-400); letter-spacing: .3px;
+  .score-panel-header .sh { margin: 0; }
+  .gauge-wrap { display: flex; justify-content: center; margin: 4px 0 8px; }
+  .score-subs {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto;
   }
-  .score-meta { display: flex; flex-wrap: wrap; gap: 16px; }
-  .score-meta-item .sm-val { font-size: 15px; font-weight: 700; color: var(--navy); }
-  .score-meta-item .sm-lbl { font-size: 9px; color: var(--gray-400); letter-spacing: .5px; text-transform: uppercase; margin-top: 1px; }
+  .score-sub {
+    background: var(--gray-50); border-radius: var(--radius); padding: 8px 10px; text-align: center;
+  }
+  .score-sub-val { font-size: 14px; font-weight: 700; color: var(--navy); }
+  .score-sub-lbl { font-size: 9px; color: var(--gray-400); text-transform: uppercase; letter-spacing: .5px; margin-top: 1px; }
+  .activity-panel {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl); box-shadow: var(--shadow-md);
+    padding: 16px 20px; height: 100%; display: flex; flex-direction: column;
+  }
+  .activity-panel .sh { margin: 0 0 12px; }
 
   /* ══ KPI GRID ════════════════════════════════ */
   .kpi-grid {
@@ -318,7 +323,7 @@
     main { padding: 20px 16px; }
     .elite-header { grid-template-columns: 4px 1fr auto; }
     .header-logo { display: none; }
-    .score-hero { flex-direction: column; gap: 20px; }
+    .hub-columns { grid-template-columns: 1fr; }
   }
 
   /* ══ TOOL NAV BAR ══════════════════════════════════════════ */
@@ -457,16 +462,15 @@
 
 
   /* Hub-specific dark mode */
-  body.dark .score-hero {
+  body.dark .score-panel, body.dark .activity-panel {
     background: #1F2937 !important; border-color: #374151 !important;
   }
-  body.dark .score-hero * { color: #F1F5F9 !important; }
-  body.dark .score-num, body.dark .score-max, body.dark .score-lbl { color: #F1F5F9 !important; }
-  body.dark .score-lbl, body.dark .score-max { color: #9CA3AF !important; }
-  body.dark .score-ranges span { color: #9CA3AF !important; }
-  body.dark .score-bar-wrap { background: #374151 !important; }
-  body.dark .score-meta-item .sm-val { color: #F1F5F9 !important; }
-  body.dark .score-meta-item .sm-lbl { color: #9CA3AF !important; }
+  body.dark .score-panel * { color: #F1F5F9 !important; }
+  body.dark .score-sub { background: #374151 !important; }
+  body.dark .score-sub-val { color: #F1F5F9 !important; }
+  body.dark .score-sub-lbl { color: #9CA3AF !important; }
+  body.dark .gauge-text-score { fill: #F1F5F9 !important; }
+  body.dark .gauge-text-sub { fill: #9CA3AF !important; }
   body.dark .page-tile {
     background: #1F2937 !important; border-color: #374151 !important;
   }
@@ -558,41 +562,58 @@ function toggleDarkMode() {
 </nav>
 
 <main>
-  <div class="callout" id="regionCallout">Loading region data...</div>
+  <div class="hub-columns">
+    <!-- LEFT COLUMN: Activity Feed -->
+    <div class="hub-col">
+      <div class="activity-panel">
+        <span class="sh">Activity Feed</span>
+        <div id="regionCallout" style="font-size:13px;color:var(--gray-600);line-height:1.6;">Loading region data...</div>
+      </div>
+    </div>
+    <!-- RIGHT COLUMN: Health Score Gauge -->
+    <div class="hub-col">
+      <div class="score-panel">
+        <div class="score-panel-header">
+          <span class="sh">Regional Health Score</span>
+          <span class="sr-right" id="scoreTimestamp" style="font-size:11px;color:var(--gray-400);">—</span>
+        </div>
+        <div class="gauge-wrap">
+          <svg id="gaugeChart" viewBox="0 0 220 130" width="220" height="130">
+            <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="#E5E7EB" stroke-width="14" stroke-linecap="round"/>
+            <path id="gaugeArc" d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="#9CA3AF" stroke-width="14" stroke-linecap="round" stroke-dasharray="282.7" stroke-dashoffset="282.7"/>
+            <text id="gaugeScore" class="gauge-text-score" x="110" y="100" text-anchor="middle" font-size="38" font-weight="700" fill="var(--navy)">—</text>
+            <text x="110" y="118" text-anchor="middle" font-size="12" fill="var(--gray-400)">/850</text>
+            <text id="gaugeGrade" x="110" y="78" text-anchor="middle" font-size="12" font-weight="700" fill="var(--gray-400)">—</text>
+            <text x="16" y="128" text-anchor="start" font-size="9" fill="var(--gray-400)">300</text>
+            <text x="204" y="128" text-anchor="end" font-size="9" fill="var(--gray-400)">850</text>
+          </svg>
+        </div>
+        <div class="score-subs">
+          <div class="score-sub">
+            <div class="score-sub-val" id="smCompliance">—</div>
+            <div class="score-sub-lbl">Compliance</div>
+          </div>
+          <div class="score-sub">
+            <div class="score-sub-val" id="smSafety">—</div>
+            <div class="score-sub-lbl">Fleet score</div>
+          </div>
+          <div class="score-sub">
+            <div class="score-sub-val" id="smReviews">—</div>
+            <div class="score-sub-lbl">Avg review</div>
+          </div>
+          <div class="score-sub">
+            <div class="score-sub-val" id="smLitigation">—</div>
+            <div class="score-sub-lbl">Open litigation</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <!-- HEALTH SCORE HERO -->
-  <div class="section-row" style="margin-bottom:14px;">
-    <span class="sh">Regional Health Score</span>
-    <span class="sr-right" id="scoreTimestamp">—</span>
-  </div>
-  <div class="score-hero">
-    <div class="score-dial">
-      <div class="score-num" id="heroScore">—</div>
-      <div class="score-max">/850</div>
-      <div class="score-lbl">Health Score</div>
-    </div>
-    <div class="score-track" style="flex:1;">
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray-400);">
-        <span>300 — Poor</span>
-        <span id="scoreGrade" style="font-weight:700;color:var(--blue);">—</span>
-        <span>850 — Excellent</span>
-      </div>
-      <div class="score-bar-wrap">
-        <div class="score-bar-fill" id="scoreBarFill" style="width:0%;background:var(--blue);"></div>
-      </div>
-      <div class="score-ranges">
-        <span>300</span><span>450</span><span>600</span><span>750</span><span>850</span>
-      </div>
-      <div class="score-meta" style="margin-top:10px;">
-        <div class="score-meta-item"><div class="sm-val" id="smCompliance">—</div><div class="sm-lbl">Compliance %</div></div>
-        <div class="score-meta-item"><div class="sm-val" id="smFleet">—</div><div class="sm-lbl">Fleet Active</div></div>
-        <div class="score-meta-item"><div class="sm-val" id="smSafety">—</div><div class="sm-lbl">Safety Score</div></div>
-        <div class="score-meta-item"><div class="sm-val" id="smReviews">—</div><div class="sm-lbl">Avg Review</div></div>
-        <div class="score-meta-item"><div class="sm-val" id="smLitigation">—</div><div class="sm-lbl">Open Litigation</div></div>
-        <div class="score-meta-item"><div class="sm-val" id="smNational">—</div><div class="sm-lbl">National Rank</div></div>
-      </div>
-    </div>
-  </div>
+  <!-- Hidden elements for compatibility -->
+  <span id="scoreGrade" style="display:none;">—</span>
+  <span id="smFleet" style="display:none;">—</span>
+  <span id="smNational" style="display:none;">—</span>
 
   <!-- KPI STRIP -->
   <div class="section-row">
@@ -830,17 +851,22 @@ function openPage(key) {
 ══════════════════════════════════════════════════════ */
 function renderScore(score) {
   if (!score) return;
-  const pct   = Math.round(((score - 300) / 550) * 100);
+  const pct   = Math.max(0, Math.min(1, (score - 300) / 550));
   const grade = score >= 750 ? 'Excellent' : score >= 600 ? 'Good' : score >= 450 ? 'Fair' : 'Needs Attention';
   const color = score >= 750 ? '#16A34A' : score >= 600 ? '#2563EB' : score >= 450 ? '#D97706' : '#DC2626';
+  const arcLen = Math.PI * 90; // half-circle arc length for r=90
+  const offset = arcLen * (1 - pct);
 
-  document.getElementById('heroScore').textContent          = score;
-  document.getElementById('heroScore').style.color          = color;
-  document.getElementById('scoreGrade').textContent         = grade;
-  document.getElementById('scoreGrade').style.color         = color;
-  document.getElementById('scoreBarFill').style.width       = pct + '%';
-  document.getElementById('scoreBarFill').style.background  = color;
-  document.getElementById('hdrScore').textContent           = score;
+  const arc   = document.getElementById('gaugeArc');
+  const gs    = document.getElementById('gaugeScore');
+  const gg    = document.getElementById('gaugeGrade');
+  if (arc) { arc.style.strokeDasharray = arcLen; arc.style.strokeDashoffset = offset; arc.style.stroke = color; }
+  if (gs)  { gs.textContent = score; gs.style.fill = color; }
+  if (gg)  { gg.textContent = grade; gg.style.fill = color; }
+
+  const el = document.getElementById('heroScore');
+  if (el) el.textContent = score;
+  document.getElementById('hdrScore').textContent = score;
 }
 
 /* ══════════════════════════════════════════════════════
