@@ -671,7 +671,7 @@ async function syncData() {
 async function _syncDataFresh() {
   document.getElementById('hdrSync').textContent = 'Syncing…';
   try {
-    const res  = await fetch(`${BACKEND_URL}?action=legalData`); // no region = all regions
+    const res  = await fetch(`${BACKEND_URL}?action=cachedLegalData`);
     const data = await res.json();
     allCases = (data.cases || []).map(normalizeCase);
     renderAll();
