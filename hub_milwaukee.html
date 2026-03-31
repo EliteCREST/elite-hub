@@ -1021,7 +1021,8 @@ let chatMessages = [];
 function getCurrentUser() {
   try {
     const sess = JSON.parse(localStorage.getItem('elite_session') || '{}');
-    return sess.name || sess.username || 'Unknown';
+    const u = sess.user || sess;
+    return u.name || u.username || 'Unknown';
   } catch(e) { return 'Unknown'; }
 }
 
@@ -1175,21 +1176,20 @@ function showToast(msg, type = 'info') {
 ══════════════════════════════════════════════════════ */
 initRegion();
 
-// Load cached data instantly, then sync fresh in background
+// Load cached data instantly — only sync on first visit or Sync button
 try {
   const cached = localStorage.getItem(CACHE_KEY);
   if (cached) {
     const { data, ts } = JSON.parse(cached);
-    if (Date.now() - ts < 600000) { // 10 min cache
-      applyScorecard(data);
-      document.getElementById('scoreTimestamp').textContent = 'Cached · syncing…';
-    }
+    applyScorecard(data);
+    document.getElementById('scoreTimestamp').textContent = 'Last synced ' + new Date(ts).toLocaleTimeString();
+  } else {
+    // First visit — no cache, must sync
+    syncData();
   }
-} catch(e) {}
+} catch(e) { syncData(); }
 
-syncData();
 loadChat();
-setInterval(syncData, 120000); // auto-refresh every 2 min
 setInterval(loadChat, 30000);  // refresh chat every 30 sec
 
 function logout() {
