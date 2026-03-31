@@ -1050,7 +1050,8 @@ let chatMessages = [];
 function getCurrentUser() {
   try {
     const sess = JSON.parse(localStorage.getItem('elite_session') || '{}');
-    return sess.name || sess.username || 'Unknown';
+    const u = sess.user || sess;
+    return u.name || u.username || 'Unknown';
   } catch(e) { return 'Unknown'; }
 }
 
