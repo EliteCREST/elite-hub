@@ -730,6 +730,23 @@ function openRegion(key) {
    BACKEND SYNC
 ══════════════════════════════════════════════════════ */
 async function refreshData() {
+  // Show cached data instantly while fetching fresh
+  try {
+    const cached = localStorage.getItem('eliteHubScores');
+    if (cached) {
+      const { data: cachedRegions, ts } = JSON.parse(cached);
+      if (Date.now() - ts < 300000) { // 5 min cache
+        cachedRegions.forEach(r => {
+          const idx = regionData.findIndex(x => x.key === r.key);
+          if (idx >= 0) regionData[idx] = { ...regionData[idx], ...r };
+        });
+        buildLeaderboard();
+        buildRegionCards();
+        document.getElementById('syncLabel').textContent = 'Cached';
+      }
+    }
+  } catch(e) {}
+
   document.getElementById('syncLabel').textContent = 'Syncing…';
   document.getElementById('lastSync').textContent  = '…';
 
@@ -742,16 +759,113 @@ async function refreshData() {
   }
 
   try {
+    // First load HUB_SUMMARY for any manually pushed display values (fleet count, review avg, etc.)
     const res  = await fetch(`${BACKEND_URL}?action=allRegionSummaries`);
     const data = await res.json();
-
     if (data.regions) {
       data.regions.forEach(r => {
         const idx = regionData.findIndex(x => x.key === r.key);
-        if (idx >= 0) regionData[idx] = { ...regionData[idx], ...r };
+        // Only apply trend and status from summary — don't overwrite live-computed scores
+        if (idx >= 0) {
+          if (r.trend)  regionData[idx].trend  = r.trend;
+          if (r.status) regionData[idx].status = r.status;
+          // Display values (fleet count, review avg) from summary
+          if (r.fleet !== undefined)   regionData[idx].fleet   = r.fleet;
+          if (r.reviews !== undefined) regionData[idx].reviews = r.reviews;
+        }
       });
     }
 
+    // Load weights + all scores in parallel
+    let weights = { compliance: 0.40, fleet: 0.25, reviews: 0.25, licensing: 0.10 };
+    try {
+      const [wRes, scoresRes, fleetRes, reviewsRes, legalRes] = await Promise.all([
+        fetch(`${BACKEND_URL}?action=getScoringRules`),
+        fetch(`${BACKEND_URL}?action=allComplianceScores`),
+        fetch(`${BACKEND_URL}?action=allFleetScores`),
+        fetch(`${BACKEND_URL}?action=allReviewsScores`),
+        fetch(`${BACKEND_URL}?action=allLegalScores`)
+      ]);
+      const [wData, scoresData, fleetData, reviewsData, legalData] = await Promise.all([
+        wRes.json(), scoresRes.json(), fleetRes.json(), reviewsRes.json(), legalRes.json()
+      ]);
+
+      // Apply weights
+      if (wData.rules) {
+        weights.compliance = (wData.rules['wCompliance'] ?? 40) / 100;
+        weights.fleet      = (wData.rules['wFleet']      ?? 25) / 100;
+        weights.reviews    = (wData.rules['wReviews']    ?? 25) / 100;
+        weights.licensing  = (wData.rules['wLicensing']  ?? 10) / 100;
+      }
+
+      // Apply fleet scores to regionData (fleetScore is 0-500, normalize to 0-100)
+      if (fleetData.scores) {
+        REGIONS.forEach(region => {
+          const fs = fleetData.scores[region.key];
+          const idx = regionData.findIndex(x => x.key === region.key);
+          if (idx < 0 || !fs) return;
+          if (fs.fleetScore !== undefined && fs.fleetScore !== null) {
+            regionData[idx].fleetScore = Math.min(100, (fs.fleetScore / 500) * 100); // normalize to 0-100
+            regionData[idx].fleetRaw   = fs.fleetScore; // keep raw for display
+          }
+        });
+      }
+
+      // Apply reviews scores to regionData (reviewsScore is 0-100)
+      if (reviewsData.scores) {
+        REGIONS.forEach(region => {
+          const rs = reviewsData.scores[region.key];
+          const idx = regionData.findIndex(x => x.key === region.key);
+          if (idx < 0 || !rs) return;
+          if (rs.reviewsScore !== undefined && rs.reviewsScore !== null) {
+            regionData[idx].reviewsScore = rs.reviewsScore;
+          }
+        });
+      }
+
+      // Apply legal/licensing scores to regionData (legalScore is 0-100)
+      if (legalData.scores) {
+        REGIONS.forEach(region => {
+          const ls = legalData.scores[region.key];
+          const idx = regionData.findIndex(x => x.key === region.key);
+          if (idx < 0 || !ls) return;
+          if (ls.legalScore !== undefined && ls.legalScore !== null) {
+            regionData[idx].licensingScore = ls.legalScore;
+          }
+        });
+      }
+
+      // Compute composite health scores
+      if (scoresData.scores) {
+        REGIONS.forEach(region => {
+          const compData = scoresData.scores[region.key];
+          const idx = regionData.findIndex(x => x.key === region.key);
+          if (idx < 0) return;
+          if (!compData || compData.total === 0) {
+            regionData[idx].score      = null;
+            regionData[idx].compliance = null;
+          } else {
+            const compScore = compData.complianceScore ?? 0;
+            regionData[idx].complianceScore = compScore;
+            regionData[idx].compliance      = compData.compliancePct;
+            const rd = regionData[idx];
+            const available = [
+              { score: compScore,                weight: weights.compliance, has: true },
+              { score: rd.fleetScore    ?? null, weight: weights.fleet,      has: rd.fleetScore    !== undefined && rd.fleetScore    !== null },
+              { score: rd.reviewsScore  ?? null, weight: weights.reviews,    has: rd.reviewsScore  !== undefined && rd.reviewsScore  !== null },
+              { score: rd.licensingScore ?? null, weight: weights.licensing, has: rd.licensingScore !== undefined && rd.licensingScore !== null },
+            ];
+            const totalWeight = available.filter(s => s.has).reduce((sum, s) => sum + s.weight, 0);
+            const weighted    = available.filter(s => s.has).reduce((sum, s) => sum + (s.score * s.weight), 0);
+            const normalized  = totalWeight > 0 ? weighted / totalWeight : compScore;
+            regionData[idx].score = Math.round(300 + (normalized / 100) * 550);
+          }
+        });
+      }
+    } catch(e) { console.error('Score load error:', e); }
+
+    // Cache the scores for instant load next time
+    try { localStorage.setItem('eliteHubScores', JSON.stringify({ data: regionData, ts: Date.now() })); } catch(e) {}
     document.getElementById('syncLabel').textContent  = 'Live';
     document.getElementById('lastSync').textContent   = new Date().toLocaleTimeString();
     document.getElementById('lbTimestamp').textContent = 'Updated ' + new Date().toLocaleTimeString();

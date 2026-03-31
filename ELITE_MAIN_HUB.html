@@ -193,58 +193,58 @@
   .region-card:hover .rc-arrow { color: var(--blue); right: 16px; }
 
   .rc-top {
-    padding: 14px 16px 10px;
-    display: flex; align-items: flex-start; gap: 10px;
+    padding: 20px 20px 16px;
+    display: flex; align-items: flex-start; gap: 14px;
     border-bottom: 1px solid var(--gray-200);
   }
   .rc-icon {
-    width: 36px; height: 36px; border-radius: 8px;
+    width: 46px; height: 46px; border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 17px; flex-shrink: 0;
+    font-size: 20px; flex-shrink: 0;
     background: var(--blue-pale); color: var(--blue);
   }
   .rc-identity { flex: 1; }
-  .rc-city  { font-size: 14px; font-weight: 700; color: var(--navy); }
-  .rc-state { font-size: 10px; color: var(--gray-400); margin-top: 1px; letter-spacing: .3px; }
+  .rc-city  { font-size: 16px; font-weight: 700; color: var(--navy); }
+  .rc-state { font-size: 11px; color: var(--gray-400); margin-top: 2px; letter-spacing: .3px; }
   .rc-brands {
-    margin-top: 4px; display: flex; flex-wrap: wrap; gap: 3px;
+    margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px;
   }
   .brand-chip {
-    font-size: 9px; font-weight: 700; letter-spacing: .5px;
-    text-transform: uppercase; padding: 1px 6px;
+    font-size: 10px; font-weight: 700; letter-spacing: .5px;
+    text-transform: uppercase; padding: 2px 7px;
     border-radius: 20px; background: var(--gray-100); color: var(--gray-600);
   }
 
   .rc-score-bar {
-    padding: 8px 16px;
+    padding: 14px 20px;
     border-bottom: 1px solid var(--gray-200);
   }
   .rc-score-row {
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
   }
-  .rc-score-label { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-400); }
-  .rc-score-val   { font-size: 15px; font-weight: 700; }
-  .rc-bar-track { height: 4px; background: var(--gray-200); border-radius: 2px; }
-  .rc-bar-fill  { height: 100%; border-radius: 2px; transition: width .7s ease; }
+  .rc-score-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-400); }
+  .rc-score-val   { font-size: 18px; font-weight: 700; }
+  .rc-bar-track { height: 6px; background: var(--gray-200); border-radius: 3px; }
+  .rc-bar-fill  { height: 100%; border-radius: 3px; transition: width .7s ease; }
 
   .rc-stats {
-    padding: 8px 16px;
+    padding: 14px 20px;
     display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
+    gap: 8px;
   }
-  .rc-stat .rs-val { font-size: 13px; font-weight: 700; color: var(--navy); }
-  .rc-stat .rs-lbl { font-size: 9px; color: var(--gray-400); letter-spacing: .3px; text-transform: uppercase; margin-top: 0; }
+  .rc-stat .rs-val { font-size: 15px; font-weight: 700; color: var(--navy); }
+  .rc-stat .rs-lbl { font-size: 10px; color: var(--gray-400); letter-spacing: .3px; text-transform: uppercase; margin-top: 1px; }
 
   .rc-footer {
-    padding: 7px 16px;
+    padding: 10px 20px;
     background: var(--gray-50);
     display: flex; align-items: center; justify-content: space-between;
     border-top: 1px solid var(--gray-200);
   }
-  .rc-status { font-size: 10px; font-weight: 600; display: flex; align-items: center; }
+  .rc-status { font-size: 11px; font-weight: 600; display: flex; align-items: center; }
   .rc-arrow {
-    color: var(--gray-300); font-size: 14px;
+    color: var(--gray-300); font-size: 16px;
     transition: color .2s, right .2s;
     position: relative; right: 0;
   }
@@ -535,8 +535,8 @@ function toggleDarkMode() {
    ELITE HUB — CONFIGURATION
 ══════════════════════════════════════════════════════ */
 
-const BUILD_MODE  = false;
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec';
+const BUILD_MODE  = true;
+const BACKEND_URL = ''; // Paste GAS Web App URL here
 
 /* ── REGION REGISTRY ─────────────────────────────────
    Add/remove regions here only. Everything else auto-builds.
@@ -738,7 +738,7 @@ function buildRegionCards() {
         <div class="rc-score-bar">
           <div class="rc-score-row">
             <span class="rc-score-label">Health Score</span>
-            <span class="rc-score-val score-${sc}">${d.score !== null ? d.score : '—'}<span style="font-size:10px;font-weight:400;color:var(--gray-400)">/850</span></span>
+            <span class="rc-score-val score-${sc}">${d.score !== null ? d.score : '—'}<span style="font-size:12px;font-weight:400;color:var(--gray-400)">/850</span></span>
           </div>
           <div class="rc-bar-track">
             <div class="rc-bar-fill ${fillClass(d.score)}" style="width:${pct}%"></div>
@@ -777,11 +777,8 @@ function openRegion(key) {
 
   if (!BUILD_MODE) {
     const userRegion = localStorage.getItem('eliteUserRegion');
-    const userRole   = (localStorage.getItem('eliteUserRole') || '').toLowerCase();
-    const adminRoles = ['admin', 'administration', 'sr director'];
-    const isAdmin    = adminRoles.includes(userRole);
-    const regionMatch = userRegion && (userRegion.toLowerCase() === 'all' || userRegion.toLowerCase() === key);
-    if (!isAdmin && !regionMatch) {
+    const userRole   = localStorage.getItem('eliteUserRole');
+    if (userRole !== 'admin' && userRegion !== key) {
       showToast(`Access restricted — you are assigned to ${userRegion || 'no region'}.`, 'error');
       return;
     }
@@ -827,23 +824,18 @@ async function refreshData() {
   }
 
   try {
-    // First load HUB_SUMMARY for status/trend only (scores are computed live below)
+    // First load HUB_SUMMARY for any manually pushed scores
     const res  = await fetch(`${BACKEND_URL}?action=allRegionSummaries`);
     const data = await res.json();
     if (data.regions) {
       data.regions.forEach(r => {
         const idx = regionData.findIndex(x => x.key === r.key);
-        if (idx >= 0) {
-          // Only apply non-score fields — scores are computed live from individual endpoints
-          if (r.trend)  regionData[idx].trend  = r.trend;
-          if (r.status) regionData[idx].status = r.status;
-        }
+        if (idx >= 0) regionData[idx] = { ...regionData[idx], ...r };
       });
     }
 
     // Load weights + all compliance scores in parallel — single round trip each
     let weights = { compliance: 0.40, fleet: 0.25, reviews: 0.25, licensing: 0.10 };
-    let scoresData = {}, fleetData = {}, reviewsData = {}, legalData = {};
     try {
       const [wRes, scoresRes, fleetRes, reviewsRes, legalRes] = await Promise.all([
         fetch(`${BACKEND_URL}?action=getScoringRules`),
@@ -852,13 +844,9 @@ async function refreshData() {
         fetch(`${BACKEND_URL}?action=allReviewsScores`),
         fetch(`${BACKEND_URL}?action=allLegalScores`)
       ]);
-      const [wData, scoresDataParsed, fleetDataParsed, reviewsDataParsed, legalDataParsed] = await Promise.all([
+      const [wData, scoresData, fleetData, reviewsData, legalData] = await Promise.all([
         wRes.json(), scoresRes.json(), fleetRes.json(), reviewsRes.json(), legalRes.json()
       ]);
-      scoresData = scoresDataParsed;
-      fleetData = fleetDataParsed;
-      reviewsData = reviewsDataParsed;
-      legalData = legalDataParsed;
 
       // Apply weights
       if (wData.rules) {
@@ -868,42 +856,44 @@ async function refreshData() {
         weights.licensing  = (wData.rules['wLicensing']  ?? 10) / 100;
       }
 
-      // Apply fleet scores
+      // Apply fleet scores to regionData (fleetScore is 0-500, normalize to 0-100)
       if (fleetData.scores) {
         REGIONS.forEach(region => {
-          const fd = fleetData.scores[region.key];
+          const fs = fleetData.scores[region.key];
           const idx = regionData.findIndex(x => x.key === region.key);
-          if (idx >= 0 && fd) {
-            regionData[idx].fleetScore = fd.fleetScore != null ? (fd.fleetScore / 5) : null; // normalize 500→100 scale
-            regionData[idx].fleet      = fd.total ?? null;
+          if (idx < 0 || !fs) return;
+          if (fs.fleetScore !== undefined && fs.fleetScore !== null) {
+            regionData[idx].fleetScore = Math.min(100, (fs.fleetScore / 500) * 100); // normalize to 0-100
+            regionData[idx].fleetRaw   = fs.fleetScore; // keep raw for display
           }
         });
       }
 
-      // Apply reviews scores
+      // Apply reviews scores to regionData (reviewsScore is 0-100)
       if (reviewsData.scores) {
         REGIONS.forEach(region => {
-          const rd = reviewsData.scores[region.key];
+          const rs = reviewsData.scores[region.key];
           const idx = regionData.findIndex(x => x.key === region.key);
-          if (idx >= 0 && rd) {
-            regionData[idx].reviewsScore = rd.reviewScore ?? null;
-            regionData[idx].reviews      = rd.avgRating   ?? null;
+          if (idx < 0 || !rs) return;
+          if (rs.reviewsScore !== undefined && rs.reviewsScore !== null) {
+            regionData[idx].reviewsScore = rs.reviewsScore;
           }
         });
       }
 
-      // Apply legal/licensing scores
+      // Apply legal/licensing scores to regionData (legalScore is 0-100)
       if (legalData.scores) {
         REGIONS.forEach(region => {
-          const ld = legalData.scores[region.key];
+          const ls = legalData.scores[region.key];
           const idx = regionData.findIndex(x => x.key === region.key);
-          if (idx >= 0 && ld) {
-            regionData[idx].licensingScore = ld.legalScore ?? null;
+          if (idx < 0 || !ls) return;
+          if (ls.legalScore !== undefined && ls.legalScore !== null) {
+            regionData[idx].licensingScore = ls.legalScore;
           }
         });
       }
 
-      // Apply compliance scores + compute composite
+      // Compute composite health scores
       if (scoresData.scores) {
         REGIONS.forEach(region => {
           const compData = scoresData.scores[region.key];
@@ -916,11 +906,12 @@ async function refreshData() {
             const compScore = compData.complianceScore ?? 0;
             regionData[idx].complianceScore = compScore;
             regionData[idx].compliance      = compData.compliancePct;
+            const rd = regionData[idx];
             const available = [
-              { score: compScore,                               weight: weights.compliance, has: true },
-              { score: regionData[idx].fleetScore    ?? null,  weight: weights.fleet,      has: regionData[idx].fleetScore    !== null },
-              { score: regionData[idx].reviewsScore  ?? null,  weight: weights.reviews,    has: regionData[idx].reviewsScore  !== null },
-              { score: regionData[idx].licensingScore ?? null, weight: weights.licensing,  has: regionData[idx].licensingScore !== null },
+              { score: compScore,                weight: weights.compliance, has: true },
+              { score: rd.fleetScore    ?? null, weight: weights.fleet,      has: rd.fleetScore    !== undefined && rd.fleetScore    !== null },
+              { score: rd.reviewsScore  ?? null, weight: weights.reviews,    has: rd.reviewsScore  !== undefined && rd.reviewsScore  !== null },
+              { score: rd.licensingScore ?? null, weight: weights.licensing, has: rd.licensingScore !== undefined && rd.licensingScore !== null },
             ];
             const totalWeight = available.filter(s => s.has).reduce((sum, s) => sum + s.weight, 0);
             const weighted    = available.filter(s => s.has).reduce((sum, s) => sum + (s.score * s.weight), 0);
@@ -930,14 +921,6 @@ async function refreshData() {
         });
       }
     } catch(e) { console.error('Score load error:', e); }
-
-    // DEBUG — remove after confirming scores work
-    console.log('[EliteHub] scoresData:', JSON.stringify(scoresData?.scores || 'undefined'));
-    console.log('[EliteHub] fleetData:', JSON.stringify(fleetData?.scores || 'undefined'));
-    console.log('[EliteHub] reviewsData:', JSON.stringify(reviewsData?.scores || 'undefined'));
-    console.log('[EliteHub] legalData:', JSON.stringify(legalData?.scores || 'undefined'));
-    console.log('[EliteHub] regionData after apply:', regionData.map(r => r.key + ':' + r.score + ' comp=' + r.compliance));
-
 
     // Cache the scores for instant load next time
     try { localStorage.setItem('eliteHubScores', JSON.stringify({ data: regionData, ts: Date.now() })); } catch(e) {}
