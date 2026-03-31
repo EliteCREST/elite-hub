@@ -636,15 +636,16 @@ let sortDir   = -1;
 let editingId = null;
 
 /* ══ INIT ════════════════════════════════════════════════════ */
-document.getElementById('hdrSub').textContent       = 'ALL REGIONS';
-document.getElementById('hdrPageName').textContent  = 'Legal Admin — All Regions';
-document.getElementById('hdrRegion').textContent    = 'National';
-document.getElementById('hdrAbbr').textContent      = 'ALL';
-document.getElementById('navRegion').textContent    = region.city;
-document.getElementById('footerRegion').textContent = region.city;
-document.getElementById('backToHub').href           = 'https://elitecrest.github.io/elite-hub/admin.html';
-document.getElementById('footerHubLink').href       = 'https://elitecrest.github.io/elite-hub/admin.html';
-document.getElementById('pageCallout').innerHTML    = '<strong>Legal Admin — All Regions.</strong> View, add, and manage all legal cases, complaints, and liens across all 9 regions. Data synced from Google Sheets.';
+const _el = (id) => document.getElementById(id);
+if (_el('hdrSub'))        _el('hdrSub').textContent       = 'ALL REGIONS';
+if (_el('hdrPageName'))   _el('hdrPageName').textContent  = 'Legal Admin — All Regions';
+if (_el('hdrRegion'))     _el('hdrRegion').textContent    = 'National';
+if (_el('hdrAbbr'))       _el('hdrAbbr').textContent      = 'ALL';
+if (_el('navRegion'))     _el('navRegion').textContent    = region.city;
+if (_el('footerRegion'))  _el('footerRegion').textContent = region.city;
+if (_el('backToHub'))     _el('backToHub').href           = 'https://elitecrest.github.io/elite-hub/admin.html';
+if (_el('footerHubLink')) _el('footerHubLink').href       = 'https://elitecrest.github.io/elite-hub/admin.html';
+if (_el('pageCallout'))   _el('pageCallout').innerHTML    = '<strong>Legal Admin — All Regions.</strong> View, add, and manage all legal cases, complaints, and liens across all 9 regions. Data synced from Google Sheets.';
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
