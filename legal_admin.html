@@ -534,74 +534,16 @@ function toggleDarkMode() {
 
 <!-- ADD / EDIT MODAL -->
 <div class="modal-overlay" id="caseModal">
-  <div class="modal">
+  <div class="modal" style="max-width:720px;">
     <div class="modal-header">
       <div>
         <div class="mh-title" id="modalTitle">Add Case</div>
-        <div class="mh-sub" id="modalSub">Add a new legal case or complaint</div>
+        <div class="mh-sub" id="modalSub">Add a new record</div>
       </div>
       <button class="close-btn" onclick="closeModal()">✕</button>
     </div>
-    <div class="modal-body">
-      <div class="form-section">
-        <div class="form-section-title">⚖️ Case Details</div>
-        <div class="form-row">
-          <div class="form-group"><label>Case Title</label><input type="text" id="fTitle" placeholder="e.g. Sara Walters Roof"></div>
-          <div class="form-group"><label>Type</label>
-            <select id="fType">
-              <option value="">Select type...</option>
-              <option>Lawsuit</option>
-              <option>AG Complaint</option>
-              <option>BBB Complaint</option>
-              <option>ROC Complaint</option>
-              <option>Lien</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Brand</label>
-            <select id="fBrand">
-              <option value="">Select brand...</option>
-              <option>Aspen</option><option>Grove</option><option>Reimagine</option>
-              <option>Universal</option><option>Wildwood</option><option>123 Exteriors</option>
-            </select>
-          </div>
-          <div class="form-group"><label>Status</label>
-            <select id="fStatus">
-              <option value="Open">Open</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Closed">Closed</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Job Number</label><input type="text" id="fJobNumber" placeholder="e.g. WW-69999"></div>
-          <div class="form-group"><label>Amount ($)</label><input type="number" id="fAmount" placeholder="0.00" step="0.01"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Filed Date</label><input type="date" id="fFiledDate"></div>
-          <div class="form-group"><label>Resolved / Hearing Date</label><input type="date" id="fResolvedDate"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Assigned To</label><input type="text" id="fAssignedTo" placeholder="Team member name"></div>
-          <div class="form-group"><label>Linked Case ID</label><input type="text" id="fLinkedId" placeholder="Related case ID (optional)"></div>
-        </div>
-      </div>
-      <div class="form-section" style="border-color:#0369A1;background:#E0F2FE;">
-        <div class="form-section-title" style="color:#0369A1;">🏠 Lien Details (if applicable)</div>
-        <div class="form-row">
-          <div class="form-group"><label>Lien Address</label><input type="text" id="fLienAddress" placeholder="Property address"></div>
-          <div class="form-group"><label>Lien Amount ($)</label><input type="number" id="fLienAmount" placeholder="0.00" step="0.01"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Lien Filed Date</label><input type="date" id="fLienFiled"></div>
-          <div class="form-group"><label>Lien Release Date</label><input type="date" id="fLienRelease"></div>
-        </div>
-      </div>
-      <div class="form-section" style="border-color:var(--gray-300);background:var(--gray-50);">
-        <div class="form-section-title" style="color:var(--gray-600);">📝 Notes</div>
-        <div class="form-group"><textarea id="fNotes" placeholder="Any additional notes..."></textarea></div>
-      </div>
+    <div class="modal-body" id="modalBody">
+      <!-- Dynamic form fields injected by JS -->
     </div>
     <div class="modal-footer">
       <div style="font-size:11px;color:var(--gray-400);">Saves directly to Google Sheets</div>
@@ -867,16 +809,226 @@ function renderTable() {
 }
 
 /* ══ MODAL ═══════════════════════════════════════════════════ */
+const BRAND_OPTIONS = '<option value="">Select brand...</option><option>Aspen</option><option>Grove</option><option>Reimagine</option><option>Universal</option><option>Wildwood</option><option>123 Exteriors</option>';
+const STATUS_OPTIONS = '<option value="Open">Open</option><option value="In Progress">In Progress</option><option value="Closed">Closed</option>';
+const REGION_OPTIONS = '<option value="">Select region...</option><option value="CLE">Cleveland</option><option value="PHX">Phoenix</option><option value="ABQ">Albuquerque</option><option value="MSP">Minneapolis</option><option value="STL">St. Louis</option><option value="CHI">Chicago</option><option value="IND">Indianapolis</option><option value="PIT">Pittsburgh</option><option value="MKE">Milwaukee</option>';
+const YESNO_OPTIONS = '<option value="">—</option><option value="Yes">Yes</option><option value="No">No</option>';
+const LEAD_OPTIONS = '<option value="">Select...</option><option>D2D</option><option>Canvass</option><option>Referral</option><option>Online</option><option>Other</option>';
+
+const FORM_FIELDS = {
+  'Lawsuit': [
+    { section: '⚖️ Case Details', fields: [
+      { id:'fType', label:'Type', type:'hidden', value:'Lawsuit' },
+      { id:'fStatus', label:'Status', type:'select', options: STATUS_OPTIONS },
+      { id:'fBrand', label:'Brand', type:'select', options: BRAND_OPTIONS },
+      { id:'fRegion', label:'Region / Market', type:'select', options: REGION_OPTIONS },
+      { id:'fJobNumber', label:'Job Number', type:'text', placeholder:'e.g. WW-69999' },
+      { id:'fFiledDate', label:'Filed Date', type:'date' },
+      { id:'fAmount', label:'Amount at Stake ($)', type:'number', placeholder:'0.00' },
+      { id:'fAssignedTo', label:'Assigned To', type:'text' },
+    ]},
+    { section: '👤 Complainant & Legal', fields: [
+      { id:'fTitle', label:'Complainant Name', type:'text', placeholder:'Full name' },
+      { id:'fCaseNumber', label:'Case Number', type:'text' },
+      { id:'fAttorneyAssigned', label:'Attorney Assigned', type:'text' },
+      { id:'fResponseDueDate', label:'Response Due Date', type:'date' },
+      { id:'fHearingDate', label:'Hearing Date', type:'date' },
+      { id:'fSentToGM', label:'Sent to GM', type:'text' },
+      { id:'fResolvedDate', label:'Resolved Date', type:'date' },
+    ]},
+    { section: '📋 Additional Info', fields: [
+      { id:'fTypeOfLead', label:'Type of Lead', type:'select', options: LEAD_OPTIONS },
+      { id:'fSalesRep', label:'Sales Rep', type:'text' },
+      { id:'fOpenService', label:'Open Service on File', type:'select', options: YESNO_OPTIONS },
+      { id:'fComplaintPOC', label:'Complaint POC', type:'text' },
+      { id:'fComplaintPOCNumber', label:'Complaint POC Number', type:'text' },
+      { id:'fComplaintPOCEmail', label:'Complaint POC Email', type:'email' },
+      { id:'fOutsideCounsel', label:'Given to Outside Counsel', type:'select', options: YESNO_OPTIONS },
+      { id:'fOutsideCounselDate', label:'Date Given to Outside Counsel', type:'date' },
+    ]},
+    { section: '📝 Notes', color:'gray', fields: [
+      { id:'fNotes', label:'Notes', type:'textarea' },
+    ]},
+  ],
+  'BBB Complaint': [
+    { section: '📋 BBB Complaint Details', fields: [
+      { id:'fType', label:'Type', type:'hidden', value:'BBB Complaint' },
+      { id:'fStatus', label:'Status', type:'select', options: STATUS_OPTIONS },
+      { id:'fBrand', label:'Brand', type:'select', options: BRAND_OPTIONS },
+      { id:'fRegion', label:'Region / Market', type:'select', options: REGION_OPTIONS },
+      { id:'fJobNumber', label:'Job Number', type:'text' },
+      { id:'fFiledDate', label:'Filed Date', type:'date' },
+      { id:'fAmount', label:'Amount at Stake ($)', type:'number', placeholder:'0.00' },
+      { id:'fAssignedTo', label:'Assigned To', type:'text' },
+    ]},
+    { section: '👤 Complaint Info', fields: [
+      { id:'fTitle', label:'Complainant Name', type:'text' },
+      { id:'fComplaintDate', label:'Complaint Date', type:'date' },
+      { id:'fComplaint', label:'Complaint', type:'textarea' },
+      { id:'fFirstResponse', label:'1st Response', type:'textarea' },
+      { id:'fComplaintPlus', label:'Complaint +', type:'textarea' },
+      { id:'fResponseToAdd', label:'Response + to Add', type:'textarea' },
+      { id:'fResponseDates', label:'Response + Dates', type:'text' },
+      { id:'fCreditAmount', label:'Credit Amount ($)', type:'number', placeholder:'0.00' },
+      { id:'fResolvedDate', label:'Resolved Date', type:'date' },
+    ]},
+    { section: '📋 Additional Info', fields: [
+      { id:'fTypeOfLead', label:'Type of Lead', type:'select', options: LEAD_OPTIONS },
+      { id:'fSalesRep', label:'Sales Rep', type:'text' },
+      { id:'fOpenService', label:'Open Service on File', type:'select', options: YESNO_OPTIONS },
+    ]},
+    { section: '📝 Notes', color:'gray', fields: [
+      { id:'fNotes', label:'Notes', type:'textarea' },
+    ]},
+  ],
+  'AG Complaint': [
+    { section: '📋 AG Complaint Details', fields: [
+      { id:'fType', label:'Type', type:'hidden', value:'AG Complaint' },
+      { id:'fStatus', label:'Status', type:'select', options: STATUS_OPTIONS },
+      { id:'fBrand', label:'Brand', type:'select', options: BRAND_OPTIONS },
+      { id:'fRegion', label:'Region / Market', type:'select', options: REGION_OPTIONS },
+      { id:'fJobNumber', label:'Job Number', type:'text' },
+      { id:'fFiledDate', label:'Filed Date', type:'date' },
+      { id:'fAmount', label:'Amount at Stake ($)', type:'number', placeholder:'0.00' },
+      { id:'fAssignedTo', label:'Assigned To', type:'text' },
+    ]},
+    { section: '👤 Complaint Info', fields: [
+      { id:'fTitle', label:'Complainant Name', type:'text' },
+      { id:'fResponseSent', label:'Response Sent', type:'date' },
+      { id:'fResolvedDate', label:'Resolved Date', type:'date' },
+      { id:'fResolutionSummary', label:'Resolution Summary', type:'textarea' },
+      { id:'fComplaintNumber', label:'Complaint Number', type:'text' },
+      { id:'fDateToRespond', label:'Date to Respond', type:'date' },
+      { id:'fComplaintPOC', label:'Complaint POC', type:'text' },
+      { id:'fComplaintPOCNumber', label:'Complaint POC Number', type:'text' },
+      { id:'fComplaintPOCEmail', label:'Complaint POC Email', type:'email' },
+    ]},
+    { section: '📋 Additional Info', fields: [
+      { id:'fTypeOfLead', label:'Type of Lead', type:'select', options: LEAD_OPTIONS },
+      { id:'fSalesRep', label:'Sales Rep', type:'text' },
+      { id:'fOpenService', label:'Open Service on File', type:'select', options: YESNO_OPTIONS },
+    ]},
+    { section: '📝 Notes', color:'gray', fields: [
+      { id:'fNotes', label:'Notes', type:'textarea' },
+    ]},
+  ],
+  'Lien': [
+    { section: '🏠 Lien Details', fields: [
+      { id:'fType', label:'Type', type:'hidden', value:'Lien' },
+      { id:'fStatus', label:'Status', type:'select', options: STATUS_OPTIONS },
+      { id:'fBrand', label:'Brand', type:'select', options: BRAND_OPTIONS },
+      { id:'fRegion', label:'Region / Market', type:'select', options: REGION_OPTIONS },
+      { id:'fJobNumber', label:'Job Number', type:'text' },
+      { id:'fFiledDate', label:'Filed Date', type:'date' },
+      { id:'fAmount', label:'Amount at Stake ($)', type:'number', placeholder:'0.00' },
+      { id:'fAssignedTo', label:'Assigned To', type:'text' },
+    ]},
+    { section: '👤 Property & Lien Info', fields: [
+      { id:'fTitle', label:'Customer Name', type:'text' },
+      { id:'fLienAddress', label:'Property Address', type:'text' },
+      { id:'fLienAmount', label:'Lien Amount ($)', type:'number', placeholder:'0.00' },
+      { id:'fLienFiled', label:'Lien Filed Date', type:'date' },
+      { id:'fLienRelease', label:'Release Date', type:'date' },
+      { id:'fAttorneyAssigned', label:'Attorney Assigned', type:'text' },
+      { id:'fResolvedDate', label:'Resolved Date', type:'date' },
+      { id:'fResolutionSummary', label:'Resolution Summary', type:'textarea' },
+    ]},
+    { section: '📋 Additional Info', fields: [
+      { id:'fTypeOfLead', label:'Type of Lead', type:'select', options: LEAD_OPTIONS },
+      { id:'fSalesRep', label:'Sales Rep', type:'text' },
+      { id:'fOpenService', label:'Open Service on File', type:'select', options: YESNO_OPTIONS },
+    ]},
+    { section: '📝 Notes', color:'gray', fields: [
+      { id:'fNotes', label:'Notes', type:'textarea' },
+    ]},
+  ],
+  'ROC Complaint': [
+    { section: '📋 ROC Complaint Details', fields: [
+      { id:'fType', label:'Type', type:'hidden', value:'ROC Complaint' },
+      { id:'fStatus', label:'Status', type:'select', options: STATUS_OPTIONS },
+      { id:'fBrand', label:'Brand', type:'select', options: BRAND_OPTIONS },
+      { id:'fRegion', label:'Region / Market', type:'select', options: REGION_OPTIONS },
+      { id:'fJobNumber', label:'Job Number', type:'text' },
+      { id:'fFiledDate', label:'Filed Date', type:'date' },
+      { id:'fAmount', label:'Amount at Stake ($)', type:'number', placeholder:'0.00' },
+      { id:'fGMAssigned', label:'GM Assigned To', type:'text' },
+    ]},
+    { section: '👤 Complaint Info', fields: [
+      { id:'fTitle', label:'Customer Name', type:'text' },
+      { id:'fCaseNumber', label:'Case Number', type:'text' },
+      { id:'fComplaintDate', label:'Complaint Date', type:'date' },
+      { id:'fInspectionDate', label:'On Site Inspection Date', type:'date' },
+      { id:'fOnsiteInspection', label:'Onsite Inspection', type:'text' },
+      { id:'fROCInspector', label:'ROC Inspector', type:'text' },
+      { id:'fInspectorContact', label:'Inspector Contact', type:'text' },
+      { id:'fLicenseHolder', label:'License Holder', type:'text' },
+      { id:'fNatureOfComplaint', label:'Nature of Complaint', type:'textarea' },
+      { id:'fResolvedDate', label:'Resolved Date', type:'date' },
+    ]},
+    { section: '🗓️ Site Visit Dates', fields: [
+      { id:'fSiteVisit1', label:'Site Visit 1', type:'date' },
+      { id:'fSiteVisit2', label:'Site Visit 2', type:'date' },
+      { id:'fSiteVisit3', label:'Site Visit 3', type:'date' },
+      { id:'fSiteVisit4', label:'Site Visit 4', type:'date' },
+    ]},
+    { section: '📋 Additional Info', fields: [
+      { id:'fTypeOfLead', label:'Type of Lead', type:'select', options: LEAD_OPTIONS },
+      { id:'fSalesRep', label:'Sales Rep', type:'text' },
+      { id:'fOpenService', label:'Open Service on File', type:'select', options: YESNO_OPTIONS },
+    ]},
+    { section: '📝 Notes', color:'gray', fields: [
+      { id:'fNotes', label:'Notes', type:'textarea' },
+    ]},
+  ],
+};
+
+let currentFormType = 'Lawsuit';
+
+function buildFormHTML(type) {
+  const sections = FORM_FIELDS[type] || FORM_FIELDS['Lawsuit'];
+  return sections.map(sec => {
+    const bgColor = sec.color === 'gray' ? 'var(--gray-50)' : 'white';
+    const borderColor = sec.color === 'gray' ? 'var(--gray-300)' : 'var(--blue)';
+    const rows = [];
+    const fields = sec.fields.filter(f => f.type !== 'hidden');
+    const hiddens = sec.fields.filter(f => f.type === 'hidden');
+    for (let i = 0; i < fields.length; i += 2) {
+      const f1 = fields[i];
+      const f2 = fields[i + 1];
+      rows.push('<div class="form-row">' + renderField(f1) + (f2 ? renderField(f2) : '') + '</div>');
+    }
+    return '<div class="form-section" style="border-color:' + borderColor + ';background:' + bgColor + ';">' +
+      '<div class="form-section-title">' + sec.section + '</div>' +
+      hiddens.map(f => '<input type="hidden" id="' + f.id + '" value="' + (f.value || '') + '">').join('') +
+      rows.join('') +
+      '</div>';
+  }).join('');
+}
+
+function renderField(f) {
+  let input = '';
+  if (f.type === 'select') {
+    input = '<select id="' + f.id + '">' + f.options + '</select>';
+  } else if (f.type === 'textarea') {
+    input = '<textarea id="' + f.id + '" placeholder="' + (f.placeholder || '') + '"></textarea>';
+  } else if (f.type === 'date') {
+    input = '<input type="date" id="' + f.id + '">';
+  } else if (f.type === 'number') {
+    input = '<input type="number" id="' + f.id + '" placeholder="' + (f.placeholder || '0.00') + '" step="0.01">';
+  } else if (f.type === 'email') {
+    input = '<input type="email" id="' + f.id + '" placeholder="' + (f.placeholder || '') + '">';
+  } else {
+    input = '<input type="text" id="' + f.id + '" placeholder="' + (f.placeholder || '') + '">';
+  }
+  return '<div class="form-group"><label>' + f.label + '</label>' + input + '</div>';
+}
+
 function openAddModal(type) {
   editingId = null;
-  const label = type || 'Case';
-  document.getElementById('modalTitle').textContent = 'Add ' + label;
-  document.getElementById('modalSub').textContent   = 'Add a new ' + label.toLowerCase() + ' record';
-  clearForm();
-  if (type) {
-    const typeSelect = document.getElementById('fType');
-    if (typeSelect) typeSelect.value = type;
-  }
+  currentFormType = type || 'Lawsuit';
+  document.getElementById('modalTitle').textContent = 'Add ' + currentFormType;
+  document.getElementById('modalSub').textContent   = 'Add a new ' + currentFormType.toLowerCase() + ' record';
+  document.getElementById('modalBody').innerHTML    = buildFormHTML(currentFormType);
   document.getElementById('caseModal').classList.add('open');
 }
 
@@ -884,8 +1036,10 @@ function openEditModal(id) {
   const c = allCases.find(x => x.id === id);
   if (!c) return;
   editingId = id;
-  document.getElementById('modalTitle').textContent = 'Edit Case';
+  currentFormType = c.type || 'Lawsuit';
+  document.getElementById('modalTitle').textContent = 'Edit ' + currentFormType;
   document.getElementById('modalSub').textContent   = c.title || 'Case';
+  document.getElementById('modalBody').innerHTML    = buildFormHTML(currentFormType);
   populateForm(c);
   document.getElementById('caseModal').classList.add('open');
 }
@@ -895,54 +1049,65 @@ function closeModal() {
   editingId = null;
 }
 
-function clearForm() {
-  ['fTitle','fJobNumber','fAmount','fAssignedTo','fLinkedId','fLienAddress','fLienAmount','fNotes']
-    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  ['fFiledDate','fResolvedDate','fLienFiled','fLienRelease']
-    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  ['fType','fBrand','fStatus']
-    .forEach(id => { const el = document.getElementById(id); if (el) el.selectedIndex = 0; });
-  document.getElementById('fStatus').value = 'Open';
-}
-
 function populateForm(c) {
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
-  set('fTitle',       c.title);
-  set('fType',        c.type);
-  set('fBrand',       c.brand);
-  set('fStatus',      c.status);
-  set('fJobNumber',   c.job_number);
-  set('fAmount',      c.amount);
-  set('fFiledDate',   c.filed_date);
-  set('fResolvedDate',c.resolved_date);
-  set('fAssignedTo',  c.assigned_to);
-  set('fLinkedId',    c.linked_id);
-  set('fLienAddress', c.lien_address);
-  set('fLienAmount',  c.lien_amount);
-  set('fLienFiled',   c.lien_filed);
-  set('fLienRelease', c.lien_release);
-  set('fNotes',       c.notes);
+  // Common fields
+  set('fType', c.type); set('fStatus', c.status); set('fBrand', c.brand);
+  set('fRegion', c.region); set('fJobNumber', c.job_number); set('fFiledDate', c.filed_date);
+  set('fAmount', c.amount); set('fAssignedTo', c.assigned_to); set('fTitle', c.title);
+  set('fResolvedDate', c.resolved_date); set('fNotes', c.notes);
+  // Type-specific fields
+  set('fCaseNumber', c.case_number); set('fAttorneyAssigned', c.attorney_assigned);
+  set('fResponseDueDate', c.response_due_date); set('fHearingDate', c.hearing_date);
+  set('fSentToGM', c.sent_to_gm); set('fTypeOfLead', c.type_of_lead);
+  set('fSalesRep', c.sales_rep); set('fOpenService', c.open_service);
+  set('fComplaintPOC', c.complaint_poc); set('fComplaintPOCNumber', c.complaint_poc_number);
+  set('fComplaintPOCEmail', c.complaint_poc_email);
+  set('fOutsideCounsel', c.outside_counsel); set('fOutsideCounselDate', c.outside_counsel_date);
+  set('fComplaintDate', c.complaint_date); set('fComplaint', c.complaint);
+  set('fFirstResponse', c.first_response); set('fComplaintPlus', c.complaint_plus);
+  set('fResponseToAdd', c.response_to_add); set('fResponseDates', c.response_dates);
+  set('fCreditAmount', c.credit_amount);
+  set('fResponseSent', c.response_sent); set('fResolutionSummary', c.resolution_summary);
+  set('fComplaintNumber', c.complaint_number); set('fDateToRespond', c.date_to_respond);
+  set('fLienAddress', c.lien_address); set('fLienAmount', c.lien_amount);
+  set('fLienFiled', c.lien_filed); set('fLienRelease', c.lien_release);
+  set('fGMAssigned', c.gm_assigned); set('fInspectionDate', c.inspection_date);
+  set('fOnsiteInspection', c.onsite_inspection); set('fROCInspector', c.roc_inspector);
+  set('fInspectorContact', c.inspector_contact); set('fLicenseHolder', c.license_holder);
+  set('fNatureOfComplaint', c.nature_of_complaint);
+  set('fSiteVisit1', c.site_visit_1); set('fSiteVisit2', c.site_visit_2);
+  set('fSiteVisit3', c.site_visit_3); set('fSiteVisit4', c.site_visit_4);
 }
 
 function getFormValues() {
   const g = id => (document.getElementById(id)||{}).value || '';
   return {
-    title:         g('fTitle'),
-    type:          g('fType'),
-    brand:         g('fBrand'),
-    region:        regionKey,
-    status:        g('fStatus'),
-    job_number:    g('fJobNumber'),
-    amount:        g('fAmount'),
-    filed_date:    g('fFiledDate'),
-    resolved_date: g('fResolvedDate'),
-    assigned_to:   g('fAssignedTo'),
-    linked_id:     g('fLinkedId'),
-    lien_address:  g('fLienAddress'),
-    lien_amount:   g('fLienAmount'),
-    lien_filed:    g('fLienFiled'),
-    lien_release:  g('fLienRelease'),
-    notes:         g('fNotes'),
+    title: g('fTitle'), type: g('fType'), brand: g('fBrand'), region: g('fRegion'),
+    status: g('fStatus'), job_number: g('fJobNumber'), amount: g('fAmount'),
+    filed_date: g('fFiledDate'), resolved_date: g('fResolvedDate'),
+    assigned_to: g('fAssignedTo'), notes: g('fNotes'),
+    case_number: g('fCaseNumber'), attorney_assigned: g('fAttorneyAssigned'),
+    response_due_date: g('fResponseDueDate'), hearing_date: g('fHearingDate'),
+    sent_to_gm: g('fSentToGM'), type_of_lead: g('fTypeOfLead'),
+    sales_rep: g('fSalesRep'), open_service: g('fOpenService'),
+    complaint_poc: g('fComplaintPOC'), complaint_poc_number: g('fComplaintPOCNumber'),
+    complaint_poc_email: g('fComplaintPOCEmail'),
+    outside_counsel: g('fOutsideCounsel'), outside_counsel_date: g('fOutsideCounselDate'),
+    complaint_date: g('fComplaintDate'), complaint: g('fComplaint'),
+    first_response: g('fFirstResponse'), complaint_plus: g('fComplaintPlus'),
+    response_to_add: g('fResponseToAdd'), response_dates: g('fResponseDates'),
+    credit_amount: g('fCreditAmount'),
+    response_sent: g('fResponseSent'), resolution_summary: g('fResolutionSummary'),
+    complaint_number: g('fComplaintNumber'), date_to_respond: g('fDateToRespond'),
+    lien_address: g('fLienAddress'), lien_amount: g('fLienAmount'),
+    lien_filed: g('fLienFiled'), lien_release: g('fLienRelease'),
+    gm_assigned: g('fGMAssigned'), inspection_date: g('fInspectionDate'),
+    onsite_inspection: g('fOnsiteInspection'), roc_inspector: g('fROCInspector'),
+    inspector_contact: g('fInspectorContact'), license_holder: g('fLicenseHolder'),
+    nature_of_complaint: g('fNatureOfComplaint'),
+    site_visit_1: g('fSiteVisit1'), site_visit_2: g('fSiteVisit2'),
+    site_visit_3: g('fSiteVisit3'), site_visit_4: g('fSiteVisit4'),
   };
 }
 
@@ -950,7 +1115,7 @@ async function saveCase() {
   const vals   = getFormValues();
   const isEdit = !!editingId;
 
-  if (!vals.title) { showToast('Case title is required.', 'warn'); return; }
+  if (!vals.title) { showToast('Name/title is required.', 'warn'); return; }
   if (!vals.type)  { showToast('Case type is required.', 'warn'); return; }
 
   if (isEdit) {
@@ -971,7 +1136,7 @@ async function saveCase() {
       body: JSON.stringify({
         action:  isEdit ? 'updateCase' : 'addCase',
         id:      editingId,
-        region:  regionKey,
+        region:  vals.region || regionKey,
         caseData: vals,
       })
     });
