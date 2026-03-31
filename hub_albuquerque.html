@@ -186,65 +186,7 @@
   }
   .callout strong { font-weight: 700; }
 
-  /* ══ TWO-COLUMN TOP GRID ═══════════════════════ */
-  .hub-top-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
-    margin-bottom: 28px;
-  }
-  .hub-top-panel {
-    background: white; border: 1px solid var(--gray-200);
-    border-radius: var(--radius-xl); box-shadow: var(--shadow-md);
-    display: flex; flex-direction: column; overflow: hidden;
-  }
-  .hub-panel-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 14px 20px 10px; border-bottom: 1px solid var(--gray-100);
-    flex-shrink: 0;
-  }
-
-  /* ── Left: Activity Feed ──────────────────────── */
-  .hub-feed-panel { min-height: 0; }
-  .hub-feed-scroll {
-    flex: 1; overflow-y: auto; padding: 0;
-    max-height: 320px; min-height: 200px;
-  }
-  .hub-feed-scroll::-webkit-scrollbar { width: 5px; }
-  .hub-feed-scroll::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 4px; }
-  .hub-feed-item {
-    padding: 11px 20px; border-bottom: 1px solid var(--gray-100);
-    font-size: 12.5px; color: var(--navy); line-height: 1.5;
-    display: flex; align-items: flex-start; gap: 10px;
-  }
-  .hub-feed-item:last-child { border-bottom: none; }
-  .hub-feed-item:hover { background: var(--blue-pale); }
-  .hub-feed-tag {
-    font-size: 9px; font-weight: 700; letter-spacing: 1px;
-    text-transform: uppercase; white-space: nowrap;
-    padding: 2px 6px; border-radius: 4px; flex-shrink: 0; margin-top: 1px;
-  }
-  .hub-feed-tag.national { background: #DBEAFE; color: var(--blue); }
-  .hub-feed-tag.regional { background: #E0E7FF; color: var(--navy); }
-  .hub-feed-empty {
-    padding: 20px; text-align: center; color: var(--gray-400);
-    font-size: 12.5px;
-  }
-
-  /* ── Right: Health Score ──────────────────────── */
-  .hub-score-body { padding: 18px 20px 20px; }
-  .hub-score-top {
-    display: flex; align-items: center; gap: 24px; margin-bottom: 16px;
-  }
-  .hub-score-top .score-dial { flex-shrink: 0; text-align: center; }
-  .hub-score-top .score-num { font-size: 48px; font-weight: 700; line-height: 1; }
-  .hub-score-top .score-max { font-size: 15px; color: var(--gray-400); }
-  .hub-score-top .score-lbl { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-400); margin-top: 2px; }
-  .hub-score-bar-area { flex: 1; min-width: 0; }
-  .hub-score-meta-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 16px;
-    padding-top: 14px; border-top: 1px solid var(--gray-100);
-  }
-
-  /* ══ HEALTH SCORE HERO (kept for compat) ═══════ */
+  /* ══ HEALTH SCORE HERO ════════════════════════ */
   .score-hero {
     background: white; border: 1px solid var(--gray-200);
     border-radius: var(--radius-xl); box-shadow: var(--shadow-md);
@@ -377,10 +319,6 @@
     .elite-header { grid-template-columns: 4px 1fr auto; }
     .header-logo { display: none; }
     .score-hero { flex-direction: column; gap: 20px; }
-    .hub-top-grid { grid-template-columns: 1fr; }
-    .hub-feed-scroll { max-height: 200px; }
-    .hub-score-top { flex-direction: column; gap: 12px; }
-    .hub-score-meta-grid { grid-template-columns: repeat(2, 1fr); }
   }
 
   /* ══ TOOL NAV BAR ══════════════════════════════════════════ */
@@ -523,15 +461,6 @@
     background: #1F2937 !important; border-color: #374151 !important;
   }
   body.dark .score-hero * { color: #F1F5F9 !important; }
-  body.dark .hub-top-panel { background: #1F2937 !important; border-color: #374151 !important; }
-  body.dark .hub-panel-header { border-color: #374151 !important; }
-  body.dark .hub-feed-item { border-color: #374151 !important; color: #F1F5F9 !important; }
-  body.dark .hub-feed-item:hover { background: #1E3A5F !important; }
-  body.dark .hub-feed-tag.national { background: #1E3A5F !important; color: #93C5FD !important; }
-  body.dark .hub-feed-tag.regional { background: #312E81 !important; color: #A5B4FC !important; }
-  body.dark .hub-feed-empty { color: #9CA3AF !important; }
-  body.dark .hub-score-body * { color: #F1F5F9 !important; }
-  body.dark .hub-score-meta-grid { border-color: #374151 !important; }
   body.dark .score-num, body.dark .score-max, body.dark .score-lbl { color: #F1F5F9 !important; }
   body.dark .score-lbl, body.dark .score-max { color: #9CA3AF !important; }
   body.dark .score-ranges span { color: #9CA3AF !important; }
@@ -621,7 +550,7 @@ function toggleDarkMode() {
   </div>
 </header>
 <div class="sub-bar"></div>
-<nav class="tool-nav"><span class="tool-nav-label">Tools</span><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/fleet.html?region=albuquerque"><span class="tn-icon">🚗</span>Fleet</a><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/compliance.html?region=albuquerque"><span class="tn-icon">📋</span>Compliance</a><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/legal.html?region=albuquerque"><span class="tn-icon">⚖️</span>Legal</a><span class="tn-btn" style="display:none;" title="Coming soon"><span class="tn-icon">⚖️</span>Licensing</span><span class="tn-btn" style="display:none;" title="Coming soon"><span class="tn-icon">🏷️</span>Pricing</span><span class="tn-btn" style="display:none;" title="Coming soon"><span class="tn-icon">📊</span>CFB</span><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/reviews.html?region=albuquerque"><span class="tn-icon">⭐</span>Reviews</a><span class="tn-btn" style="display:none;" title="Coming soon"><span class="tn-icon">🔍</span>Invoices</span><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/documents.html?region=albuquerque"><span class="tn-icon">📁</span>Documents</a></nav>
+<nav class="tool-nav"><span class="tool-nav-label">Tools</span><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/fleet.html?region=albuquerque"><span class="tn-icon">🚗</span>Fleet</a><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/compliance.html?region=albuquerque"><span class="tn-icon">📋</span>Compliance</a><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/legal.html?region=albuquerque"><span class="tn-icon">⚖️</span>Legal</a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">⚖️</span>Licensing</span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🏷️</span>Pricing</span><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">📊</span>CFB</span><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/reviews.html?region=albuquerque"><span class="tn-icon">⭐</span>Reviews</a><span class="tn-btn" style="opacity:.35;cursor:default;" title="Coming soon"><span class="tn-icon">🔍</span>Invoices</span><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/documents.html?region=albuquerque"><span class="tn-icon">📁</span>Documents</a></nav>
 
 <!-- BACK NAV -->
 <nav class="back-nav">
@@ -629,53 +558,38 @@ function toggleDarkMode() {
 </nav>
 
 <main>
-  <!-- TWO-COLUMN: ACTIVITY FEED + HEALTH SCORE -->
-  <div class="hub-top-grid">
-    <!-- LEFT: Activity / Notes Feed -->
-    <div class="hub-top-panel hub-feed-panel">
-      <div class="hub-panel-header">
-        <span class="sh">Activity Feed</span>
-      </div>
-      <div class="hub-feed-scroll" id="regionCallout">
-        <div class="hub-feed-empty">Loading region data...</div>
-      </div>
-    </div>
+  <div class="callout" id="regionCallout">Loading region data...</div>
 
-    <!-- RIGHT: Health Score -->
-    <div class="hub-top-panel hub-score-panel">
-      <div class="hub-panel-header">
-        <span class="sh">Regional Health Score</span>
-        <span class="sr-right" id="scoreTimestamp">—</span>
+  <!-- HEALTH SCORE HERO -->
+  <div class="section-row" style="margin-bottom:14px;">
+    <span class="sh">Regional Health Score</span>
+    <span class="sr-right" id="scoreTimestamp">—</span>
+  </div>
+  <div class="score-hero">
+    <div class="score-dial">
+      <div class="score-num" id="heroScore">—</div>
+      <div class="score-max">/850</div>
+      <div class="score-lbl">Health Score</div>
+    </div>
+    <div class="score-track" style="flex:1;">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray-400);">
+        <span>300 — Poor</span>
+        <span id="scoreGrade" style="font-weight:700;color:var(--blue);">—</span>
+        <span>850 — Excellent</span>
       </div>
-      <div class="hub-score-body">
-        <div class="hub-score-top">
-          <div class="score-dial">
-            <div class="score-num" id="heroScore">—</div>
-            <div class="score-max">/850</div>
-            <div class="score-lbl">Health Score</div>
-          </div>
-          <div class="hub-score-bar-area">
-            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--gray-400);">
-              <span>300 — Poor</span>
-              <span id="scoreGrade" style="font-weight:700;color:var(--blue);">—</span>
-              <span>850 — Excellent</span>
-            </div>
-            <div class="score-bar-wrap">
-              <div class="score-bar-fill" id="scoreBarFill" style="width:0%;background:var(--blue);"></div>
-            </div>
-            <div class="score-ranges">
-              <span>300</span><span>450</span><span>600</span><span>750</span><span>850</span>
-            </div>
-          </div>
-        </div>
-        <div class="hub-score-meta-grid">
-          <div class="score-meta-item"><div class="sm-val" id="smCompliance">—</div><div class="sm-lbl">Compliance %</div></div>
-          <div class="score-meta-item"><div class="sm-val" id="smFleet">—</div><div class="sm-lbl">Fleet Active</div></div>
-          <div class="score-meta-item"><div class="sm-val" id="smSafety">—</div><div class="sm-lbl">Safety Score</div></div>
-          <div class="score-meta-item"><div class="sm-val" id="smReviews">—</div><div class="sm-lbl">Avg Review</div></div>
-          <div class="score-meta-item"><div class="sm-val" id="smLitigation">—</div><div class="sm-lbl">Open Litigation</div></div>
-          <div class="score-meta-item"><div class="sm-val" id="smNational">—</div><div class="sm-lbl">National Rank</div></div>
-        </div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-fill" id="scoreBarFill" style="width:0%;background:var(--blue);"></div>
+      </div>
+      <div class="score-ranges">
+        <span>300</span><span>450</span><span>600</span><span>750</span><span>850</span>
+      </div>
+      <div class="score-meta" style="margin-top:18px;">
+        <div class="score-meta-item"><div class="sm-val" id="smCompliance">—</div><div class="sm-lbl">Compliance %</div></div>
+        <div class="score-meta-item"><div class="sm-val" id="smFleet">—</div><div class="sm-lbl">Fleet Active</div></div>
+        <div class="score-meta-item"><div class="sm-val" id="smSafety">—</div><div class="sm-lbl">Safety Score</div></div>
+        <div class="score-meta-item"><div class="sm-val" id="smReviews">—</div><div class="sm-lbl">Avg Review</div></div>
+        <div class="score-meta-item"><div class="sm-val" id="smLitigation">—</div><div class="sm-lbl">Open Litigation</div></div>
+        <div class="score-meta-item"><div class="sm-val" id="smNational">—</div><div class="sm-lbl">National Rank</div></div>
       </div>
     </div>
   </div>
@@ -693,8 +607,8 @@ function toggleDarkMode() {
     <div class="kpi-card"><div class="kpi-icon">🚗</div><div class="kpi-label">Fleet</div><div class="kpi-value" id="kpiFleet">—</div></div>
     <div class="kpi-card"><div class="kpi-icon">🛡️</div><div class="kpi-label">Safety Score</div><div class="kpi-value" id="kpiSafety">—</div></div>
     <div class="kpi-card"><div class="kpi-icon">⭐</div><div class="kpi-label">Reviews</div><div class="kpi-value" id="kpiReviews">—<span class="unit">/5</span></div></div>
-    <div class="kpi-card" style="display:none;"><div class="kpi-icon">📊</div><div class="kpi-label">Open CFB</div><div class="kpi-value" id="kpiCFB">—</div></div>
-    <div class="kpi-card" style="display:none;"><div class="kpi-icon">⚖️</div><div class="kpi-label">Licenses</div><div class="kpi-value" id="kpiLicenses">—</div></div>
+    <div class="kpi-card"><div class="kpi-icon">📊</div><div class="kpi-label">Open CFB</div><div class="kpi-value" id="kpiCFB">—</div></div>
+    <div class="kpi-card"><div class="kpi-icon">⚖️</div><div class="kpi-label">Licenses</div><div class="kpi-value" id="kpiLicenses">—</div></div>
     <div class="kpi-card"><div class="kpi-icon">🏁</div><div class="kpi-label">Nat'l Rank</div><div class="kpi-value" id="kpiRank">—<span class="unit">/9</span></div></div>
   </div>
 
@@ -774,7 +688,6 @@ const PAGE_REGISTRY = [
   },
   {
     key:    'upt',
-    hidden: true,
     name:   'Unified Pricing Tool',
     desc:   'Master pricing, SPAR tracker, invoice management',
     icon:   '🏷️',
@@ -785,7 +698,6 @@ const PAGE_REGISTRY = [
   },
   {
     key:    'cfb',
-    hidden: true,
     name:   'Contract Financial Breakdown',
     desc:   'RCV summaries, Tax & O&P calculator, pre/post-tax',
     icon:   '📊',
@@ -806,7 +718,6 @@ const PAGE_REGISTRY = [
   },
   {
     key:    'invoice-parser',
-    hidden: true,
     name:   'Invoice Parser',
     desc:   '5-step invoice reconciliation wizard',
     icon:   '🔍',
@@ -829,8 +740,8 @@ function initRegion() {
   document.getElementById('navRegion').textContent     = REGION.city;
   document.getElementById('toolsRegionName').textContent = REGION.city;
   document.getElementById('footerRegion').textContent  = REGION.city;
-  document.getElementById('regionCallout').innerHTML =
-    '<div class="hub-feed-empty">Loading notes...</div>';
+  document.getElementById('regionCallout').innerHTML   =
+    `<strong>${REGION.city} Regional Hub</strong> — Loading notes...`;
 
   // Load admin notes and update callout
   async function loadAdminNotes() {
@@ -842,27 +753,19 @@ function initRegion() {
 
       let html = '';
       if (national) {
-        // Split multiple notes by newline if present
-        national.split('\n').filter(Boolean).forEach(note => {
-          html += `<div class="hub-feed-item">
-            <span class="hub-feed-tag national">📢 ALL</span>
-            <span>${note.trim()}</span>
-          </div>`;
-        });
+        html += `<div style="margin-bottom:${regional ? '8px' : '0'};">
+          <span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--blue);margin-right:8px;">📢 ALL REGIONS</span>
+          ${national}
+        </div>`;
       }
       if (regional) {
-        regional.split('\n').filter(Boolean).forEach(note => {
-          html += `<div class="hub-feed-item">
-            <span class="hub-feed-tag regional">📍 ${REGION.abbr}</span>
-            <span>${note.trim()}</span>
-          </div>`;
-        });
+        html += `<div>
+          <span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--navy);margin-right:8px;">📍 ${REGION.abbr}</span>
+          ${regional}
+        </div>`;
       }
       if (!national && !regional) {
-        html = `<div class="hub-feed-item">
-          <span class="hub-feed-tag regional">📍 ${REGION.abbr}</span>
-          <span><strong>${REGION.city} Regional Hub</strong> — Command center. All tools, data, and compliance tracking scoped to this region.</span>
-        </div>`;
+        html = `<strong>${REGION.city} Regional Hub</strong> — Command center for the ${REGION.city} office. All tools, data, and compliance tracking scoped to this region. Health score is calculated against national Elite standards and reported to the Main Hub leaderboard.`;
       }
       const el = document.getElementById('regionCallout');
       if (el) el.innerHTML = html;
@@ -885,7 +788,7 @@ function initRegion() {
 ══════════════════════════════════════════════════════ */
 function buildTiles() {
   const grid = document.getElementById('tilesGrid');
-  grid.innerHTML = PAGE_REGISTRY.filter(p => !p.hidden).map(p => `
+  grid.innerHTML = PAGE_REGISTRY.map(p => `
     <div class="page-tile" onclick="openPage('${p.key}')">
       <div class="pt-domain-bar d-${p.domain}-bar"></div>
       <div class="pt-header">
@@ -950,117 +853,150 @@ async function syncData() {
     return;
   }
   try {
-    const res  = await fetch(`${BACKEND_URL}?action=regionHub&region=${REGION.key}`);
-    const data = await res.json();
-
-    renderScore(data.score);
-
-    // KPIs
     const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.textContent = val; };
-    set('kpiContractors', data.contractors);
-    set('kpiCompliant',   data.compliant);
-    set('kpiAlerts',      data.alerts);
-    set('kpiFleet',       data.fleet);
-    set('kpiReviews',     data.reviews);
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-    // Pull live compliance stats directly — small delay to avoid GAS rate limit
-    await new Promise(r => setTimeout(r, 800));
-    try {
-      const [compRes, fleetRes] = await Promise.all([
-        fetch(`${BACKEND_URL}?action=complianceData&region=${REGION.key}`),
-        fetch(`${BACKEND_URL}?action=fleetData&region=${REGION.key}`)
-      ]);
-      const compData = await compRes.json();
-      // Fleet KPI
-      try {
-        const fleetD = await fleetRes.json();
-        if (fleetD && fleetD.total !== undefined) {
-          set('kpiFleet', fleetD.total);
-          set('smFleet',  fleetD.total + ' vehicles');
-        }
-        // Load fleet safety scores
-        try {
-          const safetyRes  = await fetch(`${BACKEND_URL}?action=allFleetScores`);
-          const safetyData = await safetyRes.json();
-          if (safetyData.scores && safetyData.scores[REGION.key]) {
-            const fs = safetyData.scores[REGION.key];
-            if (fs && fs.fleetScore !== undefined) {
-              set('kpiSafety', fs.fleetScore + '/500');
-              set('smSafety',  fs.fleetScore + '/500');
-              // Store fleet score for hub push
-              window._fleetSafetyScore = fs.fleetScore;
-            }
-          }
-        } catch(e) {}
-      } catch(e) {}
-      if (compData && !compData.error) {
-        const total     = compData.total     || 0;
-        const compliant = compData.compliant || 0;
-        const alerts    = (compData.data || []).filter(c => {
-          const gl = c.gl_expiry ? Math.ceil((new Date(c.gl_expiry) - new Date()) / 86400000) : -1;
-          const wc = c.wc_expiry ? Math.ceil((new Date(c.wc_expiry) - new Date()) / 86400000) : -1;
-          return gl < 0 || wc < 0 || gl <= 30 || wc <= 30;
-        }).length;
-        const compPct = compData.compliancePct !== undefined ? compData.compliancePct + '%' : '—';
-        const el = (id) => document.getElementById(id);
-        if (el('kpiContractors')) el('kpiContractors').textContent = total;
-        if (el('kpiCompliant'))   el('kpiCompliant').textContent   = compliant;
-        if (el('kpiAlerts'))      el('kpiAlerts').textContent      = alerts;
-        if (el('comp-total'))     el('comp-total').textContent     = total;
-        if (el('comp-alerts'))    el('comp-alerts').textContent    = alerts;
-        if (el('smCompliance'))   el('smCompliance').textContent   = compPct;
-        // Show compliance score
-        const cscore = compData.complianceScore !== undefined ? compData.complianceScore : '—';
-        if (el('kpiCompScore'))   el('kpiCompScore').textContent   = cscore + (cscore !== '—' ? '/100' : '');
-      }
-    } catch(e) { console.error('Compliance fetch error:', e); }
-    set('kpiCFB',         data.openCFB);
-    set('kpiLicenses',    data.licenses);
-    set('kpiRank',        data.rank);
-    set('smCompliance',   data.compliancePct ? data.compliancePct + '%' : '—');
-    set('smFleet',        data.fleetActive);
-    set('smReviews',      data.reviews);
-    set('smLitigation',   data.litigation);
-    set('smNational',     data.rank ? '#' + data.rank : '—');
+    // Fetch all data in parallel
+    const [hubRes, compRes, fleetRes, fleetScoreRes, reviewsRes, legalRes, rulesRes] = await Promise.all([
+      fetch(`${BACKEND_URL}?action=regionHub&region=${REGION.key}`),
+      fetch(`${BACKEND_URL}?action=complianceData&region=${REGION.key}`),
+      fetch(`${BACKEND_URL}?action=fleetData&region=${REGION.key}`),
+      fetch(`${BACKEND_URL}?action=allFleetScores`),
+      fetch(`${BACKEND_URL}?action=allReviewsScores`),
+      fetch(`${BACKEND_URL}?action=allLegalScores`),
+      fetch(`${BACKEND_URL}?action=getScoringRules`),
+    ]);
+    const [hubData, compData, fleetData, fleetScoreData, reviewsData, legalData, rulesData] = await Promise.all([
+      hubRes.json(), compRes.json(), fleetRes.json(), fleetScoreRes.json(), reviewsRes.json(), legalRes.json(), rulesRes.json(),
+    ]);
 
-    // Tile stats
-    if (data.tileStats) {
-      Object.entries(data.tileStats).forEach(([k, v]) => {
-        const el = document.getElementById('stat-' + k);
-        if (el) el.textContent = v;
-      });
+    // ── Weights ──
+    const rules = rulesData.rules || {};
+    const weights = {
+      compliance: (rules['wCompliance'] ?? 40) / 100,
+      fleet:      (rules['wFleet']      ?? 25) / 100,
+      reviews:    (rules['wReviews']    ?? 25) / 100,
+      licensing:  (rules['wLicensing']  ?? 10) / 100,
+    };
+
+    // ── Compliance ──
+    let compScore = null, compPct = null;
+    if (compData && !compData.error && compData.total > 0) {
+      compScore = clamp(compData.complianceScore ?? 0, 0, 100);
+      compPct   = compData.compliancePct;
+      const total     = compData.total || 0;
+      const compliant = compData.compliant || 0;
+      const alerts    = (compData.data || []).filter(c => {
+        const gl = c.gl_expiry ? Math.ceil((new Date(c.gl_expiry) - new Date()) / 86400000) : -1;
+        const wc = c.wc_expiry ? Math.ceil((new Date(c.wc_expiry) - new Date()) / 86400000) : -1;
+        return gl < 0 || wc < 0 || gl <= 30 || wc <= 30;
+      }).length;
+      set('kpiContractors', total);
+      set('kpiCompliant',   compliant);
+      set('kpiAlerts',      alerts);
+      set('comp-total',     total);
+      set('comp-alerts',    alerts);
+      set('smCompliance',   compPct + '%');
+      set('kpiCompScore',   compScore + '/100');
     }
 
-    // Push to hub
-    await pushToHub(data);
+    // ── Fleet ──
+    let fleetNorm = null;
+    if (fleetData && fleetData.total !== undefined) {
+      set('kpiFleet', fleetData.total);
+      set('smFleet',  fleetData.total + ' vehicles');
+    }
+    if (fleetScoreData.scores && fleetScoreData.scores[REGION.key]) {
+      const fs = fleetScoreData.scores[REGION.key];
+      if (fs && fs.fleetScore !== undefined && fs.fleetScore !== null) {
+        const raw = clamp(fs.fleetScore, 0, 500);
+        fleetNorm = (raw / 500) * 100;
+        set('kpiSafety', raw + '/500');
+        set('smSafety',  raw + '/500');
+      }
+    }
 
-    document.getElementById('hdrSync').textContent         = new Date().toLocaleTimeString();
+    // ── Reviews ──
+    let reviewScore = null;
+    if (reviewsData.scores && reviewsData.scores[REGION.key]) {
+      const rs = reviewsData.scores[REGION.key];
+      if (rs) {
+        const val = rs.reviewScore ?? rs.reviewsScore ?? null;
+        if (val !== null && val !== undefined) reviewScore = clamp(val, 0, 100);
+        if (rs.avgRating !== undefined) set('smReviews', rs.avgRating);
+        set('kpiReviews', reviewScore !== null ? reviewScore + '/100' : '—');
+      }
+    }
+
+    // ── Legal ──
+    let legalScore = null;
+    if (legalData.scores && legalData.scores[REGION.key]) {
+      const ls = legalData.scores[REGION.key];
+      if (ls && ls.legalScore !== undefined && ls.legalScore !== null) {
+        legalScore = clamp(ls.legalScore, 0, 100);
+        set('smLitigation', ls.openCases || 0);
+      }
+    }
+
+    // ── Compute Health Score ──
+    if (compScore !== null) {
+      const available = [
+        { score: compScore,    weight: weights.compliance, has: true },
+        { score: fleetNorm,    weight: weights.fleet,      has: fleetNorm !== null },
+        { score: reviewScore,  weight: weights.reviews,    has: reviewScore !== null },
+        { score: legalScore,   weight: weights.licensing,  has: legalScore !== null },
+      ];
+      const totalWeight = available.filter(s => s.has).reduce((sum, s) => sum + s.weight, 0);
+      const weighted    = available.filter(s => s.has).reduce((sum, s) => sum + (s.score * s.weight), 0);
+      const normalized  = totalWeight > 0 ? weighted / totalWeight : compScore;
+      const healthScore = Math.min(850, Math.max(300, Math.round(300 + (normalized / 100) * 550)));
+      renderScore(healthScore);
+      set('hdrScore', healthScore);
+
+      // Compute national rank from all compliance scores
+      try {
+        const allCompRes  = await fetch(`${BACKEND_URL}?action=allComplianceScores`);
+        const allCompData = await allCompRes.json();
+        if (allCompData.scores) {
+          const allScores = Object.entries(allCompData.scores)
+            .filter(([k, v]) => v && v.complianceScore !== undefined)
+            .map(([k, v]) => ({ key: k, score: clamp(v.complianceScore, 0, 100) }))
+            .sort((a, b) => b.score - a.score);
+          const rank = allScores.findIndex(s => s.key === REGION.key) + 1;
+          set('smNational', rank > 0 ? '#' + rank : '—');
+          set('kpiRank', rank > 0 ? rank : '—');
+        }
+      } catch(e) {}
+
+      // Push to hub summary
+      try {
+        await fetch(BACKEND_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'pushRegionSummary',
+            region: REGION.key,
+            data: {
+              score:      healthScore,
+              compliance: compPct,
+              fleet:      fleetNorm !== null ? Math.round(fleetNorm * 5) : '',
+              reviews:    reviewScore,
+              trend:      0,
+              status:     'Active',
+            }
+          })
+        });
+      } catch(e) {}
+    } else {
+      // No compliance data — use hub summary score
+      renderScore(hubData.score);
+    }
+
+    document.getElementById('hdrSync').textContent        = new Date().toLocaleTimeString();
     document.getElementById('scoreTimestamp').textContent  = 'Updated ' + new Date().toLocaleTimeString();
   } catch(err) {
     document.getElementById('scoreTimestamp').textContent = 'Sync error';
     console.error(err);
   }
-}
-
-async function pushToHub(data) {
-  if (!BACKEND_URL) return;
-  try {
-    await fetch(BACKEND_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'pushRegionSummary',
-        region: REGION.key,
-        data: {
-          score:      data.score,
-          compliance: data.compliancePct,
-          fleet:      window._fleetSafetyScore || data.fleet,
-          reviews:    data.reviews,
-          trend:      data.trend || 0,
-          status:     data.status || 'Active',
-        }
-      })
-    });
-  } catch(e) { /* silent fail */ }
 }
 
 /* ══════════════════════════════════════════════════════
