@@ -219,6 +219,36 @@
   .activity-scroll {
     flex: 1; overflow-y: auto; font-size: 13px; color: var(--gray-600); line-height: 1.6;
   }
+  .chat-msg {
+    display: flex; gap: 8px; margin-bottom: 10px;
+  }
+  .chat-avatar {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: white; flex-shrink: 0; margin-top: 2px;
+  }
+  .chat-bubble {
+    background: var(--gray-50); border-radius: 0 10px 10px 10px; padding: 8px 12px;
+    max-width: 85%; font-size: 12.5px; line-height: 1.5; color: var(--navy);
+  }
+  .chat-bubble-mine { background: #EBF5FF; border-radius: 10px 0 10px 10px; margin-left: auto; }
+  .chat-author { font-size: 10px; font-weight: 700; color: var(--gray-500); margin-bottom: 2px; }
+  .chat-time { font-size: 9px; color: var(--gray-400); margin-top: 3px; }
+  .chat-reply-tag { font-size: 10px; color: var(--blue); margin-bottom: 3px; font-style: italic; }
+  .chat-input-row {
+    display: flex; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--gray-100);
+  }
+  .chat-input {
+    flex: 1; border: 1px solid var(--gray-200); border-radius: 16px; padding: 6px 12px;
+    font-size: 12px; outline: none; font-family: inherit;
+  }
+  .chat-input:focus { border-color: var(--blue); }
+  .chat-send {
+    background: var(--blue); color: white; border: none; border-radius: 50%;
+    width: 30px; height: 30px; cursor: pointer; font-size: 14px; display: flex;
+    align-items: center; justify-content: center;
+  }
+  .chat-send:hover { opacity: 0.85; }
   .action-grid {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;
   }
@@ -520,6 +550,10 @@
   body.dark .action-issue { color: #9CA3AF !important; }
   body.dark .action-item { border-color: #374151 !important; }
   body.dark .activity-scroll { color: #D1D5DB !important; }
+  body.dark .chat-bubble { background: #374151 !important; color: #F1F5F9 !important; }
+  body.dark .chat-bubble-mine { background: #1E3A5F !important; }
+  body.dark .chat-input { background: #374151 !important; border-color: #4B5563 !important; color: #F1F5F9 !important; }
+  body.dark .chat-input-row { border-color: #374151 !important; }
   body.dark .page-tile {
     background: #1F2937 !important; border-color: #374151 !important;
   }
@@ -616,7 +650,13 @@ function toggleDarkMode() {
     <div class="hub-col">
       <div class="activity-panel">
         <span class="sh">Activity Feed</span>
-        <div id="regionCallout" style="font-size:13px;color:var(--gray-600);line-height:1.6;">Loading region data...</div>
+        <div class="activity-scroll" id="chatFeed">
+          <div style="color:var(--gray-400);font-size:12px;text-align:center;padding:20px 0;">Loading messages...</div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="chat-send" onclick="sendChat()" title="Send">&#10148;</button>
+        </div>
       </div>
     </div>
     <!-- RIGHT COLUMN: Health Score Gauge -->
@@ -811,40 +851,6 @@ function initRegion() {
   document.getElementById('navRegion').textContent     = REGION.city;
   document.getElementById('toolsRegionName').textContent = REGION.city;
   document.getElementById('footerRegion').textContent  = REGION.city;
-  document.getElementById('regionCallout').innerHTML   =
-    `<strong>${REGION.city} Regional Hub</strong> — Loading notes...`;
-
-  // Load admin notes and update callout
-  async function loadAdminNotes() {
-    try {
-      const res  = await fetch(`${BACKEND_URL}?action=getAdminNotes&region=${REGION.key}`);
-      const data = await res.json();
-      const national = (data.national || '').trim();
-      const regional = (data.regional || '').trim();
-
-      let html = '';
-      if (national) {
-        html += `<div style="margin-bottom:${regional ? '8px' : '0'};">
-          <span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--blue);margin-right:8px;">📢 ALL REGIONS</span>
-          ${national}
-        </div>`;
-      }
-      if (regional) {
-        html += `<div>
-          <span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--navy);margin-right:8px;">📍 ${REGION.abbr}</span>
-          ${regional}
-        </div>`;
-      }
-      if (!national && !regional) {
-        html = `<strong>${REGION.city} Regional Hub</strong> — Command center for the ${REGION.city} office. All tools, data, and compliance tracking scoped to this region. Health score is calculated against national Elite standards and reported to the Main Hub leaderboard.`;
-      }
-      const el = document.getElementById('regionCallout');
-      if (el) el.innerHTML = html;
-    } catch(e) {
-      // Keep default text on error
-    }
-  }
-  loadAdminNotes();
 
   if (MAIN_HUB_URL) {
     document.getElementById('backToMain').href   = MAIN_HUB_URL;
@@ -1007,6 +1013,103 @@ function renderActions(containerId, badgeId, actions, isDetailed) {
   }
 }
 
+/* ══════════════════════════════════════════════════════
+   CHAT
+══════════════════════════════════════════════════════ */
+let chatMessages = [];
+
+function getCurrentUser() {
+  try {
+    const sess = JSON.parse(localStorage.getItem('elite_session') || '{}');
+    return sess.name || sess.username || 'Unknown';
+  } catch(e) { return 'Unknown'; }
+}
+
+function getInitials(name) {
+  return String(name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function formatChatTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const now = new Date();
+  const diff = now - d;
+  if (diff < 60000) return 'Just now';
+  if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
+  if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+function renderChat() {
+  const feed = document.getElementById('chatFeed');
+  if (!feed) return;
+  const me = getCurrentUser();
+
+  if (!chatMessages.length) {
+    feed.innerHTML = '<div style="color:var(--gray-400);font-size:12px;text-align:center;padding:20px 0;">No messages yet. Start the conversation!</div>';
+    return;
+  }
+
+  feed.innerHTML = chatMessages.map(m => {
+    const isMine = m.author === me;
+    const initials = getInitials(m.author);
+    const colors = ['#2563EB','#16A34A','#D97706','#DC2626','#7C3AED','#0891B2','#BE185D','#4F46E5'];
+    const colorIdx = Math.abs(String(m.author).split('').reduce((s,c) => s + c.charCodeAt(0), 0)) % colors.length;
+    const avatarColor = colors[colorIdx];
+
+    let replyHtml = '';
+    if (m.replyTo) {
+      const parent = chatMessages.find(p => p.id === m.replyTo);
+      if (parent) replyHtml = '<div class="chat-reply-tag">Replying to ' + parent.author + '</div>';
+    }
+
+    return '<div class="chat-msg" style="' + (isMine ? 'flex-direction:row-reverse;' : '') + '">' +
+      '<div class="chat-avatar" style="background:' + avatarColor + ';">' + initials + '</div>' +
+      '<div>' +
+        '<div class="chat-author" style="' + (isMine ? 'text-align:right;' : '') + '">' + m.author + '</div>' +
+        '<div class="chat-bubble' + (isMine ? ' chat-bubble-mine' : '') + '">' +
+          replyHtml +
+          m.message +
+        '</div>' +
+        '<div class="chat-time" style="' + (isMine ? 'text-align:right;' : '') + '">' + formatChatTime(m.timestamp) + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  feed.scrollTop = feed.scrollHeight;
+}
+
+async function loadChat() {
+  if (!BACKEND_URL) return;
+  try {
+    const res = await fetch(BACKEND_URL + '?action=getRegionChat&region=' + REGION.key);
+    const data = await res.json();
+    if (data.messages) {
+      chatMessages = data.messages;
+      renderChat();
+    }
+  } catch(e) { console.error('Chat load error:', e); }
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  if (!input || !input.value.trim()) return;
+  const message = input.value.trim();
+  const author = getCurrentUser();
+  input.value = '';
+
+  chatMessages.push({ id: 'temp_' + Date.now(), author, message, replyTo: '', timestamp: new Date().toISOString() });
+  renderChat();
+
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'postRegionChat', region: REGION.key, author, message, replyTo: '' })
+    });
+    await loadChat();
+  } catch(e) { console.error('Chat send error:', e); }
+}
+
 async function syncData() {
   document.getElementById('scoreTimestamp').textContent = 'Syncing…';
   if (!BACKEND_URL) {
@@ -1085,7 +1188,9 @@ try {
 } catch(e) {}
 
 syncData();
+loadChat();
 setInterval(syncData, 120000); // auto-refresh every 2 min
+setInterval(loadChat, 30000);  // refresh chat every 30 sec
 
 function logout() {
   localStorage.removeItem('elite_session');
