@@ -1005,11 +1005,22 @@ async function syncData(useCache = false) {
     document.getElementById('hdrSync').textContent = 'Error';
     showToast('Could not load fleet data', 'error');
   }
+
+  try { localStorage.setItem('cache_fleet_admin', JSON.stringify({ ts: Date.now() })); } catch(e) {}
 }
 
 // Script is at bottom of body — DOM is already ready, call directly
-syncData(false);
-setInterval(() => syncData(false), 120000);
+// Cache-first: only fetch fresh on first visit or Sync button
+(async function() {
+  try {
+    const cached = localStorage.getItem('cache_fleet_admin');
+    if (cached) {
+      const { ts } = JSON.parse(cached);
+      if (Date.now() - ts < 600000) return; // Use cached data
+    }
+  } catch(e) {}
+  await syncData(false);
+})();
 
 function normalizeVehicle(r) {
   return {

@@ -194,6 +194,17 @@ let currentFilter = 'all';
 
 async function load() {
   try {
+    const cached = localStorage.getItem('cache_carlynn');
+    if (cached) {
+      const { ts } = JSON.parse(cached);
+      if (Date.now() - ts < 600000) return;
+    }
+  } catch(e) {}
+  await _loadFresh();
+}
+
+async function _loadFresh() {
+  try {
     // Load all assigned + resolved for this person
     const [r1, r2] = await Promise.all([
       fetch(`${BACKEND_URL}?action=getNotifications&assignee=${ME}`),
@@ -207,6 +218,8 @@ async function load() {
   } catch(e) {
     document.getElementById('notifList').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Could not load notifications.</div>';
   }
+
+  try { localStorage.setItem('cache_carlynn', JSON.stringify({ ts: Date.now() })); } catch(e) {}
 }
 
 function setFilter(f, btn) {

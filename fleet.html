@@ -1113,12 +1113,25 @@ document.getElementById('pageCallout').innerHTML    =
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 syncData();
-setInterval(syncData, 120000); // auto-refresh every 2 min
 
 /* ══════════════════════════════════════════════════════════════
    DATA SYNC
 ══════════════════════════════════════════════════════════════ */
 async function syncData() {
+  // Use cache — only fetch fresh on manual Sync
+  try {
+    const cached = localStorage.getItem('cache_fleet');
+    if (cached) {
+      const { ts } = JSON.parse(cached);
+      if (Date.now() - ts < 600000) { // 10 min cache
+        return; // Data already loaded from previous visit
+      }
+    }
+  } catch(e) {}
+  await _syncDataFresh();
+}
+
+async function _syncDataFresh() {
   // Show cached data instantly if available
   const cacheKey = `fleet_${regionKey}`;
   const cached = getCached(cacheKey);
@@ -1145,6 +1158,9 @@ async function syncData() {
     document.getElementById('hdrSync').textContent = 'Error';
     showToast('Could not load fleet data', 'error');
   }
+
+  // Save to cache
+  try { localStorage.setItem('cache_fleet', JSON.stringify({ ts: Date.now() })); } catch(e) {}
 }
 
 function normalizeVehicle(r) {

@@ -431,7 +431,7 @@ function toggleDarkMode() {
     <span class="sh">Case Overview</span>
     <div style="display:flex;gap:8px;">
       <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Case</button>
-      <button class="btn btn-outline btn-sm" onclick="syncData()">↻ Sync</button>
+      <button class="btn btn-outline btn-sm" onclick="_syncDataFresh()">↻ Sync</button>
       <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export</button>
     </div>
   </div>
@@ -649,10 +649,23 @@ document.getElementById('pageCallout').innerHTML    = '<strong>Legal Admin — A
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 syncData();
-setInterval(syncData, 120000);
 
 /* ══ SYNC ════════════════════════════════════════════════════ */
 async function syncData() {
+  // Use cache — only fetch fresh on manual Sync
+  try {
+    const cached = localStorage.getItem('cache_legal_admin');
+    if (cached) {
+      const { ts } = JSON.parse(cached);
+      if (Date.now() - ts < 600000) { // 10 min cache
+        return; // Data already loaded from previous visit
+      }
+    }
+  } catch(e) {}
+  await _syncDataFresh();
+}
+
+async function _syncDataFresh() {
   document.getElementById('hdrSync').textContent = '…';
   try {
     const res  = await fetch(`${BACKEND_URL}?action=legalData`); // no region = all regions
@@ -664,6 +677,9 @@ async function syncData() {
     document.getElementById('hdrSync').textContent = 'Error';
     showToast('Could not load legal data', 'error');
   }
+
+  // Save to cache
+  try { localStorage.setItem('cache_legal_admin', JSON.stringify({ ts: Date.now() })); } catch(e) {}
 }
 
 function normalizeCase(r) {
