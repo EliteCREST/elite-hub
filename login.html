@@ -174,7 +174,8 @@ async function doLogin() {
 
     if (data.success) {
       saveSession(data.user);
-      window.location.href = 'index.html';
+      const defaultPage = (data.user.default_page || 'index').replace('.html','') + '.html';
+      window.location.href = defaultPage;
     } else {
       showError(data.error || 'Invalid username or password.');
       btn.disabled = false;
