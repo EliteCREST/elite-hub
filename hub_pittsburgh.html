@@ -846,6 +846,52 @@ function renderScore(score) {
 /* ══════════════════════════════════════════════════════
    SYNC FROM BACKEND
 ══════════════════════════════════════════════════════ */
+const CACHE_KEY = 'hub_scorecard_' + REGION.key;
+
+function applyScorecard(d) {
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined && val !== null) el.textContent = val; };
+
+  // Health Score
+  if (d.healthScore) {
+    renderScore(d.healthScore);
+    set('hdrScore', d.healthScore);
+  }
+
+  // Compliance
+  if (d.compliance) {
+    set('kpiContractors', d.compliance.total);
+    set('kpiCompliant',   d.compliance.compliant);
+    set('smCompliance',   d.compliance.pct !== null ? d.compliance.pct + '%' : '—');
+    set('kpiCompScore',   d.compliance.score !== null ? d.compliance.score + '/100' : '—');
+  }
+
+  // Alerts
+  set('kpiAlerts', d.alerts);
+
+  // Fleet
+  if (d.fleet) {
+    set('kpiFleet',  d.fleet.total);
+    set('smFleet',   d.fleet.total + ' vehicles');
+    set('kpiSafety', d.fleet.score !== null ? d.fleet.score + '/500' : '—');
+    set('smSafety',  d.fleet.score !== null ? d.fleet.score + '/500' : '—');
+  }
+
+  // Reviews
+  if (d.reviews) {
+    set('smReviews',  d.reviews.avgRating);
+    set('kpiReviews', d.reviews.score !== null ? d.reviews.score + '/100' : '—');
+  }
+
+  // Legal
+  if (d.legal) {
+    set('smLitigation', d.legal.openCases);
+  }
+
+  // Rank
+  set('smNational', d.rank ? '#' + d.rank : '—');
+  set('kpiRank',    d.rank || '—');
+}
+
 async function syncData() {
   document.getElementById('scoreTimestamp').textContent = 'Syncing…';
   if (!BACKEND_URL) {
@@ -853,146 +899,36 @@ async function syncData() {
     return;
   }
   try {
-    const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.textContent = val; };
-    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+    const res  = await fetch(`${BACKEND_URL}?action=regionScorecard&region=${REGION.key}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
 
-    // Fetch all data in parallel
-    const [hubRes, compRes, fleetRes, fleetScoreRes, reviewsRes, legalRes, rulesRes] = await Promise.all([
-      fetch(`${BACKEND_URL}?action=regionHub&region=${REGION.key}`),
-      fetch(`${BACKEND_URL}?action=complianceData&region=${REGION.key}`),
-      fetch(`${BACKEND_URL}?action=fleetData&region=${REGION.key}`),
-      fetch(`${BACKEND_URL}?action=allFleetScores`),
-      fetch(`${BACKEND_URL}?action=allReviewsScores`),
-      fetch(`${BACKEND_URL}?action=allLegalScores`),
-      fetch(`${BACKEND_URL}?action=getScoringRules`),
-    ]);
-    const [hubData, compData, fleetData, fleetScoreData, reviewsData, legalData, rulesData] = await Promise.all([
-      hubRes.json(), compRes.json(), fleetRes.json(), fleetScoreRes.json(), reviewsRes.json(), legalRes.json(), rulesRes.json(),
-    ]);
+    applyScorecard(data);
 
-    // ── Weights ──
-    const rules = rulesData.rules || {};
-    const weights = {
-      compliance: (rules['wCompliance'] ?? 40) / 100,
-      fleet:      (rules['wFleet']      ?? 25) / 100,
-      reviews:    (rules['wReviews']    ?? 25) / 100,
-      licensing:  (rules['wLicensing']  ?? 10) / 100,
-    };
+    // Cache for instant load next time
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch(e) {}
 
-    // ── Compliance ──
-    let compScore = null, compPct = null;
-    if (compData && !compData.error && compData.total > 0) {
-      compScore = clamp(compData.complianceScore ?? 0, 0, 100);
-      compPct   = compData.compliancePct;
-      const total     = compData.total || 0;
-      const compliant = compData.compliant || 0;
-      const alerts    = (compData.data || []).filter(c => {
-        const gl = c.gl_expiry ? Math.ceil((new Date(c.gl_expiry) - new Date()) / 86400000) : -1;
-        const wc = c.wc_expiry ? Math.ceil((new Date(c.wc_expiry) - new Date()) / 86400000) : -1;
-        return gl < 0 || wc < 0 || gl <= 30 || wc <= 30;
-      }).length;
-      set('kpiContractors', total);
-      set('kpiCompliant',   compliant);
-      set('kpiAlerts',      alerts);
-      set('comp-total',     total);
-      set('comp-alerts',    alerts);
-      set('smCompliance',   compPct + '%');
-      set('kpiCompScore',   compScore + '/100');
+    // Push health score to hub summary (fire-and-forget)
+    if (data.healthScore) {
+      fetch(BACKEND_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'pushRegionSummary',
+          region: REGION.key,
+          data: {
+            score:      data.healthScore,
+            compliance: data.compliance ? data.compliance.pct : '',
+            fleet:      data.fleet ? data.fleet.score : '',
+            reviews:    data.reviews ? data.reviews.score : '',
+            trend:      0,
+            status:     'Active',
+          }
+        })
+      }).catch(() => {});
     }
 
-    // ── Fleet ──
-    let fleetNorm = null;
-    if (fleetData && fleetData.total !== undefined) {
-      set('kpiFleet', fleetData.total);
-      set('smFleet',  fleetData.total + ' vehicles');
-    }
-    if (fleetScoreData.scores && fleetScoreData.scores[REGION.key]) {
-      const fs = fleetScoreData.scores[REGION.key];
-      if (fs && fs.fleetScore !== undefined && fs.fleetScore !== null) {
-        const raw = clamp(fs.fleetScore, 0, 500);
-        fleetNorm = (raw / 500) * 100;
-        set('kpiSafety', raw + '/500');
-        set('smSafety',  raw + '/500');
-      }
-    }
-
-    // ── Reviews ──
-    let reviewScore = null;
-    if (reviewsData.scores && reviewsData.scores[REGION.key]) {
-      const rs = reviewsData.scores[REGION.key];
-      if (rs) {
-        const val = rs.reviewScore ?? rs.reviewsScore ?? null;
-        if (val !== null && val !== undefined) reviewScore = clamp(val, 0, 100);
-        if (rs.avgRating !== undefined) set('smReviews', rs.avgRating);
-        set('kpiReviews', reviewScore !== null ? reviewScore + '/100' : '—');
-      }
-    }
-
-    // ── Legal ──
-    let legalScore = null;
-    if (legalData.scores && legalData.scores[REGION.key]) {
-      const ls = legalData.scores[REGION.key];
-      if (ls && ls.legalScore !== undefined && ls.legalScore !== null) {
-        legalScore = clamp(ls.legalScore, 0, 100);
-        set('smLitigation', ls.openCases || 0);
-      }
-    }
-
-    // ── Compute Health Score ──
-    if (compScore !== null) {
-      const available = [
-        { score: compScore,    weight: weights.compliance, has: true },
-        { score: fleetNorm,    weight: weights.fleet,      has: fleetNorm !== null },
-        { score: reviewScore,  weight: weights.reviews,    has: reviewScore !== null },
-        { score: legalScore,   weight: weights.licensing,  has: legalScore !== null },
-      ];
-      const totalWeight = available.filter(s => s.has).reduce((sum, s) => sum + s.weight, 0);
-      const weighted    = available.filter(s => s.has).reduce((sum, s) => sum + (s.score * s.weight), 0);
-      const normalized  = totalWeight > 0 ? weighted / totalWeight : compScore;
-      const healthScore = Math.min(850, Math.max(300, Math.round(300 + (normalized / 100) * 550)));
-      renderScore(healthScore);
-      set('hdrScore', healthScore);
-
-      // Compute national rank from all compliance scores
-      try {
-        const allCompRes  = await fetch(`${BACKEND_URL}?action=allComplianceScores`);
-        const allCompData = await allCompRes.json();
-        if (allCompData.scores) {
-          const allScores = Object.entries(allCompData.scores)
-            .filter(([k, v]) => v && v.complianceScore !== undefined)
-            .map(([k, v]) => ({ key: k, score: clamp(v.complianceScore, 0, 100) }))
-            .sort((a, b) => b.score - a.score);
-          const rank = allScores.findIndex(s => s.key === REGION.key) + 1;
-          set('smNational', rank > 0 ? '#' + rank : '—');
-          set('kpiRank', rank > 0 ? rank : '—');
-        }
-      } catch(e) {}
-
-      // Push to hub summary
-      try {
-        await fetch(BACKEND_URL, {
-          method: 'POST',
-          body: JSON.stringify({
-            action: 'pushRegionSummary',
-            region: REGION.key,
-            data: {
-              score:      healthScore,
-              compliance: compPct,
-              fleet:      fleetNorm !== null ? Math.round(fleetNorm * 5) : '',
-              reviews:    reviewScore,
-              trend:      0,
-              status:     'Active',
-            }
-          })
-        });
-      } catch(e) {}
-    } else {
-      // No compliance data — use hub summary score
-      renderScore(hubData.score);
-    }
-
-    document.getElementById('hdrSync').textContent        = new Date().toLocaleTimeString();
-    document.getElementById('scoreTimestamp').textContent  = 'Updated ' + new Date().toLocaleTimeString();
+    document.getElementById('hdrSync').textContent       = new Date().toLocaleTimeString();
+    document.getElementById('scoreTimestamp').textContent = 'Updated ' + new Date().toLocaleTimeString();
   } catch(err) {
     document.getElementById('scoreTimestamp').textContent = 'Sync error';
     console.error(err);
@@ -1020,27 +956,20 @@ function showToast(msg, type = 'info') {
    INIT
 ══════════════════════════════════════════════════════ */
 initRegion();
-syncData();
 
-  // Load from pre-warmed cache instantly
-  try {
-    const _cc = localStorage.getItem('compliance_pittsburgh');
-    if (_cc) {
-      const { data: cd, ts } = JSON.parse(_cc);
-      if (Date.now() - ts < 300000 && cd.data) {
-        const compData = cd;
-        // Apply cached compliance data
-        const compPct = compData.compliancePct || 0;
-        const total   = compData.total || 0;
-        const alerts  = (compData.expiredGL||0) + (compData.expiredWC||0);
-        if (el('kpiContractors')) el('kpiContractors').textContent = total;
-        if (el('smCompliance'))   el('smCompliance').textContent   = compPct + '%';
-        if (el('kpiAlerts'))      el('kpiAlerts').textContent      = alerts;
-        if (el('kpiCompScore'))   el('kpiCompScore').textContent   = (compData.complianceScore || '—') + '/100';
-      }
+// Load cached data instantly, then sync fresh in background
+try {
+  const cached = localStorage.getItem(CACHE_KEY);
+  if (cached) {
+    const { data, ts } = JSON.parse(cached);
+    if (Date.now() - ts < 600000) { // 10 min cache
+      applyScorecard(data);
+      document.getElementById('scoreTimestamp').textContent = 'Cached · syncing…';
     }
-  } catch(e) {}
-  // elite-hub-cache marker
+  }
+} catch(e) {}
+
+syncData();
 setInterval(syncData, 120000); // auto-refresh every 2 min
 
 function logout() {
