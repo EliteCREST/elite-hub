@@ -706,8 +706,8 @@ function buildPodium() {
           </div>
           <div class="pc-stats">
             <div class="pc-stat"><div class="ps-val">${r.compliance !== null ? r.compliance + '%' : '—'}</div><div class="ps-lbl">Compliance</div></div>
-            <div class="pc-stat"><div class="ps-val">${r.fleet !== null ? r.fleet : '—'}</div><div class="ps-lbl">Fleet</div></div>
-            <div class="pc-stat"><div class="ps-val">${r.reviews !== null ? r.reviews : '—'}</div><div class="ps-lbl">Reviews</div></div>
+            <div class="pc-stat"><div class="ps-val">${r.fleetRaw !== undefined && r.fleetRaw !== null ? r.fleetRaw + '/500' : '—'}</div><div class="ps-lbl">Fleet Score</div></div>
+            <div class="pc-stat"><div class="ps-val">${r.reviewsScore !== undefined && r.reviewsScore !== null ? r.reviewsScore + '/100' : '—'}</div><div class="ps-lbl">Reviews</div></div>
           </div>
         </div>
       </div>`;
@@ -750,11 +750,11 @@ function buildRegionCards() {
             <div class="rs-lbl">Compliance</div>
           </div>
           <div class="rc-stat">
-            <div class="rs-val">${d.fleet !== null ? d.fleet : '—'}</div>
-            <div class="rs-lbl">Fleet</div>
+            <div class="rs-val">${d.fleetRaw !== undefined && d.fleetRaw !== null ? d.fleetRaw + '/500' : '—'}</div>
+            <div class="rs-lbl">Fleet Score</div>
           </div>
           <div class="rc-stat">
-            <div class="rs-val">${d.reviews !== null ? d.reviews : '—'}</div>
+            <div class="rs-val">${d.reviewsScore !== undefined && d.reviewsScore !== null ? d.reviewsScore + '/100' : '—'}</div>
             <div class="rs-lbl">Reviews</div>
           </div>
         </div>
@@ -856,39 +856,44 @@ async function refreshData() {
         weights.licensing  = (wData.rules['wLicensing']  ?? 10) / 100;
       }
 
-      // Apply fleet scores to regionData (fleetScore is 0-500, normalize to 0-100)
+      // Helper: clamp a value between min and max
+      const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+      // Apply fleet scores — backend returns raw fleetScore (0-500 range, clamped)
       if (fleetData.scores) {
         REGIONS.forEach(region => {
           const fs = fleetData.scores[region.key];
           const idx = regionData.findIndex(x => x.key === region.key);
           if (idx < 0 || !fs) return;
           if (fs.fleetScore !== undefined && fs.fleetScore !== null) {
-            regionData[idx].fleetScore = Math.min(100, (fs.fleetScore / 500) * 100); // normalize to 0-100
-            regionData[idx].fleetRaw   = fs.fleetScore; // keep raw for display
+            const clamped = clamp(fs.fleetScore, 0, 500);
+            regionData[idx].fleetScore = (clamped / 500) * 100; // normalize to 0-100 for weighting
+            regionData[idx].fleetRaw   = clamped;               // keep 0-500 for display
           }
         });
       }
 
-      // Apply reviews scores to regionData (reviewsScore is 0-100)
+      // Apply reviews scores — backend key is "reviewScore" (not reviewsScore), 0-100 range
       if (reviewsData.scores) {
         REGIONS.forEach(region => {
           const rs = reviewsData.scores[region.key];
           const idx = regionData.findIndex(x => x.key === region.key);
           if (idx < 0 || !rs) return;
-          if (rs.reviewsScore !== undefined && rs.reviewsScore !== null) {
-            regionData[idx].reviewsScore = rs.reviewsScore;
+          const val = rs.reviewScore ?? rs.reviewsScore ?? null;
+          if (val !== undefined && val !== null) {
+            regionData[idx].reviewsScore = clamp(val, 0, 100);
           }
         });
       }
 
-      // Apply legal/licensing scores to regionData (legalScore is 0-100)
+      // Apply legal/licensing scores — 0-100 range
       if (legalData.scores) {
         REGIONS.forEach(region => {
           const ls = legalData.scores[region.key];
           const idx = regionData.findIndex(x => x.key === region.key);
           if (idx < 0 || !ls) return;
           if (ls.legalScore !== undefined && ls.legalScore !== null) {
-            regionData[idx].licensingScore = ls.legalScore;
+            regionData[idx].licensingScore = clamp(ls.legalScore, 0, 100);
           }
         });
       }
@@ -903,7 +908,8 @@ async function refreshData() {
             regionData[idx].score      = null;
             regionData[idx].compliance = null;
           } else {
-            const compScore = compData.complianceScore ?? 0;
+            // Clamp compliance score to 0-100
+            const compScore = clamp(compData.complianceScore ?? 0, 0, 100);
             regionData[idx].complianceScore = compScore;
             regionData[idx].compliance      = compData.compliancePct;
             const rd = regionData[idx];
@@ -916,7 +922,8 @@ async function refreshData() {
             const totalWeight = available.filter(s => s.has).reduce((sum, s) => sum + s.weight, 0);
             const weighted    = available.filter(s => s.has).reduce((sum, s) => sum + (s.score * s.weight), 0);
             const normalized  = totalWeight > 0 ? weighted / totalWeight : compScore;
-            regionData[idx].score = Math.round(300 + (normalized / 100) * 550);
+            // Final score: 300-850 range, hard clamped
+            regionData[idx].score = Math.min(850, Math.max(300, Math.round(300 + (normalized / 100) * 550)));
           }
         });
       }
