@@ -716,30 +716,21 @@
   }
 
 
-  /* ══ STICKY TOOL NAV + BACK NAV ═════════════════════════ */
+  /* ══ STICKY BACK NAV ═════════════════════════ */
   .sub-bar {
     position: sticky;
-    top: 68px; /* flush under header */
+    top: 68px;
     z-index: 192;
-  }
-  .tool-nav {
-    position: sticky;
-    top: 71px; /* header(68) + sub-bar(3) */
-    z-index: 191;
-    background: var(--navy) !important; /* solid — no bleed-through */
-    margin: 0 !important;
-    padding-top: 2px !important;
-    padding-bottom: 2px !important;
   }
   .back-nav {
     position: sticky;
-    top: 109px; /* header(68) + sub-bar(3) + tool-nav(38) */
+    top: 71px; /* header(68) + sub-bar(3) */
     z-index: 190;
     background: var(--navy) !important;
     box-shadow: 0 3px 8px rgba(27,42,74,.35);
     margin: 0 !important;
   }
-  html { scroll-padding-top: 145px; }
+  html { scroll-padding-top: 110px; }
 </style>
 </head>
 <body>
