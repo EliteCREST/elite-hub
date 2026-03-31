@@ -678,7 +678,7 @@ function toggleDarkMode() {
     <span class="sh">Reputation Overview</span>
     <div style="display:flex;gap:8px;align-items:center;">
       <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Review</button>
-      <button class="btn btn-outline btn-sm" onclick="_syncBackendFresh()">↻ Sync</button>
+      <button class="btn btn-outline btn-sm" onclick="syncBackend()">↻ Sync</button>
     </div>
   </div>
   <div class="kpi-grid">
@@ -1231,21 +1231,8 @@ function saveReview() {
 /* ══════════════════════════════════════════════════════════════
    BACKEND SYNC (for when backend is wired)
 ══════════════════════════════════════════════════════════════ */
-async function syncBackend() {
-  // Use cache — only fetch fresh on manual Sync
-  try {
-    const cached = localStorage.getItem('cache_reviews');
-    if (cached) {
-      const { ts } = JSON.parse(cached);
-      if (Date.now() - ts < 600000) { // 10 min cache
-        return; // Data already loaded from previous visit
-      }
-    }
-  } catch(e) {}
-  await _syncBackendFresh();
-}
 
-async function _syncBackendFresh() {
+async function syncBackend() {
   if (!BACKEND_URL) {
     showToast('Backend URL not configured yet — paste it into BACKEND_URL.', 'warn');
     return;
@@ -1262,7 +1249,7 @@ async function _syncBackendFresh() {
   }
 
   // Save to cache
-  try { localStorage.setItem('cache_reviews', JSON.stringify({ ts: Date.now() })); } catch(e) {}
+  try {  } catch(e) {}
 }
 
 /* ══════════════════════════════════════════════════════════════

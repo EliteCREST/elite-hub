@@ -1117,21 +1117,8 @@ syncData();
 /* ══════════════════════════════════════════════════════════════
    DATA SYNC
 ══════════════════════════════════════════════════════════════ */
-async function syncData() {
-  // Use cache — only fetch fresh on manual Sync
-  try {
-    const cached = localStorage.getItem('cache_fleet');
-    if (cached) {
-      const { ts } = JSON.parse(cached);
-      if (Date.now() - ts < 600000) { // 10 min cache
-        return; // Data already loaded from previous visit
-      }
-    }
-  } catch(e) {}
-  await _syncDataFresh();
-}
 
-async function _syncDataFresh() {
+async function syncData() {
   // Show cached data instantly if available
   const cacheKey = `fleet_${regionKey}`;
   const cached = getCached(cacheKey);
@@ -1160,7 +1147,7 @@ async function _syncDataFresh() {
   }
 
   // Save to cache
-  try { localStorage.setItem('cache_fleet', JSON.stringify({ ts: Date.now() })); } catch(e) {}
+  try {  } catch(e) {}
 }
 
 function normalizeVehicle(r) {

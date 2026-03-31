@@ -656,9 +656,12 @@ async function syncData() {
   try {
     const cached = localStorage.getItem('cache_legal_admin');
     if (cached) {
-      const { ts } = JSON.parse(cached);
-      if (Date.now() - ts < 600000) { // 10 min cache
-        return; // Data already loaded from previous visit
+      const { data, ts } = JSON.parse(cached);
+      if (Date.now() - ts < 600000 && data && data.length > 0) {
+        allCases = data;
+        renderAll();
+        document.getElementById('hdrSync').textContent = new Date(ts).toLocaleTimeString();
+        return;
       }
     }
   } catch(e) {}
@@ -666,20 +669,19 @@ async function syncData() {
 }
 
 async function _syncDataFresh() {
-  document.getElementById('hdrSync').textContent = '…';
+  document.getElementById('hdrSync').textContent = 'Syncing…';
   try {
     const res  = await fetch(`${BACKEND_URL}?action=legalData`); // no region = all regions
     const data = await res.json();
     allCases = (data.cases || []).map(normalizeCase);
     renderAll();
     document.getElementById('hdrSync').textContent = new Date().toLocaleTimeString();
+    // Save data + timestamp to cache
+    try { localStorage.setItem('cache_legal_admin', JSON.stringify({ data: allCases, ts: Date.now() })); } catch(e) {}
   } catch(e) {
     document.getElementById('hdrSync').textContent = 'Error';
     showToast('Could not load legal data', 'error');
   }
-
-  // Save to cache
-  try { localStorage.setItem('cache_legal_admin', JSON.stringify({ ts: Date.now() })); } catch(e) {}
 }
 
 function normalizeCase(r) {

@@ -196,8 +196,14 @@ async function load() {
   try {
     const cached = localStorage.getItem('cache_carlynn');
     if (cached) {
-      const { ts } = JSON.parse(cached);
-      if (Date.now() - ts < 600000) return;
+      const { html, rhtml, ts } = JSON.parse(cached);
+      if (Date.now() - ts < 600000 && html) {
+        const nl = document.getElementById('notifList');
+        const rl = document.getElementById('resolvedList');
+        if (nl) nl.innerHTML = html;
+        if (rl) rl.innerHTML = rhtml || '';
+        return;
+      }
     }
   } catch(e) {}
   await _loadFresh();
@@ -219,7 +225,11 @@ async function _loadFresh() {
     document.getElementById('notifList').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Could not load notifications.</div>';
   }
 
-  try { localStorage.setItem('cache_carlynn', JSON.stringify({ ts: Date.now() })); } catch(e) {}
+  try {
+    const _html = document.getElementById('notifList') ? document.getElementById('notifList').innerHTML : '';
+    const _rhtml = document.getElementById('resolvedList') ? document.getElementById('resolvedList').innerHTML : '';
+    localStorage.setItem('cache_carlynn', JSON.stringify({ html: _html, rhtml: _rhtml, ts: Date.now() }));
+  } catch(e) {}
 }
 
 function setFilter(f, btn) {
