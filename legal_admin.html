@@ -648,41 +648,56 @@ document.getElementById('pageCallout').innerHTML    = '<strong>Legal Admin — A
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-syncData();
-
 /* ══ SYNC ════════════════════════════════════════════════════ */
 async function syncData() {
-  // Use cache — only fetch fresh on manual Sync
+  // Use cache if available
   try {
     const cached = localStorage.getItem('cache_legal_admin');
     if (cached) {
-      const { data, ts } = JSON.parse(cached);
-      if (Date.now() - ts < 600000 && data && data.length > 0) {
-        allCases = data;
+      const parsed = JSON.parse(cached);
+      if (parsed && parsed.data && parsed.data.length > 0 && Date.now() - parsed.ts < 600000) {
+        allCases = parsed.data;
         renderAll();
-        document.getElementById('hdrSync').textContent = new Date(ts).toLocaleTimeString();
+        document.getElementById('hdrSync').textContent = 'Cached ' + new Date(parsed.ts).toLocaleTimeString();
         return;
       }
     }
-  } catch(e) {}
+  } catch(e) { console.log('Cache read error:', e); }
+  // No valid cache — fetch fresh
   await _syncDataFresh();
 }
 
 async function _syncDataFresh() {
   document.getElementById('hdrSync').textContent = 'Syncing…';
+  document.getElementById('tableSubtitle').textContent = 'Loading cases from server...';
   try {
     const res  = await fetch(`${BACKEND_URL}?action=cachedLegalData`);
     const data = await res.json();
     allCases = (data.cases || []).map(normalizeCase);
     renderAll();
     document.getElementById('hdrSync').textContent = new Date().toLocaleTimeString();
-    // Save data + timestamp to cache
-    try { localStorage.setItem('cache_legal_admin', JSON.stringify({ data: allCases, ts: Date.now() })); } catch(e) {}
+    // Save to cache — strip large fields to fit localStorage
+    try {
+      const slim = allCases.map(c => ({
+        id: c.id, title: c.title, type: c.type, brand: c.brand, region: c.region,
+        status: c.status, job_number: c.job_number, amount: c.amount,
+        filed_date: c.filed_date, resolved_date: c.resolved_date,
+        assigned_to: c.assigned_to, linked_id: c.linked_id,
+        lien_address: c.lien_address, lien_amount: c.lien_amount,
+        lien_filed: c.lien_filed, lien_release: c.lien_release,
+        notes: (c.notes || '').slice(0, 200),
+      }));
+      localStorage.setItem('cache_legal_admin', JSON.stringify({ data: slim, ts: Date.now() }));
+    } catch(e) { console.log('Cache save error:', e); }
   } catch(e) {
     document.getElementById('hdrSync').textContent = 'Error';
+    document.getElementById('tableSubtitle').textContent = 'Failed to load — click Sync to retry';
     showToast('Could not load legal data', 'error');
   }
 }
+
+// Auto-load on page open
+syncData();
 
 function normalizeCase(r) {
   return {
