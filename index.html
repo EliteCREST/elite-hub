@@ -598,7 +598,7 @@ function buildPodium() {
             <div class="pc-bar-fill" style="width:${pct}%;background:${color};"></div>
           </div>
           <div class="pc-stats">
-            <div class="pc-stat"><div class="ps-val">${r.compliance !== null ? r.compliance + '%' : '—'}</div><div class="ps-lbl">Compliance</div></div>
+            <div class="pc-stat"><div class="ps-val">${r.complianceScore !== undefined && r.complianceScore !== null ? r.complianceScore + '/100' : '—'}</div><div class="ps-lbl">${r.compliance !== null ? r.compliance + '% compliant' : 'Compliance'}</div></div>
             <div class="pc-stat"><div class="ps-val">${r.fleetRaw !== undefined && r.fleetRaw !== null ? r.fleetRaw + '/500' : '—'}</div><div class="ps-lbl">Fleet Score</div></div>
             <div class="pc-stat"><div class="ps-val">${r.reviewsScore !== undefined && r.reviewsScore !== null ? r.reviewsScore + '/100' : '—'}</div><div class="ps-lbl">Reviews</div></div>
           </div>
@@ -639,8 +639,8 @@ function buildRegionCards() {
         </div>
         <div class="rc-stats">
           <div class="rc-stat">
-            <div class="rs-val">${d.compliance !== null ? d.compliance + '%' : '—'}</div>
-            <div class="rs-lbl">Compliance</div>
+            <div class="rs-val">${d.complianceScore !== undefined && d.complianceScore !== null ? d.complianceScore + '/100' : '—'}</div>
+            <div class="rs-lbl">${d.compliance !== null ? d.compliance + '% compliant' : 'Compliance'}</div>
           </div>
           <div class="rc-stat">
             <div class="rs-val">${d.fleetRaw !== undefined && d.fleetRaw !== null ? d.fleetRaw + '/500' : '—'}</div>
