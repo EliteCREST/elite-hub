@@ -429,8 +429,12 @@ function toggleDarkMode() {
   <!-- KPI STRIP -->
   <div class="section-row">
     <span class="sh">Case Overview</span>
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add Case</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button class="btn btn-primary btn-sm" onclick="openAddModal('Lawsuit')">+ Lawsuit</button>
+      <button class="btn btn-primary btn-sm" style="background:#7C3AED;" onclick="openAddModal('AG Complaint')">+ AG Complaint</button>
+      <button class="btn btn-primary btn-sm" style="background:#0891B2;" onclick="openAddModal('BBB Complaint')">+ BBB Complaint</button>
+      <button class="btn btn-primary btn-sm" style="background:#D97706;" onclick="openAddModal('ROC Complaint')">+ ROC Complaint</button>
+      <button class="btn btn-primary btn-sm" style="background:#059669;" onclick="openAddModal('Lien')">+ Lien</button>
       <button class="btn btn-outline btn-sm" onclick="_syncDataFresh()">↻ Sync</button>
       <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export</button>
     </div>
@@ -863,11 +867,16 @@ function renderTable() {
 }
 
 /* ══ MODAL ═══════════════════════════════════════════════════ */
-function openAddModal() {
+function openAddModal(type) {
   editingId = null;
-  document.getElementById('modalTitle').textContent = 'Add Case';
-  document.getElementById('modalSub').textContent   = 'Add a new case for ' + region.city;
+  const label = type || 'Case';
+  document.getElementById('modalTitle').textContent = 'Add ' + label;
+  document.getElementById('modalSub').textContent   = 'Add a new ' + label.toLowerCase() + ' record';
   clearForm();
+  if (type) {
+    const typeSelect = document.getElementById('fType');
+    if (typeSelect) typeSelect.value = type;
+  }
   document.getElementById('caseModal').classList.add('open');
 }
 
