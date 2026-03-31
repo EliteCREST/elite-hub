@@ -830,14 +830,13 @@ function toggleDarkMode() {
     </div>
   </div>
   <div class="kpi-grid">
-    <div class="kpi-card good-card"><div class="kpi-icon">👥</div><div class="kpi-label">Total Active</div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-sub" id="kpiInactive">— inactive hidden</div></div>
-    <div class="kpi-card good-card"><div class="kpi-icon">✅</div><div class="kpi-label">Compliant</div><div class="kpi-value" id="kpiCompliant">—</div><div class="kpi-sub" id="kpiCompliantPct">—</div></div>
     <div class="kpi-card alert-card"><div class="kpi-icon">🔴</div><div class="kpi-label">Expired</div><div class="kpi-value" id="kpiExpired">—</div><div class="kpi-sub">GL or WC expired</div></div>
     <div class="kpi-card alert-card"><div class="kpi-icon">⚠️</div><div class="kpi-label">Expiring 5 Days</div><div class="kpi-value" id="kpiExp30">—</div><div class="kpi-sub">Immediate action</div></div>
     <div class="kpi-card warn-card"><div class="kpi-icon">🕐</div><div class="kpi-label">Expiring 10 Days</div><div class="kpi-value" id="kpiExp60">—</div><div class="kpi-sub">Monitor closely</div></div>
-    <div class="kpi-card"><div class="kpi-icon">📄</div><div class="kpi-label">Missing Docs</div><div class="kpi-value" id="kpiMissing">—</div><div class="kpi-sub">No GL or WC on file</div></div>
-    <div class="kpi-card"><div class="kpi-icon">✈️</div><div class="kpi-label">Will Travel</div><div class="kpi-value" id="kpiTravel">—</div><div class="kpi-sub">Available regionally</div></div>
-    <div class="kpi-card"><div class="kpi-icon">🗂️</div><div class="kpi-label">All Records</div><div class="kpi-value" id="kpiAll">—</div><div class="kpi-sub">Including inactive</div></div>
+    <div class="kpi-card alert-card"><div class="kpi-icon">📄</div><div class="kpi-label">Missing Docs</div><div class="kpi-value" id="kpiMissing">—</div><div class="kpi-sub">No GL or WC on file</div></div>
+    <div class="kpi-card alert-card"><div class="kpi-icon">🚫</div><div class="kpi-label">Inactive Contracts</div><div class="kpi-value" id="kpiInactive">—</div><div class="kpi-sub">Contract status inactive</div></div>
+    <div class="kpi-card good-card"><div class="kpi-icon">✅</div><div class="kpi-label">Total Contractors</div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-sub">All records</div></div>
+    <div class="kpi-card good-card"><div class="kpi-icon">🟢</div><div class="kpi-label">Fully Compliant</div><div class="kpi-value" id="kpiCompliant">—</div><div class="kpi-sub" id="kpiCompliantPct">—</div></div>
   </div>
 
   <!-- FILTER BAR -->
@@ -1293,16 +1292,14 @@ function updateKPIs() {
   const travel     = active.filter(c => (c.will_travel||'').toLowerCase() === 'yes').length;
   const alerts     = expired + exp30;
 
-  document.getElementById('kpiTotal').textContent       = active.length;
-  document.getElementById('kpiInactive').textContent    = `${inactive.length} inactive hidden`;
+  document.getElementById('kpiTotal').textContent       = allContractors.length;
+  document.getElementById('kpiInactive').textContent    = inactive.length;
   document.getElementById('kpiCompliant').textContent   = compliant;
   document.getElementById('kpiCompliantPct').textContent = active.length ? Math.round((compliant/active.length)*100) + '% of active' : '—';
   document.getElementById('kpiExpired').textContent     = expired;
   document.getElementById('kpiExp30').textContent       = exp30;
   document.getElementById('kpiExp60').textContent       = exp60;
   document.getElementById('kpiMissing').textContent     = missing;
-  document.getElementById('kpiTravel').textContent      = travel;
-  document.getElementById('kpiAll').textContent         = allContractors.length;
   document.getElementById('hdrTotal').textContent       = active.length;
   document.getElementById('hdrAlerts').textContent      = alerts;
 }
