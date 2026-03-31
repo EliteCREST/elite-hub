@@ -866,12 +866,10 @@ const FORM_FIELDS = {
       { id:'fComplaintDate', label:'Complaint Date', type:'date' },
       { id:'fComplaint', label:'Complaint', type:'textarea' },
       { id:'fFirstResponse', label:'1st Response', type:'textarea' },
-      { id:'fComplaintPlus', label:'Complaint +', type:'textarea' },
-      { id:'fResponseToAdd', label:'Response + to Add', type:'textarea' },
-      { id:'fResponseDates', label:'Response + Dates', type:'text' },
       { id:'fCreditAmount', label:'Credit Amount ($)', type:'number', placeholder:'0.00' },
       { id:'fResolvedDate', label:'Resolved Date', type:'date' },
     ]},
+    { section: '📨 Additional Complaints', sectionId:'bbbExtraComplaints', fields: [] },
     { section: '📋 Additional Info', fields: [
       { id:'fTypeOfLead', label:'Type of Lead', type:'select', options: LEAD_OPTIONS },
       { id:'fSalesRep', label:'Sales Rep', type:'text' },
@@ -989,6 +987,17 @@ function buildFormHTML(type) {
   return sections.map(sec => {
     const bgColor = sec.color === 'gray' ? 'var(--gray-50)' : 'white';
     const borderColor = sec.color === 'gray' ? 'var(--gray-300)' : 'var(--blue)';
+
+    // Special section: BBB additional complaints
+    if (sec.sectionId === 'bbbExtraComplaints') {
+      return '<div class="form-section" style="border-color:#0891B2;background:#F0FDFA;">' +
+        '<div class="form-section-title" style="color:#0891B2;">📨 Additional Complaints</div>' +
+        '<div id="bbbExtraContainer"></div>' +
+        '<button type="button" class="btn btn-outline btn-sm" onclick="addBBBComplaint()" style="margin-top:8px;">+ Add Complaint</button>' +
+        '<div style="font-size:10px;color:var(--gray-400);margin-top:4px;">Up to 7 additional complaints</div>' +
+        '</div>';
+    }
+
     const rows = [];
     const fields = sec.fields.filter(f => f.type !== 'hidden');
     const hiddens = sec.fields.filter(f => f.type === 'hidden');
@@ -1003,6 +1012,34 @@ function buildFormHTML(type) {
       rows.join('') +
       '</div>';
   }).join('');
+}
+
+let bbbComplaintCount = 0;
+
+function addBBBComplaint() {
+  if (bbbComplaintCount >= 7) { showToast('Maximum 7 additional complaints', 'warn'); return; }
+  bbbComplaintCount++;
+  const n = bbbComplaintCount;
+  const container = document.getElementById('bbbExtraContainer');
+  const div = document.createElement('div');
+  div.id = 'bbbComplaint_' + n;
+  div.style.cssText = 'border:1px solid var(--gray-200);border-radius:8px;padding:12px;margin-bottom:10px;background:white;position:relative;';
+  div.innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
+      '<span style="font-size:11px;font-weight:700;color:#0891B2;text-transform:uppercase;letter-spacing:1px;">Complaint ' + n + '</span>' +
+      '<button type="button" onclick="removeBBBComplaint(' + n + ')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:2px 6px;">✕</button>' +
+    '</div>' +
+    '<div class="form-group" style="margin-bottom:8px;"><label>Complaint Note</label><textarea id="fComplaint_' + n + '_note" placeholder="Describe the complaint..."></textarea></div>' +
+    '<div class="form-row">' +
+      '<div class="form-group"><label>Complaint Date</label><input type="date" id="fComplaint_' + n + '_date"></div>' +
+      '<div class="form-group"><label>Response</label><textarea id="fComplaint_' + n + '_response" placeholder="Response details..."></textarea></div>' +
+    '</div>';
+  container.appendChild(div);
+}
+
+function removeBBBComplaint(n) {
+  const el = document.getElementById('bbbComplaint_' + n);
+  if (el) el.remove();
 }
 
 function renderField(f) {
@@ -1026,6 +1063,7 @@ function renderField(f) {
 function openAddModal(type) {
   editingId = null;
   currentFormType = type || 'Lawsuit';
+  bbbComplaintCount = 0;
   document.getElementById('modalTitle').textContent = 'Add ' + currentFormType;
   document.getElementById('modalSub').textContent   = 'Add a new ' + currentFormType.toLowerCase() + ' record';
   document.getElementById('modalBody').innerHTML    = buildFormHTML(currentFormType);
@@ -1037,6 +1075,7 @@ function openEditModal(id) {
   if (!c) return;
   editingId = id;
   currentFormType = c.type || 'Lawsuit';
+  bbbComplaintCount = 0;
   document.getElementById('modalTitle').textContent = 'Edit ' + currentFormType;
   document.getElementById('modalSub').textContent   = c.title || 'Case';
   document.getElementById('modalBody').innerHTML    = buildFormHTML(currentFormType);
@@ -1065,8 +1104,7 @@ function populateForm(c) {
   set('fComplaintPOCEmail', c.complaint_poc_email);
   set('fOutsideCounsel', c.outside_counsel); set('fOutsideCounselDate', c.outside_counsel_date);
   set('fComplaintDate', c.complaint_date); set('fComplaint', c.complaint);
-  set('fFirstResponse', c.first_response); set('fComplaintPlus', c.complaint_plus);
-  set('fResponseToAdd', c.response_to_add); set('fResponseDates', c.response_dates);
+  set('fFirstResponse', c.first_response);
   set('fCreditAmount', c.credit_amount);
   set('fResponseSent', c.response_sent); set('fResolutionSummary', c.resolution_summary);
   set('fComplaintNumber', c.complaint_number); set('fDateToRespond', c.date_to_respond);
@@ -1078,11 +1116,25 @@ function populateForm(c) {
   set('fNatureOfComplaint', c.nature_of_complaint);
   set('fSiteVisit1', c.site_visit_1); set('fSiteVisit2', c.site_visit_2);
   set('fSiteVisit3', c.site_visit_3); set('fSiteVisit4', c.site_visit_4);
+  // Restore BBB additional complaints
+  if (c.type === 'BBB Complaint') {
+    for (let i = 1; i <= 7; i++) {
+      const note = c['complaint_' + i + '_note'] || '';
+      const date = c['complaint_' + i + '_date'] || '';
+      const resp = c['complaint_' + i + '_response'] || '';
+      if (note || date || resp) {
+        addBBBComplaint();
+        set('fComplaint_' + i + '_note', note);
+        set('fComplaint_' + i + '_date', date);
+        set('fComplaint_' + i + '_response', resp);
+      }
+    }
+  }
 }
 
 function getFormValues() {
   const g = id => (document.getElementById(id)||{}).value || '';
-  return {
+  const vals = {
     title: g('fTitle'), type: g('fType'), brand: g('fBrand'), region: g('fRegion'),
     status: g('fStatus'), job_number: g('fJobNumber'), amount: g('fAmount'),
     filed_date: g('fFiledDate'), resolved_date: g('fResolvedDate'),
@@ -1095,8 +1147,7 @@ function getFormValues() {
     complaint_poc_email: g('fComplaintPOCEmail'),
     outside_counsel: g('fOutsideCounsel'), outside_counsel_date: g('fOutsideCounselDate'),
     complaint_date: g('fComplaintDate'), complaint: g('fComplaint'),
-    first_response: g('fFirstResponse'), complaint_plus: g('fComplaintPlus'),
-    response_to_add: g('fResponseToAdd'), response_dates: g('fResponseDates'),
+    first_response: g('fFirstResponse'),
     credit_amount: g('fCreditAmount'),
     response_sent: g('fResponseSent'), resolution_summary: g('fResolutionSummary'),
     complaint_number: g('fComplaintNumber'), date_to_respond: g('fDateToRespond'),
@@ -1109,6 +1160,13 @@ function getFormValues() {
     site_visit_1: g('fSiteVisit1'), site_visit_2: g('fSiteVisit2'),
     site_visit_3: g('fSiteVisit3'), site_visit_4: g('fSiteVisit4'),
   };
+  // Collect BBB additional complaints (1-7)
+  for (let i = 1; i <= 7; i++) {
+    vals['complaint_' + i + '_note']     = g('fComplaint_' + i + '_note');
+    vals['complaint_' + i + '_date']     = g('fComplaint_' + i + '_date');
+    vals['complaint_' + i + '_response'] = g('fComplaint_' + i + '_response');
+  }
+  return vals;
 }
 
 async function saveCase() {
