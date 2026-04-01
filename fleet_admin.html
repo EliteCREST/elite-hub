@@ -208,6 +208,8 @@
     font-size: 15px; font-weight: 700; flex-shrink: 0;
     letter-spacing: .5px;
   }
+  .vc-evid.evid-ok       { background: var(--blue); color: white; }
+  .vc-evid.evid-alert    { background: #DC2626; color: white; }
   .vc-evid.evid-active   { background: var(--navy); }
   .vc-evid.evid-inactive { background: var(--gray-400); }
   .vc-evid.evid-unknown  { background: var(--yellow); color: var(--navy); }
@@ -1118,10 +1120,23 @@ function vehicleStatusClass(v) {
 
 function evidClass(v) {
   const s = (v.status || '').toLowerCase();
-  if (s.includes('shop'))     return 'evid-shop';
-  if (s === 'active')         return 'evid-active';
-  if (s === 'inactive')       return 'evid-inactive';
-  return 'evid-unknown';
+  const isOOS = (v.out_of_service||'').toLowerCase() === 'true' || (v.out_of_service||'').toLowerCase() === 'yes';
+  if (isOOS) return 'evid-inactive';
+  if (s.includes('shop')) return 'evid-shop';
+  if (s === 'inactive') return 'evid-inactive';
+
+  let hasIssue = false;
+  const tagDate = v.tag_expiration ? new Date(v.tag_expiration) : null;
+  if (!tagDate || isNaN(tagDate) || tagDate < new Date()) hasIssue = true;
+  const insDate = v.ins_exp ? new Date(v.ins_exp) : null;
+  if (insDate && !isNaN(insDate) && insDate < new Date()) hasIssue = true;
+  const agree = (v.agreement || '').toLowerCase();
+  if (agree && agree !== 'signed') hasIssue = true;
+  const geo = (v.geotab || '').toLowerCase();
+  if (geo && geo !== 'ok' && geo !== '') hasIssue = true;
+  if (!s) hasIssue = true;
+
+  return hasIssue ? 'evid-alert' : 'evid-ok';
 }
 
 function statusLabel(v) {
