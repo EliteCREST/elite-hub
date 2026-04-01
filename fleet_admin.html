@@ -273,6 +273,10 @@
   .btn-shop:hover { opacity: .85; }
   .btn-unshop   { background: var(--green); color: white; }
   .btn-unshop:hover { opacity: .85; }
+  .btn-oos      { background: #7F1D1D; color: #FCA5A5; border: 1.5px solid #991B1B; }
+  .btn-oos:hover { background: #991B1B; color: white; }
+  .btn-oos-active { background: var(--green); color: white; }
+  .btn-oos-active:hover { opacity: .85; }
   .shop-badge   { display:inline-flex;align-items:center;gap:5px;background:#DBEAFE;color:#0369A1;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.3px; }
 
   /* ══ EMPTY STATE ═════════════════════════════════════════════ */
@@ -1051,6 +1055,7 @@ function normalizeVehicle(r) {
     maint_due:        String(r['maintenance_due_date'] || ''),
     oil_due:          String(r['oil_change_due_(miles)'] || ''),
     ins_exp:          String(r['insurance_exp_date'] || ''),
+    out_of_service:   String(r['out_of_service'] || r['out of service'] || ''),
     notes:            String(r['notes']             || ''),
     device_group:     String(r['device_group']      || ''),
     work_time:        String(r['work_time']         || ''),
@@ -1234,17 +1239,18 @@ function renderVehicles() {
 
   grid.innerHTML = filtered.map(v => {
     const isShop = (v.status||'').toLowerCase().includes('shop');
-    const sc   = vehicleStatusClass(v);
+    const isOOS  = (v.out_of_service||'').toLowerCase() === 'true' || (v.out_of_service||'').toLowerCase() === 'yes';
+    const sc   = isOOS ? 'vc-oos' : vehicleStatusClass(v);
     const ec   = evidClass(v);
-    const sl   = statusLabel(v);
+    const sl   = isOOS ? { dot: 'sdot-gray', label: 'Out of Service' } : statusLabel(v);
     const driverDisplay = v.driver || (v.last_driver ? `<em style="color:var(--gray-400);">${v.last_driver}</em>` : '<em style="color:var(--gray-400);">Unassigned</em>');
 
     return `
-    <div class="vehicle-card ${sc}" onclick="toggleDetail('${v.id}')">
+    <div class="vehicle-card ${sc}" onclick="toggleDetail('${v.id}')" style="${isOOS ? 'opacity:.5;' : ''}">
       <div class="vc-main">
         <div class="vc-evid ${ec}">${v.evid || '—'}</div>
         <div class="vc-info">
-          <div class="vc-vehicle">${[v.year, v.make, v.model].filter(Boolean).join(' ') || 'Unknown Vehicle'}</div>
+          <div class="vc-vehicle">${[v.year, v.make, v.model].filter(Boolean).join(' ') || 'Unknown Vehicle'}${isOOS ? ' <span style="font-size:10px;color:var(--gray-400);font-weight:400;">(OUT OF SERVICE)</span>' : ''}</div>
           <div class="vc-driver">${v.driver || (v.last_driver ? v.last_driver : 'Unassigned')}</div>
           <div class="vc-tags">
             ${v.plate ? `<span class="tag tag-plate">${v.plate}</span>` : ''}
@@ -1261,7 +1267,7 @@ function renderVehicles() {
             ${v.fleet_type ? `<span class="tag ${v.fleet_type === 'Accuserve' ? 'tag-brand' : 'tag-signed'}">${v.fleet_type}</span>` : ''}
           </div>
         </div>
-        <div class="vc-status">
+        <div class="vc-status" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
           <div class="status-dot-label">
             <div class="sdot ${sl.dot}"></div>
             <span style="color:var(--gray-600);font-size:11px;font-weight:700;">${sl.label}</span>
@@ -1308,6 +1314,10 @@ function renderVehicles() {
             onclick="event.stopPropagation();toggleShop('${v.id}')">
             ${isShop ? '✓ Back to Active' : '🔧 Send to Shop'}
           </button>
+          <button class="btn btn-sm ${isOOS ? 'btn-oos-active' : 'btn-oos'}"
+            onclick="event.stopPropagation();toggleOOS('${v.evid}', ${isOOS ? 'false' : 'true'})">
+            ${isOOS ? '✓ Return to Service' : '🚫 Out of Service'}
+          </button>
         </div>
       </div>
     </div>`;
@@ -1318,6 +1328,21 @@ function toggleDetail(id) {
   const el = document.getElementById('detail-' + id);
   if (!el) return;
   el.classList.toggle('open');
+}
+
+async function toggleOOS(evid, checked) {
+  const v = allVehicles.find(x => x.evid === evid);
+  if (v) v.out_of_service = checked ? 'true' : '';
+  renderAll();
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'updateVehicle', evid, vehicle: { out_of_service: checked ? 'TRUE' : '' } })
+    });
+    showToast(checked ? 'Vehicle marked out of service' : 'Vehicle returned to service', 'info');
+  } catch(e) {
+    showToast('Failed to update — try again', 'error');
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
