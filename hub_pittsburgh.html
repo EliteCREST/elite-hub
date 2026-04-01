@@ -398,39 +398,113 @@
     main { padding: 20px 16px; }
     .elite-header { grid-template-columns: 4px 1fr auto; }
     .header-logo { display: none; }
-    .hub-columns { grid-template-columns: 1fr; }
+    .hub-columns {
+    display: grid; grid-template-columns: 1fr 1fr 380px; gap: 16px; margin-bottom: 16px;
   }
-
-  /* ══ TOOL NAV BAR ══════════════════════════════════════════ */
-  .tool-nav {
-    background: var(--navy);
-    border-bottom: 1px solid rgba(255,255,255,.08);
-    padding: 0 22px;
-    display: flex; align-items: center; gap: 4px;
-    overflow-x: auto; white-space: nowrap;
-    scrollbar-width: none;
+  .hub-col { min-width: 0; }
+  .score-panel {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl); box-shadow: var(--shadow-md);
+    padding: 16px 20px; height: 100%; display: flex; flex-direction: column;
   }
-  .tool-nav::-webkit-scrollbar { display: none; }
-  .tool-nav-label {
-    font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
-    text-transform: uppercase; color: rgba(255,255,255,.3);
-    padding-right: 10px; border-right: 1px solid rgba(255,255,255,.1);
-    margin-right: 6px; flex-shrink: 0;
+  .score-panel-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
   }
-  .tn-btn {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 6px 11px; border-radius: 5px;
-    font-size: 10px; font-weight: 700; letter-spacing: .3px;
-    text-decoration: none; color: rgba(255,255,255,.75);
-    transition: background .15s, color .15s;
-    border: none; background: none; cursor: pointer;
-    font-family: Arial, sans-serif; flex-shrink: 0;
-    white-space: nowrap;
+  .score-panel-header .sh { margin: 0; }
+  .gauge-wrap { display: flex; justify-content: center; margin: 0 0 8px; }
+  .score-subs {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: auto;
   }
-  .tn-btn:hover  { background: rgba(255,255,255,.08); color: white; }
-  .tn-btn.active { background: rgba(255,255,255,.12); color: white; }
-  .tn-btn .tn-icon { font-size: 12px; }
-
+  .score-sub {
+    background: var(--gray-50); border-radius: var(--radius); padding: 6px 8px; text-align: center;
+  }
+  .score-sub-val { font-size: 13px; font-weight: 700; color: var(--navy); }
+  .score-sub-lbl { font-size: 9px; color: var(--gray-400); text-transform: uppercase; letter-spacing: .5px; margin-top: 1px; }
+  .activity-panel {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl); box-shadow: var(--shadow-md);
+    padding: 16px 20px; height: 100%; display: flex; flex-direction: column;
+    max-height: 380px;
+  }
+  .activity-panel .sh { margin: 0 0 10px; }
+  .activity-scroll {
+    flex: 1; overflow-y: auto; font-size: 13px; color: var(--gray-600); line-height: 1.6;
+  }
+  .chat-msg {
+    display: flex; gap: 8px; margin-bottom: 10px;
+  }
+  .chat-avatar {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: white; flex-shrink: 0; margin-top: 2px;
+  }
+  .chat-bubble {
+    background: var(--gray-50); border-radius: 0 10px 10px 10px; padding: 8px 12px;
+    max-width: 85%; font-size: 12.5px; line-height: 1.5; color: var(--navy);
+  }
+  .chat-bubble-mine { background: #EBF5FF; border-radius: 10px 0 10px 10px; margin-left: auto; }
+  .chat-author { font-size: 10px; font-weight: 700; color: var(--gray-500); margin-bottom: 2px; }
+  .chat-time { font-size: 9px; color: var(--gray-400); margin-top: 3px; }
+  .chat-reply-tag { font-size: 10px; color: var(--blue); margin-bottom: 3px; font-style: italic; }
+  .chat-input-row {
+    display: flex; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--gray-100);
+  }
+  .chat-input {
+    flex: 1; border: 1px solid var(--gray-200); border-radius: 16px; padding: 6px 12px;
+    font-size: 12px; outline: none; font-family: inherit;
+  }
+  .chat-input:focus { border-color: var(--blue); }
+  .chat-send {
+    background: var(--blue); color: white; border: none; border-radius: 50%;
+    width: 30px; height: 30px; cursor: pointer; font-size: 14px; display: flex;
+    align-items: center; justify-content: center;
+  }
+  .chat-send:hover { opacity: 0.85; }
+  /* Needs Attention panel */
+  .attention-panel {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl); box-shadow: var(--shadow-md);
+    padding: 16px 20px; height: 100%; display: flex; flex-direction: column;
+    max-height: 380px;
+  }
+  .attention-panel .sh { margin: 0 0 10px; }
+  .attention-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+  }
+  .attention-scroll { flex: 1; overflow-y: auto; }
+  .attention-category {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--gray-400); padding: 8px 0 4px; border-bottom: 1px solid var(--gray-100); margin-bottom: 4px;
+  }
+  .attention-category:first-child { padding-top: 0; }
+  .attention-badge {
+    display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 8px;
+    margin-left: 6px; vertical-align: middle;
+  }
+  .attention-badge.comp { background: #DBEAFE; color: #1E40AF; }
+  .attention-badge.fleet { background: #FEE2E2; color: #991B1B; }
+  .attention-badge.reviews { background: #FEF9C3; color: #92400E; }
+  .attention-badge.legal { background: #E0E7FF; color: #3730A3; }
+  .action-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 5px 0; border-bottom: 1px solid var(--gray-50); font-size: 12px;
+  }
+  .action-item:last-child { border-bottom: none; }
+  .action-dot {
+    width: 6px; height: 6px; border-radius: 50%; margin-top: 5px; flex-shrink: 0;
+  }
+  .action-dot.expired { background: #DC2626; }
+  .action-dot.urgent { background: #EA580C; }
+  .action-dot.warning { background: #D97706; }
+  .action-dot.missing { background: #6B7280; }
+  .action-name { font-weight: 600; color: var(--navy); }
+  .action-issue { color: var(--gray-500); }
+  .action-empty { color: var(--gray-400); font-size: 12px; padding: 12px 0; text-align: center; }
+  .attention-total-badge {
+    font-size: 10px; font-weight: 700; padding: 2px 10px; border-radius: 10px;
+    background: var(--gray-100); color: var(--gray-500);
+  }
+  .attention-total-badge.has-issues { background: #FEF2F2; color: #991B1B; }
 
   /* ══ DARK MODE ════════════════════════════════════════════ */
   body.dark { background: #111827; color: #F1F5F9; }
@@ -649,7 +723,7 @@ function toggleDarkMode() {
 
 <main>
   <div class="hub-columns">
-    <!-- LEFT COLUMN: Activity Feed -->
+    <!-- LEFT COLUMN: Chat Feed -->
     <div class="hub-col">
       <div class="activity-panel">
         <span class="sh">Activity Feed</span>
@@ -659,6 +733,18 @@ function toggleDarkMode() {
         <div class="chat-input-row">
           <input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendChat()">
           <button class="chat-send" onclick="sendChat()" title="Send">&#10148;</button>
+        </div>
+      </div>
+    </div>
+    <!-- CENTER COLUMN: Needs Attention -->
+    <div class="hub-col">
+      <div class="attention-panel">
+        <div class="attention-header">
+          <span class="sh">Needs Attention</span>
+          <span class="attention-total-badge" id="attentionTotalBadge">0</span>
+        </div>
+        <div class="attention-scroll" id="attentionList">
+          <div class="action-empty">Loading...</div>
         </div>
       </div>
     </div>
