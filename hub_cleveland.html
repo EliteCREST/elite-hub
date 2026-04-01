@@ -853,7 +853,7 @@ const PAGE_REGISTRY = [
     desc:   'Regional review scores, brand reputation tracking',
     icon:   '⭐',
     domain: 'reviews',
-    stats:  [{ id: 'rev-score', label: 'Avg Score' }, { id: 'rev-total', label: 'Reviews' }],
+    stats:  [{ id: 'rev-score', label: 'Score' }, { id: 'rev-s5', label: '★5' }, { id: 'rev-s4', label: '★4' }, { id: 'rev-s3', label: '★3' }, { id: 'rev-s2', label: '★2' }, { id: 'rev-s1', label: '★1' }],
     url:    'https://elitecrest.github.io/elite-hub/reviews.html?region=cleveland',
     badge:  'Live',
   },
@@ -991,6 +991,17 @@ function applyScorecard(d) {
   // Reviews
   if (d.reviews) {
     set('smReviews',  d.reviews.avgRating !== null ? Math.round(d.reviews.avgRating * 100) + '/500' : '—');
+    // Review tool card stats
+    if (d.reviews.avgRating !== null) {
+      const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+      el('stat-reviews-rev-score', Math.round(d.reviews.avgRating * 100) + '/500');
+      const sc = d.reviews.starCounts || {};
+      el('stat-reviews-rev-s5', sc.s5 || 0);
+      el('stat-reviews-rev-s4', sc.s4 || 0);
+      el('stat-reviews-rev-s3', sc.s3 || 0);
+      el('stat-reviews-rev-s2', sc.s2 || 0);
+      el('stat-reviews-rev-s1', sc.s1 || 0);
+    }
     set('kpiReviews', d.reviews.score !== null ? d.reviews.score + '/100' : '—');
   }
 
