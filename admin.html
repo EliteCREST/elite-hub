@@ -325,6 +325,17 @@
   /* Callout */
   body.dark .callout { background: #1E3A5F !important; border-color: #3B82F6 !important; color: #F1F5F9 !important; }
 
+  /* Notification panel & admin notes */
+  body.dark .notif-panel { background: #1F2937 !important; border-color: #374151 !important; }
+  body.dark .notif-panel div[style*="background:white"],
+  body.dark div[style*="background:white"] { background: #1F2937 !important; border-color: #374151 !important; }
+  body.dark textarea, body.dark select, body.dark input {
+    background: #111827 !important; color: #F1F5F9 !important; border-color: #374151 !important;
+  }
+  body.dark .notif-item { background: #1F2937 !important; border-color: #374151 !important; }
+  body.dark .notif-title { color: #F1F5F9 !important; }
+  body.dark .notif-meta { color: #9CA3AF !important; }
+
   /* Back nav */
   body.dark .back-nav { background: #0F172A !important; border-color: #1F2937 !important; }
   body.dark .back-nav a { color: #9CA3AF !important; }
@@ -453,7 +464,21 @@ function toggleDarkMode() {
   localStorage.setItem('eliteDarkMode', isDark ? 'dark' : 'light');
   const btn = document.getElementById('darkToggle');
   if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+  fixDarkInlineStyles();
 }
+function fixDarkInlineStyles() {
+  const isDark = document.body.classList.contains('dark');
+  document.querySelectorAll('div[style*="background:white"], div[style*="background: white"]').forEach(el => {
+    el.style.background = isDark ? '#1F2937' : 'white';
+    el.style.borderColor = isDark ? '#374151' : '';
+  });
+  document.querySelectorAll('select[style*="background:white"], select[style*="background: white"]').forEach(el => {
+    el.style.background = isDark ? '#111827' : 'white';
+    el.style.color = isDark ? '#F1F5F9' : '';
+    el.style.borderColor = isDark ? '#374151' : '';
+  });
+}
+window.addEventListener('DOMContentLoaded', fixDarkInlineStyles);
 </script>
 
 
