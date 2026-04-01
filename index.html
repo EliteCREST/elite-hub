@@ -373,6 +373,7 @@
     </div>
     <div class="hdr-divider"></div>
     <a class="admin-btn" id="adminBtn" href="https://elitecrest.github.io/elite-hub/admin.html" style="display:none;">⚙ Admin</a>
+    <a class="admin-btn" id="myDashBtn" href="#" style="display:none;">📋 My Dashboard</a>
     <button onclick="logout()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);padding:6px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.5px;" onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">Sign Out</button>
 </div>
 </header>
@@ -846,6 +847,14 @@ window.addEventListener('load', function() {
     // Admin button — Angel only
     var adminBtn = document.getElementById('adminBtn');
     if (adminBtn) adminBtn.style.display = (u.username||'').toLowerCase() === 'angel' ? '' : 'none';
+
+    // My Dashboard button — show for users with a non-index default page
+    var dashBtn = document.getElementById('myDashBtn');
+    var defaultPage = (u.default_page || 'index').replace('.html','');
+    if (dashBtn && defaultPage !== 'index') {
+      dashBtn.href = defaultPage + '.html';
+      dashBtn.style.display = '';
+    }
 
     // Region locks
     setTimeout(applyRegionLocks, 200);
