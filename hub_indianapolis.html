@@ -769,7 +769,7 @@ const PAGE_REGISTRY = [
     desc:   'GL/WC insurance, contractor tracking, expiry alerts',
     icon:   '📋',
     domain: 'comp',
-    stats:  [{ id: 'comp-total', label: 'Total' }, { id: 'comp-alerts', label: 'Alerts' }],
+    stats:  [{ id: 'comp-score', label: 'Score' }, { id: 'comp-expgl', label: 'Exp GL' }, { id: 'comp-expwc', label: 'Exp WC' }, { id: 'comp-missgl', label: 'No GL' }, { id: 'comp-misswc', label: 'No WC' }, { id: 'comp-expiring', label: 'Expiring' }],
     url:    'https://elitecrest.github.io/elite-hub/compliance.html?region=indianapolis',
     badge:  'Live',
   },
@@ -779,7 +779,7 @@ const PAGE_REGISTRY = [
     desc:   'Lawsuits, complaints, liens, and legal case tracking',
     icon:   '⚖️',
     domain: 'legal',
-    stats:  [{ id: 'lic-active', label: 'Active' }, { id: 'lic-expiring', label: 'Expiring' }],
+    stats:  [{ id: 'lic-score', label: 'Score' }, { id: 'lic-lawsuits', label: 'Lawsuits' }, { id: 'lic-ag', label: 'AG' }, { id: 'lic-bbb', label: 'BBB' }, { id: 'lic-roc', label: 'ROC' }, { id: 'lic-liens', label: 'Liens' }],
     url:    'https://elitecrest.github.io/elite-hub/legal.html?region=indianapolis',
     badge:  'Live',
   },
@@ -961,6 +961,27 @@ function applyScorecard(d) {
       el('stat-reviews-rev-s3', sc.s3 || 0);
       el('stat-reviews-rev-s2', sc.s2 || 0);
       el('stat-reviews-rev-s1', sc.s1 || 0);
+    }
+    // Compliance tool card stats
+    if (d.compliance && d.compliance.actions) {
+      const el3 = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+      el3('stat-compliance-comp-score', d.compliance.score !== null ? d.compliance.score + '/100' : '—');
+      const ca = d.compliance.actions;
+      el3('stat-compliance-comp-expgl', ca.filter(a => a.issue === 'GL expired').length);
+      el3('stat-compliance-comp-expwc', ca.filter(a => a.issue === 'WC expired').length);
+      el3('stat-compliance-comp-missgl', ca.filter(a => a.issue === 'GL missing').length);
+      el3('stat-compliance-comp-misswc', ca.filter(a => a.issue === 'WC missing').length);
+      el3('stat-compliance-comp-expiring', ca.filter(a => a.severity === 'urgent' || a.severity === 'warning').length);
+    }
+    // Litigation tool card stats
+    if (d.legal) {
+      const el2 = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+      el2('stat-licensing-lic-score', d.legal.score !== null ? d.legal.score + '/100' : '—');
+      el2('stat-licensing-lic-lawsuits', d.legal.actions ? d.legal.actions.filter(a => a.issue && a.issue.includes('lawsuit')).reduce((s,a) => s + (a.count||0), 0) : 0);
+      el2('stat-licensing-lic-ag', d.legal.actions ? d.legal.actions.filter(a => a.issue && a.issue.includes('AG')).reduce((s,a) => s + (a.count||0), 0) : 0);
+      el2('stat-licensing-lic-bbb', d.legal.actions ? d.legal.actions.filter(a => a.issue && a.issue.includes('BBB')).reduce((s,a) => s + (a.count||0), 0) : 0);
+      el2('stat-licensing-lic-roc', d.legal.actions ? d.legal.actions.filter(a => a.issue && a.issue.includes('ROC')).reduce((s,a) => s + (a.count||0), 0) : 0);
+      el2('stat-licensing-lic-liens', d.legal.actions ? d.legal.actions.filter(a => a.issue && a.issue.includes('lien')).reduce((s,a) => s + (a.count||0), 0) : 0);
     }
     set('kpiReviews', d.reviews.score !== null ? d.reviews.score + '/100' : '—');
   }
