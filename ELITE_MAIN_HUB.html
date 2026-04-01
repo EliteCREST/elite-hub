@@ -230,11 +230,11 @@
 
   .rc-stats {
     padding: 14px 20px;
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
   }
-  .rc-stat .rs-val { font-size: 15px; font-weight: 700; color: var(--navy); }
-  .rc-stat .rs-lbl { font-size: 10px; color: var(--gray-400); letter-spacing: .3px; text-transform: uppercase; margin-top: 1px; }
+  .rc-stat .rs-val { font-size: 13px; font-weight: 700; color: var(--navy); }
+  .rc-stat .rs-lbl { font-size: 9px; color: var(--gray-400); letter-spacing: .3px; text-transform: uppercase; margin-top: 1px; }
 
   .rc-footer {
     padding: 10px 20px;
@@ -754,8 +754,12 @@ function buildRegionCards() {
             <div class="rs-lbl">Fleet Score</div>
           </div>
           <div class="rc-stat">
-            <div class="rs-val">${d.reviewsScore !== undefined && d.reviewsScore !== null ? d.reviewsScore + '/100' : '—'}</div>
+            <div class="rs-val">${d.reviewsScore !== undefined && d.reviewsScore !== null ? Math.round(d.reviewsScore * 5) + '/500' : '—'}</div>
             <div class="rs-lbl">Reviews</div>
+          </div>
+          <div class="rc-stat">
+            <div class="rs-val">${d.licensingScore !== undefined && d.licensingScore !== null ? d.licensingScore + '/100' : '—'}</div>
+            <div class="rs-lbl">Legal</div>
           </div>
         </div>
         <div class="rc-footer">
