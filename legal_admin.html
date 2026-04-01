@@ -391,23 +391,22 @@ function toggleDarkMode() {
 <!-- TOOL NAV (dynamic) -->
 <script>
 (function(){
-  var rk = new URLSearchParams(window.location.search).get('region') || 'cleveland';
   var BASE = 'https://elitecrest.github.io/elite-hub';
   var PAGES = [
-    {key:'fleet',icon:'🚗',name:'Fleet',file:'fleet.html'},
-    {key:'compliance',icon:'📋',name:'Compliance',file:'compliance.html'},
-    {key:'legal',icon:'⚖️',name:'Legal',file:'legal.html'},
+    {key:'fleet',icon:'🚗',name:'Fleet',file:'fleet_admin.html'},
+    {key:'compliance',icon:'📋',name:'Compliance',file:'compliance_admin.html'},
+    {key:'legal',icon:'⚖️',name:'Legal',file:'legal_admin.html',active:true},
     {key:'upt',icon:'🏷️',name:'Pricing',file:null},
     {key:'cfb',icon:'📊',name:'CFB',file:null},
-    {key:'reviews',icon:'⭐',name:'Reviews',file:'reviews.html'},
+    {key:'reviews',icon:'⭐',name:'Reviews',file:'reviews_admin.html'},
     {key:'invoice-parser',icon:'🔍',name:'Invoices',file:null},
-    {key:'documents',icon:'📁',name:'Documents',file:'documents.html'},
+    {key:'documents',icon:'📁',name:'Documents',file:'documents_admin.html'},
   ];
   var nav = document.createElement('nav');
   nav.className = 'tool-nav';
   nav.innerHTML = '<span class="tool-nav-label">Tools</span>' + PAGES.map(function(p) {
-    var url = p.file ? BASE+'/'+p.file+'?region='+rk : null;
-    var active = '' // admin view, no active highlight;
+    var url = p.file ? BASE+'/'+p.file : null;
+    var active = p.active ? ' active' : '';
     return url
       ? '<a class="tn-btn'+active+'" href="'+url+'"><span class="tn-icon">'+p.icon+'</span>'+p.name+'</a>'
       : '<span class="tn-btn" style="display:none;" title="Coming soon"><span class="tn-icon">'+p.icon+'</span>'+p.name+'</span>';
