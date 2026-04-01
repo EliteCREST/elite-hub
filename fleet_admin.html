@@ -599,14 +599,8 @@ function toggleDarkMode() {
   </div>
 </header>
 <div class="sub-bar"></div>
-<nav class="tool-nav"><span class="tool-nav-label">Tools</span><a class="tn-btn active tn-dynamic" data-file="fleet.html"><span class="tn-icon">🚗</span>Fleet</a><a class="tn-btn tn-dynamic" data-file="compliance.html"><span class="tn-icon">📋</span>Compliance</a><span class="tn-btn" style="display:none;" title="Coming soon"><span class="tn-icon">⚖️</span>Licensing</span><span class="tn-btn" style="display:none;" title="Coming soon"><span class="tn-icon">🏷️</span>Pricing</span><span class="tn-btn" style="display:none;" title="Coming soon"><span class="tn-icon">📊</span>CFB</span><a class="tn-btn tn-dynamic" data-file="reviews.html"><span class="tn-icon">⭐</span>Reviews</a><span class="tn-btn" style="display:none;" title="Coming soon"><span class="tn-icon">🔍</span>Invoices</span><a class="tn-btn tn-dynamic" data-file="documents.html"><span class="tn-icon">📁</span>Documents</a></nav><script>
-(function(){
-  var rk = new URLSearchParams(window.location.search).get('region') || 'cleveland';
-  document.querySelectorAll('.tn-dynamic').forEach(function(a){
-    a.href = 'https://elitecrest.github.io/elite-hub/' + a.dataset.file + '?region=' + rk;
-  });
-})();
-</script>
+<nav class="tool-nav"><span class="tool-nav-label">Tools</span><a class="tn-btn active" href="https://elitecrest.github.io/elite-hub/fleet_admin.html"><span class="tn-icon">🚗</span>Fleet</a><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/compliance_admin.html"><span class="tn-icon">📋</span>Compliance</a><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/legal_admin.html"><span class="tn-icon">⚖️</span>Legal</a><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/reviews_admin.html"><span class="tn-icon">⭐</span>Reviews</a><a class="tn-btn" href="https://elitecrest.github.io/elite-hub/documents_admin.html"><span class="tn-icon">📁</span>Documents</a></nav>
+
 
 <!-- BACK NAV -->
 <nav class="back-nav">
