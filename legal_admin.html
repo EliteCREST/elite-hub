@@ -439,14 +439,12 @@ function toggleDarkMode() {
     </div>
   </div>
   <div class="kpi-grid">
-    <div class="kpi-card"><div class="kpi-icon">⚖️</div><div class="kpi-label">Total Cases</div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-sub">All time</div></div>
-    <div class="kpi-card"><div class="kpi-icon">🔴</div><div class="kpi-label">Open</div><div class="kpi-value" id="kpiOpen">—</div><div class="kpi-sub">Needs action</div></div>
-    <div class="kpi-card"><div class="kpi-icon">🔄</div><div class="kpi-label">In Progress</div><div class="kpi-value" id="kpiProgress">—</div><div class="kpi-sub">Active</div></div>
-    <div class="kpi-card"><div class="kpi-icon">✅</div><div class="kpi-label">Closed</div><div class="kpi-value" id="kpiClosed">—</div><div class="kpi-sub">Resolved</div></div>
-    <div class="kpi-card"><div class="kpi-icon">💰</div><div class="kpi-label">At Stake</div><div class="kpi-value" id="kpiAtStake">—</div><div class="kpi-sub">Open + in progress</div></div>
-    <div class="kpi-card"><div class="kpi-icon">⚠️</div><div class="kpi-label">Lawsuits</div><div class="kpi-value" id="kpiLawsuits">—</div><div class="kpi-sub">Active suits</div></div>
-    <div class="kpi-card"><div class="kpi-icon">📋</div><div class="kpi-label">Complaints</div><div class="kpi-value" id="kpiComplaints">—</div><div class="kpi-sub">AG / BBB / ROC</div></div>
-    <div class="kpi-card"><div class="kpi-icon">🏠</div><div class="kpi-label">Liens</div><div class="kpi-value" id="kpiLiens">—</div><div class="kpi-sub">Active liens</div></div>
+    <div class="kpi-card"><div class="kpi-icon">⚖️</div><div class="kpi-label">Lawsuits</div><div class="kpi-value" id="kpiLawsuits">—</div><div class="kpi-sub">Active</div></div>
+    <div class="kpi-card"><div class="kpi-icon">🏛️</div><div class="kpi-label">AG Complaints</div><div class="kpi-value" id="kpiAG">—</div><div class="kpi-sub">Active</div></div>
+    <div class="kpi-card"><div class="kpi-icon">📋</div><div class="kpi-label">BBB Complaints</div><div class="kpi-value" id="kpiBBB">—</div><div class="kpi-sub">Active</div></div>
+    <div class="kpi-card"><div class="kpi-icon">🔧</div><div class="kpi-label">ROC Complaints</div><div class="kpi-value" id="kpiROC">—</div><div class="kpi-sub">Active</div></div>
+    <div class="kpi-card"><div class="kpi-icon">🏠</div><div class="kpi-label">Liens</div><div class="kpi-value" id="kpiLiens">—</div><div class="kpi-sub">Active</div></div>
+    <div class="kpi-card"><div class="kpi-icon">📊</div><div class="kpi-label">Total Active</div><div class="kpi-value" id="kpiTotalActive">—</div><div class="kpi-sub">All types</div></div>
   </div>
 
   <!-- FILTER BAR -->
@@ -674,26 +672,22 @@ function renderAll() {
 }
 
 function updateKPIs() {
-  const total      = allCases.length;
-  const open       = allCases.filter(c => c.status.toLowerCase() === 'open').length;
-  const progress   = allCases.filter(c => c.status.toLowerCase() === 'in progress').length;
-  const closed     = allCases.filter(c => c.status.toLowerCase() === 'closed').length;
-  const atStake    = allCases.filter(c => ['open','in progress'].includes(c.status.toLowerCase()))
-                             .reduce((s, c) => s + (parseFloat(c.amount) || 0), 0);
-  const lawsuits   = allCases.filter(c => c.type.toLowerCase().includes('lawsuit')).length;
-  const complaints = allCases.filter(c => c.type.toLowerCase().includes('complaint')).length;
-  const liens      = allCases.filter(c => c.type.toLowerCase().includes('lien')).length;
+  const active = allCases.filter(c => c.status.toLowerCase() !== 'closed');
+  const lawsuits = active.filter(c => c.type.toLowerCase().includes('lawsuit')).length;
+  const ag       = active.filter(c => c.type.toLowerCase() === 'ag complaint').length;
+  const bbb      = active.filter(c => c.type.toLowerCase() === 'bbb complaint').length;
+  const roc      = active.filter(c => c.type.toLowerCase() === 'roc complaint').length;
+  const liens    = active.filter(c => c.type.toLowerCase().includes('lien')).length;
+  const totalActive = active.length;
 
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  set('kpiTotal',      total);
-  set('kpiOpen',       open);
-  set('kpiProgress',   progress);
-  set('kpiClosed',     closed);
-  set('kpiAtStake',    atStake > 0 ? '$' + atStake.toLocaleString('en-US', {minimumFractionDigits:0}) : '—');
-  set('kpiLawsuits',   lawsuits);
-  set('kpiComplaints', complaints);
-  set('kpiLiens',      liens);
-  set('hdrOpen',       open);
+  set('kpiLawsuits',    lawsuits);
+  set('kpiAG',          ag);
+  set('kpiBBB',         bbb);
+  set('kpiROC',         roc);
+  set('kpiLiens',       liens);
+  set('kpiTotalActive', totalActive);
+  set('hdrOpen',        totalActive);
 }
 
 /* ══ FILTERS & SORT ══════════════════════════════════════════ */
