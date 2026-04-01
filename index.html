@@ -522,10 +522,10 @@ const REGIONS = [
 
 /* ── SCORING THRESHOLDS (same for all regions) ───── */
 const SCORE_RANGES = {
-  excellent: { min: 750, max: 850 },
-  good:      { min: 600, max: 749 },
-  fair:      { min: 450, max: 599 },
-  poor:      { min: 300, max: 449 },
+  excellent: { min: 960, max: 1200 },
+  good:      { min: 720, max: 959 },
+  fair:      { min: 480, max: 719 },
+  poor:      { min: 0,   max: 479 },
 };
 
 /* ══════════════════════════════════════════════════════
@@ -552,13 +552,13 @@ const sortDir   = -1;
 
 function scoreClass(s) {
   if (s === null) return '';
-  if (s >= 750) return 'excellent';
-  if (s >= 600) return 'good';
-  if (s >= 450) return 'fair';
+  if (s >= 960) return 'excellent';
+  if (s >= 720) return 'good';
+  if (s >= 480) return 'fair';
   return 'poor';
 }
 function fillClass(s) { return 'fill-' + (scoreClass(s) || 'good'); }
-function scorePct(s)  { return s ? Math.round(((s - 300) / 550) * 100) : 0; }
+function scorePct(s)  { return s !== null ? Math.round((s / 1200) * 100) : 0; }
 
 function buildLeaderboard() {
   buildPodium();
@@ -593,7 +593,7 @@ function buildPodium() {
           <div class="pc-state">${r.state}</div>
           <div class="pc-score-row">
             <span class="pc-score-num" style="color:${color}">${r.score !== null ? r.score : '—'}</span>
-            <span class="pc-score-max">/850</span>
+            <span class="pc-score-max">/1200</span>
           </div>
           <div class="pc-bar-track">
             <div class="pc-bar-fill" style="width:${pct}%;background:${color};"></div>
@@ -632,7 +632,7 @@ function buildRegionCards() {
         <div class="rc-score-bar">
           <div class="rc-score-row">
             <span class="rc-score-label">Health Score</span>
-            <span class="rc-score-val score-${sc}">${d.score !== null ? d.score : '—'}<span style="font-size:12px;font-weight:400;color:var(--gray-400)">/850</span></span>
+            <span class="rc-score-val score-${sc}">${d.score !== null ? d.score : '—'}<span style="font-size:12px;font-weight:400;color:var(--gray-400)">/1200</span></span>
           </div>
           <div class="rc-bar-track">
             <div class="rc-bar-fill ${fillClass(d.score)}" style="width:${pct}%"></div>
