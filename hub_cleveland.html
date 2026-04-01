@@ -735,28 +735,13 @@ function toggleDarkMode() {
     </div>
   </div>
 
-  <!-- KPI STRIP -->
-  <div class="section-row">
-    <span class="sh">Region KPIs</span>
-    <button onclick="syncData()" style="background:none;border:1px solid var(--gray-200);border-radius:var(--radius);padding:5px 12px;font-size:11px;font-weight:700;color:var(--gray-600);cursor:pointer;letter-spacing:.5px;text-transform:uppercase;">↻ Sync</button>
-  </div>
-  <div class="kpi-grid">
-    <div class="kpi-card"><div class="kpi-icon">📋</div><div class="kpi-label">Contractors</div><div class="kpi-value" id="kpiContractors">—</div></div>
-    <div class="kpi-card"><div class="kpi-icon">✅</div><div class="kpi-label">Compliant</div><div class="kpi-value" id="kpiCompliant">—</div></div>
-    <div class="kpi-card"><div class="kpi-icon">📊</div><div class="kpi-label">Comp. Score</div><div class="kpi-value" id="kpiCompScore">—</div></div>
-    <div class="kpi-card"><div class="kpi-icon">⚠️</div><div class="kpi-label">Alerts</div><div class="kpi-value" id="kpiAlerts">—</div></div>
-    <div class="kpi-card"><div class="kpi-icon">🚗</div><div class="kpi-label">Fleet</div><div class="kpi-value" id="kpiFleet">—</div></div>
-    <div class="kpi-card"><div class="kpi-icon">🛡️</div><div class="kpi-label">Safety Score</div><div class="kpi-value" id="kpiSafety">—</div></div>
-    <div class="kpi-card"><div class="kpi-icon">⭐</div><div class="kpi-label">Reviews</div><div class="kpi-value" id="kpiReviews">—<span class="unit">/5</span></div></div>
-    <div class="kpi-card"><div class="kpi-icon">📊</div><div class="kpi-label">Open CFB</div><div class="kpi-value" id="kpiCFB">—</div></div>
-    <div class="kpi-card"><div class="kpi-icon">⚖️</div><div class="kpi-label">Licenses</div><div class="kpi-value" id="kpiLicenses">—</div></div>
-    <div class="kpi-card"><div class="kpi-icon">🏁</div><div class="kpi-label">Nat'l Rank</div><div class="kpi-value" id="kpiRank">—<span class="unit">/9</span></div></div>
-  </div>
-
-  <!-- SUB-PAGES -->
+  <!-- REGION TOOLS -->
   <div class="section-row">
     <span class="sh">Region Tools</span>
-    <span class="sr-right">All tools scoped to <span id="toolsRegionName">this region</span></span>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span class="sr-right">All tools scoped to <span id="toolsRegionName">this region</span></span>
+      <button onclick="syncData()" style="background:none;border:1px solid var(--gray-200);border-radius:var(--radius);padding:5px 12px;font-size:11px;font-weight:700;color:var(--gray-600);cursor:pointer;letter-spacing:.5px;text-transform:uppercase;">↻ Sync</button>
+    </div>
   </div>
   <div class="tiles-grid" id="tilesGrid">
     <!-- Built by JS from PAGE_REGISTRY -->

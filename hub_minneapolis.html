@@ -706,28 +706,13 @@ function toggleDarkMode() {
   <span id="smNational" style="display:none;">—</span>
 
 
-  <!-- KPI STRIP -->
-  <div class="section-row">
-    <span class="sh">Region KPIs</span>
-    <button onclick="syncData()" style="background:none;border:1px solid var(--gray-200);border-radius:var(--radius);padding:5px 12px;font-size:11px;font-weight:700;color:var(--gray-600);cursor:pointer;letter-spacing:.5px;text-transform:uppercase;">↻ Sync</button>
-  </div>
-  <div class="kpi-grid">
-    <div class="kpi-card"><div class="kpi-icon">📋</div><div class="kpi-label">Contractors</div><div class="kpi-value" id="kpiContractors">—</div></div>
-    <div class="kpi-card"><div class="kpi-icon">✅</div><div class="kpi-label">Compliant</div><div class="kpi-value" id="kpiCompliant">—</div></div>
-    <div class="kpi-card"><div class="kpi-icon">📊</div><div class="kpi-label">Comp. Score</div><div class="kpi-value" id="kpiCompScore">—</div></div>
-    <div class="kpi-card"><div class="kpi-icon">⚠️</div><div class="kpi-label">Alerts</div><div class="kpi-value" id="kpiAlerts">—</div></div>
-    <div class="kpi-card"><div class="kpi-icon">🚗</div><div class="kpi-label">Fleet</div><div class="kpi-value" id="kpiFleet">—</div></div>
-    <div class="kpi-card"><div class="kpi-icon">🛡️</div><div class="kpi-label">Safety Score</div><div class="kpi-value" id="kpiSafety">—</div></div>
-    <div class="kpi-card"><div class="kpi-icon">⭐</div><div class="kpi-label">Reviews</div><div class="kpi-value" id="kpiReviews">—<span class="unit">/5</span></div></div>
-    <div class="kpi-card"><div class="kpi-icon">📊</div><div class="kpi-label">Open CFB</div><div class="kpi-value" id="kpiCFB">—</div></div>
-    <div class="kpi-card"><div class="kpi-icon">⚖️</div><div class="kpi-label">Licenses</div><div class="kpi-value" id="kpiLicenses">—</div></div>
-    <div class="kpi-card"><div class="kpi-icon">🏁</div><div class="kpi-label">Nat'l Rank</div><div class="kpi-value" id="kpiRank">—<span class="unit">/9</span></div></div>
-  </div>
-
-  <!-- SUB-PAGES -->
+  <!-- REGION TOOLS -->
   <div class="section-row">
     <span class="sh">Region Tools</span>
-    <span class="sr-right">All tools scoped to <span id="toolsRegionName">this region</span></span>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span class="sr-right">All tools scoped to <span id="toolsRegionName">this region</span></span>
+      <button onclick="syncData()" style="background:none;border:1px solid var(--gray-200);border-radius:var(--radius);padding:5px 12px;font-size:11px;font-weight:700;color:var(--gray-600);cursor:pointer;letter-spacing:.5px;text-transform:uppercase;">↻ Sync</button>
+    </div>
   </div>
   <div class="tiles-grid" id="tilesGrid">
     <!-- Built by JS from PAGE_REGISTRY -->
@@ -824,7 +809,7 @@ const PAGE_REGISTRY = [
     desc:   'Regional review scores, brand reputation tracking',
     icon:   '⭐',
     domain: 'reviews',
-    stats:  [{ id: 'rev-score', label: 'Avg Score' }, { id: 'rev-total', label: 'Reviews' }],
+    stats:  [{ id: 'rev-score', label: 'Score' }, { id: 'rev-s5', label: '★5' }, { id: 'rev-s4', label: '★4' }, { id: 'rev-s3', label: '★3' }, { id: 'rev-s2', label: '★2' }, { id: 'rev-s1', label: '★1' }],
     url:    'https://elitecrest.github.io/elite-hub/reviews.html?region=minneapolis',
     badge:  'Live',
   },
@@ -962,6 +947,17 @@ function applyScorecard(d) {
   // Reviews
   if (d.reviews) {
     set('smReviews',  d.reviews.avgRating !== null ? Math.round(d.reviews.avgRating * 100) + '/500' : '—');
+    // Review tool card stats
+    if (d.reviews.avgRating !== null) {
+      const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+      el('stat-reviews-rev-score', Math.round(d.reviews.avgRating * 100) + '/500');
+      const sc = d.reviews.starCounts || {};
+      el('stat-reviews-rev-s5', sc.s5 || 0);
+      el('stat-reviews-rev-s4', sc.s4 || 0);
+      el('stat-reviews-rev-s3', sc.s3 || 0);
+      el('stat-reviews-rev-s2', sc.s2 || 0);
+      el('stat-reviews-rev-s1', sc.s1 || 0);
+    }
     set('kpiReviews', d.reviews.score !== null ? d.reviews.score + '/100' : '—');
   }
 
