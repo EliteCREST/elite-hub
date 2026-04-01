@@ -397,7 +397,6 @@
     .elite-header { grid-template-columns: 4px 1fr auto; }
     .header-logo { display: none; }
     .hub-columns { grid-template-columns: 1fr; }
-    .action-grid { grid-template-columns: 1fr 1fr; }
   }
 
   /* ══ TOOL NAV BAR ══════════════════════════════════════════ */
@@ -536,7 +535,7 @@
 
 
   /* Hub-specific dark mode */
-  body.dark .score-panel, body.dark .activity-panel, body.dark .action-panel {
+  body.dark .score-panel, body.dark .activity-panel, body.dark .attention-panel {
     background: #1F2937 !important; border-color: #374151 !important;
   }
   body.dark .score-panel * { color: #F1F5F9 !important; }
@@ -550,7 +549,8 @@
   body.dark .action-name { color: #F1F5F9 !important; }
   body.dark .action-issue { color: #9CA3AF !important; }
   body.dark .action-item { border-color: #374151 !important; }
-  body.dark .activity-scroll { color: #D1D5DB !important; }
+  body.dark .attention-category { color: #9CA3AF !important; border-color: #374151 !important; }
+
   body.dark .chat-bubble { background: #374151 !important; color: #F1F5F9 !important; }
   body.dark .chat-bubble-mine { background: #1E3A5F !important; }
   body.dark .chat-input { background: #374151 !important; border-color: #4B5563 !important; color: #F1F5F9 !important; }
@@ -970,43 +970,70 @@ function applyScorecard(d) {
   set('smNational', d.rank ? '#' + d.rank : '—');
   set('kpiRank',    d.rank || '—');
 
-  // ── Action Items ──
-  renderActions('compActions', 'compActionBadge', d.compliance ? d.compliance.actions : [], true);
-  renderActions('fleetActions', 'fleetActionBadge', d.fleet ? d.fleet.actions : [], false);
-  renderActions('reviewActions', 'reviewActionBadge', d.reviews ? d.reviews.actions : [], false);
-  renderActions('legalActions', 'legalActionBadge', d.legal ? d.legal.actions : [], false);
+  // ── Combined Needs Attention Panel ──
+  renderAttention(d);
 }
 
-function renderActions(containerId, badgeId, actions, isDetailed) {
-  const container = document.getElementById(containerId);
-  const badge = document.getElementById(badgeId);
+function renderAttention(d) {
+  const container = document.getElementById('attentionList');
+  const badge = document.getElementById('attentionTotalBadge');
   if (!container) return;
 
-  const count = isDetailed ? actions.length : actions.reduce((s, a) => s + (a.count || 1), 0);
-  if (badge) {
-    badge.textContent = count;
-    badge.className = 'action-panel-badge' + (count > 0 ? ' has-issues' : '');
-  }
+  let html = '';
+  let totalCount = 0;
 
-  if (!actions || actions.length === 0) {
-    container.innerHTML = '<div class="action-empty">All clear</div>';
-    return;
-  }
-
-  if (isDetailed) {
-    container.innerHTML = actions.map(a =>
-      '<div class="action-item">' +
-        '<div class="action-dot ' + (a.severity || '') + '"></div>' +
-        '<div><span class="action-name">' + (a.name || '') + '</span><br><span class="action-issue">' + (a.issue || '') + '</span></div>' +
-      '</div>'
+  // Compliance
+  const compActions = d.compliance ? d.compliance.actions || [] : [];
+  if (compActions.length > 0) {
+    html += '<div class="attention-category">Compliance <span class="attention-badge comp">' + compActions.length + '</span></div>';
+    html += compActions.map(a =>
+      '<div class="action-item"><div class="action-dot ' + (a.severity || '') + '"></div><div><span class="action-name">' + (a.name || '') + '</span><br><span class="action-issue">' + (a.issue || '') + '</span></div></div>'
     ).join('');
+    totalCount += compActions.length;
+  }
+
+  // Fleet
+  const fleetActions = d.fleet ? d.fleet.actions || [] : [];
+  if (fleetActions.length > 0) {
+    const fleetTotal = fleetActions.reduce((s, a) => s + (a.count || 1), 0);
+    html += '<div class="attention-category">Fleet <span class="attention-badge fleet">' + fleetTotal + '</span></div>';
+    html += fleetActions.map(a =>
+      '<div class="action-item"><div class="action-dot ' + (a.severity || '') + '"></div><div><span class="action-name">' + (a.count || 0) + ' ' + (a.issue || '') + '</span></div></div>'
+    ).join('');
+    totalCount += fleetTotal;
+  }
+
+  // Reviews
+  const reviewActions = d.reviews ? d.reviews.actions || [] : [];
+  if (reviewActions.length > 0) {
+    const reviewTotal = reviewActions.reduce((s, a) => s + (a.count || 1), 0);
+    html += '<div class="attention-category">Reviews <span class="attention-badge reviews">' + reviewTotal + '</span></div>';
+    html += reviewActions.map(a =>
+      '<div class="action-item"><div class="action-dot ' + (a.severity || '') + '"></div><div><span class="action-name">' + (a.count || 0) + ' ' + (a.issue || '') + '</span></div></div>'
+    ).join('');
+    totalCount += reviewTotal;
+  }
+
+  // Legal
+  const legalActions = d.legal ? d.legal.actions || [] : [];
+  if (legalActions.length > 0) {
+    const legalTotal = legalActions.reduce((s, a) => s + (a.count || 1), 0);
+    html += '<div class="attention-category">Legal <span class="attention-badge legal">' + legalTotal + '</span></div>';
+    html += legalActions.map(a =>
+      '<div class="action-item"><div class="action-dot ' + (a.severity || '') + '"></div><div><span class="action-name">' + (a.count || 0) + ' ' + (a.issue || '') + '</span></div></div>'
+    ).join('');
+    totalCount += legalTotal;
+  }
+
+  if (!html) {
+    container.innerHTML = '<div class="action-empty">All clear — no issues found</div>';
   } else {
-    container.innerHTML = actions.map(a =>
-      '<div class="action-item">' +
-        '<div class="action-dot ' + (a.severity || '') + '"></div>' +
-        '<div><span class="action-name">' + (a.count || 0) + ' ' + (a.issue || '') + '</span></div>' +
-      '</div>'
-    ).join('');
+    container.innerHTML = html;
+  }
+
+  if (badge) {
+    badge.textContent = totalCount;
+    badge.className = 'attention-total-badge' + (totalCount > 0 ? ' has-issues' : '');
   }
 }
 

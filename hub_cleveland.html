@@ -188,7 +188,7 @@
 
   /* ══ HEALTH SCORE HERO ════════════════════════ */
   .hub-columns {
-    display: grid; grid-template-columns: 1fr 380px; gap: 16px; margin-bottom: 16px;
+    display: grid; grid-template-columns: 1fr 1fr 380px; gap: 16px; margin-bottom: 16px;
   }
   .hub-col { min-width: 0; }
   .score-panel {
@@ -213,7 +213,7 @@
     background: white; border: 1px solid var(--gray-200);
     border-radius: var(--radius-xl); box-shadow: var(--shadow-md);
     padding: 16px 20px; height: 100%; display: flex; flex-direction: column;
-    max-height: 340px;
+    max-height: 380px;
   }
   .activity-panel .sh { margin: 0 0 10px; }
   .activity-scroll {
@@ -249,31 +249,34 @@
     align-items: center; justify-content: center;
   }
   .chat-send:hover { opacity: 0.85; }
-  .action-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;
-  }
-  .action-panel {
+  /* Needs Attention panel */
+  .attention-panel {
     background: white; border: 1px solid var(--gray-200);
     border-radius: var(--radius-xl); box-shadow: var(--shadow-md);
-    padding: 14px 16px; display: flex; flex-direction: column;
-    max-height: 260px;
+    padding: 16px 20px; height: 100%; display: flex; flex-direction: column;
+    max-height: 380px;
   }
-  .action-panel-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--gray-100);
+  .attention-panel .sh { margin: 0 0 10px; }
+  .attention-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
   }
-  .action-panel-title { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--navy); }
-  .action-panel-badge {
-    font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px;
-    background: var(--gray-100); color: var(--gray-500);
+  .attention-scroll { flex: 1; overflow-y: auto; }
+  .attention-category {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--gray-400); padding: 8px 0 4px; border-bottom: 1px solid var(--gray-100); margin-bottom: 4px;
   }
-  .action-panel-badge.has-issues { background: #FEF2F2; color: #991B1B; }
-  .action-scroll {
-    flex: 1; overflow-y: auto;
+  .attention-category:first-child { padding-top: 0; }
+  .attention-badge {
+    display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 8px;
+    margin-left: 6px; vertical-align: middle;
   }
+  .attention-badge.comp { background: #DBEAFE; color: #1E40AF; }
+  .attention-badge.fleet { background: #FEE2E2; color: #991B1B; }
+  .attention-badge.reviews { background: #FEF9C3; color: #92400E; }
+  .attention-badge.legal { background: #E0E7FF; color: #3730A3; }
   .action-item {
     display: flex; align-items: flex-start; gap: 8px;
-    padding: 6px 0; border-bottom: 1px solid var(--gray-50); font-size: 12px;
+    padding: 5px 0; border-bottom: 1px solid var(--gray-50); font-size: 12px;
   }
   .action-item:last-child { border-bottom: none; }
   .action-dot {
@@ -286,6 +289,11 @@
   .action-name { font-weight: 600; color: var(--navy); }
   .action-issue { color: var(--gray-500); }
   .action-empty { color: var(--gray-400); font-size: 12px; padding: 12px 0; text-align: center; }
+  .attention-total-badge {
+    font-size: 10px; font-weight: 700; padding: 2px 10px; border-radius: 10px;
+    background: var(--gray-100); color: var(--gray-500);
+  }
+  .attention-total-badge.has-issues { background: #FEF2F2; color: #991B1B; }
 
   /* ══ KPI GRID ════════════════════════════════ */
   .kpi-grid {
@@ -395,7 +403,6 @@
     .elite-header { grid-template-columns: 4px 1fr auto; }
     .header-logo { display: none; }
     .hub-columns { grid-template-columns: 1fr; }
-    .action-grid { grid-template-columns: 1fr 1fr; }
   }
 
   /* ══ TOOL NAV BAR ══════════════════════════════════════════ */
@@ -534,7 +541,7 @@
 
 
   /* Hub-specific dark mode */
-  body.dark .score-panel, body.dark .activity-panel, body.dark .action-panel {
+  body.dark .score-panel, body.dark .activity-panel, body.dark .attention-panel {
     background: #1F2937 !important; border-color: #374151 !important;
   }
   body.dark .score-panel * { color: #F1F5F9 !important; }
@@ -548,6 +555,7 @@
   body.dark .action-name { color: #F1F5F9 !important; }
   body.dark .action-issue { color: #9CA3AF !important; }
   body.dark .action-item { border-color: #374151 !important; }
+  body.dark .attention-category { color: #9CA3AF !important; border-color: #374151 !important; }
   body.dark .activity-scroll { color: #D1D5DB !important; }
   body.dark .chat-bubble { background: #374151 !important; color: #F1F5F9 !important; }
   body.dark .chat-bubble-mine { background: #1E3A5F !important; }
@@ -658,6 +666,18 @@ function toggleDarkMode() {
         </div>
       </div>
     </div>
+    <!-- CENTER COLUMN: Needs Attention -->
+    <div class="hub-col">
+      <div class="attention-panel">
+        <div class="attention-header">
+          <span class="sh">Needs Attention</span>
+          <span class="attention-total-badge" id="attentionTotalBadge">0</span>
+        </div>
+        <div class="attention-scroll" id="attentionList">
+          <div class="action-empty">Loading...</div>
+        </div>
+      </div>
+    </div>
     <!-- RIGHT COLUMN: Health Score Gauge -->
     <div class="hub-col">
       <div class="score-panel">
@@ -702,38 +722,6 @@ function toggleDarkMode() {
   <span id="scoreGrade" style="display:none;">—</span>
   <span id="smFleet" style="display:none;">—</span>
   <span id="smNational" style="display:none;">—</span>
-
-  <!-- ACTION ITEMS -->
-  <div class="action-grid">
-    <div class="action-panel">
-      <div class="action-panel-header">
-        <span class="action-panel-title">Compliance</span>
-        <span class="action-panel-badge" id="compActionBadge">0</span>
-      </div>
-      <div class="action-scroll" id="compActions"><div class="action-empty">No issues</div></div>
-    </div>
-    <div class="action-panel">
-      <div class="action-panel-header">
-        <span class="action-panel-title">Fleet</span>
-        <span class="action-panel-badge" id="fleetActionBadge">0</span>
-      </div>
-      <div class="action-scroll" id="fleetActions"><div class="action-empty">No issues</div></div>
-    </div>
-    <div class="action-panel">
-      <div class="action-panel-header">
-        <span class="action-panel-title">Reviews</span>
-        <span class="action-panel-badge" id="reviewActionBadge">0</span>
-      </div>
-      <div class="action-scroll" id="reviewActions"><div class="action-empty">No issues</div></div>
-    </div>
-    <div class="action-panel">
-      <div class="action-panel-header">
-        <span class="action-panel-title">Legal</span>
-        <span class="action-panel-badge" id="legalActionBadge">0</span>
-      </div>
-      <div class="action-scroll" id="legalActions"><div class="action-empty">No issues</div></div>
-    </div>
-  </div>
 
   <!-- REGION TOOLS -->
   <div class="section-row">
@@ -999,43 +987,70 @@ function applyScorecard(d) {
   set('smNational', d.rank ? '#' + d.rank : '—');
   set('kpiRank',    d.rank || '—');
 
-  // ── Action Items ──
-  renderActions('compActions', 'compActionBadge', d.compliance ? d.compliance.actions : [], true);
-  renderActions('fleetActions', 'fleetActionBadge', d.fleet ? d.fleet.actions : [], false);
-  renderActions('reviewActions', 'reviewActionBadge', d.reviews ? d.reviews.actions : [], false);
-  renderActions('legalActions', 'legalActionBadge', d.legal ? d.legal.actions : [], false);
+  // ── Combined Needs Attention Panel ──
+  renderAttention(d);
 }
 
-function renderActions(containerId, badgeId, actions, isDetailed) {
-  const container = document.getElementById(containerId);
-  const badge = document.getElementById(badgeId);
+function renderAttention(d) {
+  const container = document.getElementById('attentionList');
+  const badge = document.getElementById('attentionTotalBadge');
   if (!container) return;
 
-  const count = isDetailed ? actions.length : actions.reduce((s, a) => s + (a.count || 1), 0);
-  if (badge) {
-    badge.textContent = count;
-    badge.className = 'action-panel-badge' + (count > 0 ? ' has-issues' : '');
-  }
+  let html = '';
+  let totalCount = 0;
 
-  if (!actions || actions.length === 0) {
-    container.innerHTML = '<div class="action-empty">All clear</div>';
-    return;
-  }
-
-  if (isDetailed) {
-    container.innerHTML = actions.map(a =>
-      '<div class="action-item">' +
-        '<div class="action-dot ' + (a.severity || '') + '"></div>' +
-        '<div><span class="action-name">' + (a.name || '') + '</span><br><span class="action-issue">' + (a.issue || '') + '</span></div>' +
-      '</div>'
+  // Compliance
+  const compActions = d.compliance ? d.compliance.actions || [] : [];
+  if (compActions.length > 0) {
+    html += '<div class="attention-category">Compliance <span class="attention-badge comp">' + compActions.length + '</span></div>';
+    html += compActions.map(a =>
+      '<div class="action-item"><div class="action-dot ' + (a.severity || '') + '"></div><div><span class="action-name">' + (a.name || '') + '</span><br><span class="action-issue">' + (a.issue || '') + '</span></div></div>'
     ).join('');
+    totalCount += compActions.length;
+  }
+
+  // Fleet
+  const fleetActions = d.fleet ? d.fleet.actions || [] : [];
+  if (fleetActions.length > 0) {
+    const fleetTotal = fleetActions.reduce((s, a) => s + (a.count || 1), 0);
+    html += '<div class="attention-category">Fleet <span class="attention-badge fleet">' + fleetTotal + '</span></div>';
+    html += fleetActions.map(a =>
+      '<div class="action-item"><div class="action-dot ' + (a.severity || '') + '"></div><div><span class="action-name">' + (a.count || 0) + ' ' + (a.issue || '') + '</span></div></div>'
+    ).join('');
+    totalCount += fleetTotal;
+  }
+
+  // Reviews
+  const reviewActions = d.reviews ? d.reviews.actions || [] : [];
+  if (reviewActions.length > 0) {
+    const reviewTotal = reviewActions.reduce((s, a) => s + (a.count || 1), 0);
+    html += '<div class="attention-category">Reviews <span class="attention-badge reviews">' + reviewTotal + '</span></div>';
+    html += reviewActions.map(a =>
+      '<div class="action-item"><div class="action-dot ' + (a.severity || '') + '"></div><div><span class="action-name">' + (a.count || 0) + ' ' + (a.issue || '') + '</span></div></div>'
+    ).join('');
+    totalCount += reviewTotal;
+  }
+
+  // Legal
+  const legalActions = d.legal ? d.legal.actions || [] : [];
+  if (legalActions.length > 0) {
+    const legalTotal = legalActions.reduce((s, a) => s + (a.count || 1), 0);
+    html += '<div class="attention-category">Legal <span class="attention-badge legal">' + legalTotal + '</span></div>';
+    html += legalActions.map(a =>
+      '<div class="action-item"><div class="action-dot ' + (a.severity || '') + '"></div><div><span class="action-name">' + (a.count || 0) + ' ' + (a.issue || '') + '</span></div></div>'
+    ).join('');
+    totalCount += legalTotal;
+  }
+
+  if (!html) {
+    container.innerHTML = '<div class="action-empty">All clear — no issues found</div>';
   } else {
-    container.innerHTML = actions.map(a =>
-      '<div class="action-item">' +
-        '<div class="action-dot ' + (a.severity || '') + '"></div>' +
-        '<div><span class="action-name">' + (a.count || 0) + ' ' + (a.issue || '') + '</span></div>' +
-      '</div>'
-    ).join('');
+    container.innerHTML = html;
+  }
+
+  if (badge) {
+    badge.textContent = totalCount;
+    badge.className = 'attention-total-badge' + (totalCount > 0 ? ' has-issues' : '');
   }
 }
 
