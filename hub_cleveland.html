@@ -792,8 +792,8 @@ const PAGE_REGISTRY = [
   },
   {
     key:    'licensing',
-    name:   'Licensing & Legal',
-    desc:   'State licenses, expiry tracking, producibility',
+    name:   'Litigation',
+    desc:   'Lawsuits, complaints, liens, and legal case tracking',
     icon:   '⚖️',
     domain: 'legal',
     stats:  [{ id: 'lic-active', label: 'Active' }, { id: 'lic-expiring', label: 'Expiring' }],
@@ -801,7 +801,7 @@ const PAGE_REGISTRY = [
     badge:  'Live',
   },
   {
-    key:    'upt',
+    key:    'upt', hidden: true,
     name:   'Unified Pricing Tool',
     desc:   'Master pricing, SPAR tracker, invoice management',
     icon:   '🏷️',
@@ -811,7 +811,7 @@ const PAGE_REGISTRY = [
     badge:  'Live',
   },
   {
-    key:    'cfb',
+    key:    'cfb', hidden: true,
     name:   'Contract Financial Breakdown',
     desc:   'RCV summaries, Tax & O&P calculator, pre/post-tax',
     icon:   '📊',
@@ -831,7 +831,7 @@ const PAGE_REGISTRY = [
     badge:  'Live',
   },
   {
-    key:    'invoice-parser',
+    key:    'invoice-parser', hidden: true,
     name:   'Invoice Parser',
     desc:   '5-step invoice reconciliation wizard',
     icon:   '🔍',
@@ -868,7 +868,11 @@ function initRegion() {
 ══════════════════════════════════════════════════════ */
 function buildTiles() {
   const grid = document.getElementById('tilesGrid');
-  grid.innerHTML = PAGE_REGISTRY.map(p => `
+  // Filter: hide placeholder cards unless Angel
+  const sess = JSON.parse(localStorage.getItem('elite_session') || '{}');
+  const isAngel = ((sess.user || {}).username || '').toLowerCase() === 'angel';
+  const visiblePages = PAGE_REGISTRY.filter(p => !p.hidden || isAngel);
+  grid.innerHTML = visiblePages.map(p => `
     <div class="page-tile" onclick="openPage('${p.key}')">
       <div class="pt-domain-bar d-${p.domain}-bar"></div>
       <div class="pt-header">
