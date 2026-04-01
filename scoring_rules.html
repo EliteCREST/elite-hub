@@ -843,101 +843,27 @@ function toggleDarkMode() {
       <div class="formula-box">
         <div class="f-title">Formula</div>
         <div class="f-line">Score = 100</div>
-        <div class="f-line">Score -= (Expired License × <span id="preview-expiredLicense">0</span>) + (Missing License × <span id="preview-missingLicense">0</span>)</div>
-        <div class="f-line">Score -= (Open Lawsuit × <span id="preview-openLawsuit">0</span>) + (AG Complaint × <span id="preview-openAG">0</span>)</div>
-        <div class="f-line">Score -= (BBB Complaint × <span id="preview-openBBB">0</span>) + (ROC Complaint × <span id="preview-openROC">0</span>) + (Open Lien × <span id="preview-openLien">0</span>)</div>
-        <div class="f-comment">// Open/In Progress cases only · Floor: 0</div>
+        <div class="f-line">Score -= (Active Cases × 5 pts each)</div>
+        <div class="f-comment">// Open/In Progress cases only · All types · Floor: 0</div>
       </div>
       <div class="rules-grid">
         <div class="rule-section">
-          <div class="rule-section-title">⚖️ Licenses</div>
+          <div class="rule-section-title">⚖️ Legal Scoring</div>
           <div class="rule-row">
             <div>
-              <div class="rule-label">Expired License</div>
-              <div class="rule-desc">State license past expiry</div>
+              <div class="rule-label">Any Active Case</div>
+              <div class="rule-desc">Each open/in-progress lawsuit, complaint, or lien</div>
             </div>
             <div class="rule-input-wrap">
-              <input type="number" class="rule-input" id="r-expiredLicense" value="0" step="0.5" min="0" max="100"
-                oninput="markChanged(this);updatePreview('licensing')">
-              <span class="rule-unit">pts each</span>
-            </div>
-          </div>
-          <div class="rule-row">
-            <div>
-              <div class="rule-label">Missing License</div>
-              <div class="rule-desc">Required license not on file</div>
-            </div>
-            <div class="rule-input-wrap">
-              <input type="number" class="rule-input" id="r-missingLicense" value="0" step="0.5" min="0" max="100"
-                oninput="markChanged(this);updatePreview('licensing')">
-              <span class="rule-unit">pts each</span>
-            </div>
-          </div>
-        </div>
-        <div class="rule-section">
-          <div class="rule-section-title">⚠️ Legal Cases</div>
-          <div class="rule-row">
-            <div>
-              <div class="rule-label">Open Lawsuit</div>
-              <div class="rule-desc">Each active lawsuit</div>
-            </div>
-            <div class="rule-input-wrap">
-              <input type="number" class="rule-input" id="r-openLawsuit" value="0" step="0.5" min="0" max="100"
-                oninput="markChanged(this);updatePreview('licensing')">
-              <span class="rule-unit">pts each</span>
-            </div>
-          </div>
-          <div class="rule-row">
-            <div>
-              <div class="rule-label">AG Complaint</div>
-              <div class="rule-desc">Each open AG complaint</div>
-            </div>
-            <div class="rule-input-wrap">
-              <input type="number" class="rule-input" id="r-openAG" value="0" step="0.5" min="0" max="100"
-                oninput="markChanged(this);updatePreview('licensing')">
-              <span class="rule-unit">pts each</span>
-            </div>
-          </div>
-          <div class="rule-row">
-            <div>
-              <div class="rule-label">BBB Complaint</div>
-              <div class="rule-desc">Each open BBB complaint</div>
-            </div>
-            <div class="rule-input-wrap">
-              <input type="number" class="rule-input" id="r-openBBB" value="0" step="0.5" min="0" max="100"
-                oninput="markChanged(this);updatePreview('licensing')">
-              <span class="rule-unit">pts each</span>
-            </div>
-          </div>
-          <div class="rule-row">
-            <div>
-              <div class="rule-label">ROC Complaint</div>
-              <div class="rule-desc">Each open ROC complaint</div>
-            </div>
-            <div class="rule-input-wrap">
-              <input type="number" class="rule-input" id="r-openROC" value="0" step="0.5" min="0" max="100"
-                oninput="markChanged(this);updatePreview('licensing')">
-              <span class="rule-unit">pts each</span>
-            </div>
-          </div>
-          <div class="rule-row">
-            <div>
-              <div class="rule-label">Open Lien</div>
-              <div class="rule-desc">Each active lien</div>
-            </div>
-            <div class="rule-input-wrap">
-              <input type="number" class="rule-input" id="r-openLien" value="0" step="0.5" min="0" max="100"
-                oninput="markChanged(this);updatePreview('licensing')">
-              <span class="rule-unit">pts each</span>
+              <span style="font-size:16px;font-weight:700;color:var(--navy);">5</span>
+              <span class="rule-unit">pts each (fixed)</span>
             </div>
           </div>
         </div>
       </div>
       <div class="save-bar">
-        <div class="save-bar-note">Set values to 0 to exclude a rule from scoring</div>
-        <div class="save-bar-actions">
-          <button class="btn btn-outline btn-sm" onclick="resetSection('licensing')">Reset</button>
-          <button class="btn btn-primary btn-sm" onclick="saveSection('licensing')">💾 Save Licensing Rules</button>
+        <div class="save-bar-note">Legal scoring uses a fixed rate of 5 pts per active case</div>
+        <div class="save-bar-actions"></div>
         </div>
       </div>
     </div>
