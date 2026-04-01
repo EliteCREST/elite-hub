@@ -1052,8 +1052,6 @@ function toggleDarkMode() {
             <th class="sortable" onclick="sortBy('name')">Contractor ↕</th>
             <th class="sortable" onclick="sortBy('trade')">Trade ↕</th>
             <th>Crews</th>
-            <th class="sortable" onclick="sortBy('gl_status')">GL Status ↕</th>
-            <th class="sortable" onclick="sortBy('wc_status')">WC Status ↕</th>
             <th class="sortable" onclick="sortBy('gl_expiry')">GL Expiry ↕</th>
             <th class="sortable" onclick="sortBy('wc_expiry')">WC Expiry ↕</th>
             <th>Contract</th>
@@ -1604,8 +1602,7 @@ function renderTable() {
         </td>
         <td><span class="badge badge-blue">${c.trade || '—'}</span></td>
         <td><button class="crew-count-btn zero" data-crew-contractor="${c.name}" onclick="event.stopPropagation();openCrewPanel('${c.name}')">👷 Crews</button></td>
-        <td>${statusBadge(glStatus)}</td>
-        <td>${statusBadge(wcStatus)}</td>
+
         <td>${expiryCell(c.gl_expiry)}</td>
         <td>${expiryCell(c.wc_expiry)}</td>
         <td><span class="badge ${contractBadge}">${c.contract_status || '—'}</span></td>

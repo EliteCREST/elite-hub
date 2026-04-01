@@ -901,8 +901,6 @@ function toggleDarkMode() {
             <th onclick="sortBy('name')">Contractor ↕</th>
             <th onclick="sortBy('region')">Region ↕</th>
             <th onclick="sortBy('trade1')">Trade ↕</th>
-            <th onclick="sortBy('gl_status')">GL Status ↕</th>
-            <th onclick="sortBy('wc_status')">WC Status ↕</th>
             <th onclick="sortBy('gl_expiry')">GL Expiry ↕</th>
             <th>GL Renewal</th>
             <th onclick="sortBy('wc_expiry')">WC Expiry ↕</th>
@@ -1423,8 +1421,7 @@ function renderTable() {
           ${regionParts.map(r => `<span class="badge badge-region">${r}</span>`).join(' ')}
         </td>
         <td style="font-size:12px;color:var(--gray-600);">${c.trade1 || '—'}${c.trade2 ? ', ' + c.trade2 : ''}</td>
-        <td>${statusBadge(glStatus)}</td>
-        <td>${statusBadge(wcStatus)}</td>
+
         <td>${expiryCell(c.gl_expiry)}</td>
         <td>${c.gl_renewal ? '<span style="font-size:11px;color:#16A34A;font-weight:600;">✓ ' + new Date(c.gl_renewal).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + '</span>' : '<span style="color:var(--gray-300);font-size:11px;">—</span>'}</td>
         <td>${expiryCell(c.wc_expiry)}</td>
