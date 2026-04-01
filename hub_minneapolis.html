@@ -334,9 +334,11 @@
   }
   .pt-name { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 2px; }
   .pt-desc { font-size: 11px; color: var(--gray-600); line-height: 1.4; }
-  .pt-stats { display: flex; gap: 16px; border-top: 1px solid var(--gray-200); padding-top: 12px; }
-  .pt-stat .ts-val { font-size: 16px; font-weight: 700; color: var(--navy); }
-  .pt-stat .ts-lbl { font-size: 10px; color: var(--gray-400); letter-spacing: .3px; text-transform: uppercase; }
+  .pt-stats { display: flex; gap: 0; border-top: 1px solid var(--gray-200); padding-top: 12px; width: 100%; }
+  .pt-stat { flex: 1; text-align: center; }
+  .pt-stat:first-child { text-align: left; }
+  .pt-stat .ts-val { font-size: 14px; font-weight: 700; color: var(--navy); }
+  .pt-stat .ts-lbl { font-size: 9px; color: var(--gray-400); letter-spacing: .3px; text-transform: uppercase; }
   .pt-arrow { position: absolute; bottom: 16px; right: 16px; color: var(--gray-200); font-size: 14px; transition: color .2s; }
 
   .badge {
@@ -769,7 +771,7 @@ const PAGE_REGISTRY = [
     desc:   'GL/WC insurance, contractor tracking, expiry alerts',
     icon:   '📋',
     domain: 'comp',
-    stats:  [{ id: 'comp-score', label: 'Score' }, { id: 'comp-expgl', label: 'Exp GL' }, { id: 'comp-expwc', label: 'Exp WC' }, { id: 'comp-missgl', label: 'No GL' }, { id: 'comp-misswc', label: 'No WC' }, { id: 'comp-expiring', label: 'Expiring' }],
+    stats:  [{ id: 'comp-score', label: 'Score' }, { id: 'comp-expgl', label: 'Exp GL' }, { id: 'comp-expwc', label: 'Exp WC' }, { id: 'comp-missgl', label: 'No GL' }, { id: 'comp-misswc', label: 'No WC' }, { id: 'comp-expiring', label: 'Watch' }],
     url:    'https://elitecrest.github.io/elite-hub/compliance.html?region=minneapolis',
     badge:  'Live',
   },
@@ -779,7 +781,7 @@ const PAGE_REGISTRY = [
     desc:   'Lawsuits, complaints, liens, and legal case tracking',
     icon:   '⚖️',
     domain: 'legal',
-    stats:  [{ id: 'lic-score', label: 'Score' }, { id: 'lic-lawsuits', label: 'Lawsuits' }, { id: 'lic-ag', label: 'AG' }, { id: 'lic-bbb', label: 'BBB' }, { id: 'lic-roc', label: 'ROC' }, { id: 'lic-liens', label: 'Liens' }],
+    stats:  [{ id: 'lic-score', label: 'Score' }, { id: 'lic-lawsuits', label: 'Suits' }, { id: 'lic-ag', label: 'AG' }, { id: 'lic-bbb', label: 'BBB' }, { id: 'lic-roc', label: 'ROC' }, { id: 'lic-liens', label: 'Liens' }],
     url:    'https://elitecrest.github.io/elite-hub/legal.html?region=minneapolis',
     badge:  'Live',
   },
