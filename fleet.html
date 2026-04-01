@@ -310,6 +310,8 @@
   .tag-geotab-warn   { background: var(--yellow-pale); color: var(--yellow); }
   .tag-geotab-bad    { background: var(--red-pale); color: var(--red); }
   .tag-brand   { background: var(--blue-pale); color: var(--blue); }
+  .tag-good    { background: var(--blue-pale); color: var(--blue); }
+  .tag-bad     { background: var(--red-pale); color: var(--red); font-weight: 700; }
   .tag-signed  { background: var(--green-pale); color: var(--green); }
   .tag-unsigned { background: var(--yellow-pale); color: var(--yellow); }
   .tag-location { background: var(--gray-100); color: var(--gray-600); }
@@ -573,7 +575,8 @@
   body.dark .tag-geotab-ok, body.dark .tag-expiry-ok, body.dark .badge-green { background: #064E3B !important; color: #6EE7B7 !important; }
   body.dark .tag-geotab-bad, body.dark .tag-expiry-exp, body.dark .badge-red { background: #7F1D1D !important; color: #FCA5A5 !important; }
   body.dark .tag-expiry-warn, body.dark .badge-yellow { background: #78350F !important; color: #FCD34D !important; }
-  body.dark .tag-brand, body.dark .tag-plate, body.dark .badge-blue { background: #1E3A5F !important; color: #93C5FD !important; }
+  body.dark .tag-brand, body.dark .tag-plate, body.dark .badge-blue, body.dark .tag-good { background: #1E3A5F !important; color: #93C5FD !important; }
+  body.dark .tag-bad { background: #7F1D1D !important; color: #FCA5A5 !important; }
   body.dark .tag-location, body.dark .tag-gray { background: #374151 !important; color: #D1D5DB !important; }
 
   /* rc-footer */
@@ -1416,14 +1419,15 @@ function renderVehicles() {
           <div class="vc-driver">${v.driver || (v.last_driver ? v.last_driver : 'Unassigned')}</div>
           <div class="vc-tags">
             ${v.plate ? `<span class="tag tag-plate">${v.plate}</span>` : ''}
+            ${v.status ? `<span class="tag ${(v.status||'').toLowerCase() === 'active' ? 'tag-good' : 'tag-bad'}">${v.status}</span>` : ''}
             ${geotabTag(v)}
-            ${v.brand ? `<span class="tag tag-brand">${v.brand}</span>` : ''}
-            ${v.agreement === 'Signed' ? `<span class="tag tag-signed">Signed</span>` : v.agreement ? `<span class="tag tag-unsigned">${v.agreement}</span>` : ''}
-            ${v.vehicle_location ? `<span class="tag tag-location">${v.vehicle_location}</span>` : ''}
+            ${v.brand ? `<span class="tag tag-good">${v.brand}</span>` : ''}
+            ${v.agreement === 'Signed' ? `<span class="tag tag-good">Signed</span>` : v.agreement ? `<span class="tag tag-bad">${v.agreement}</span>` : ''}
+            ${v.vehicle_location ? `<span class="tag tag-good">${v.vehicle_location}</span>` : ''}
             ${tagExpiryTag(v)}
-            ${v.wrap === 'Yes' ? `<span class="tag tag-wrap">Wrapped</span>` : ''}
-            ${v.ownership ? `<span class="tag tag-gray">${v.ownership}</span>` : ''}
-            ${v.fleet_type ? `<span class="tag ${v.fleet_type === 'Accuserve' ? 'tag-brand' : 'tag-signed'}">${v.fleet_type}</span>` : ''}
+            ${v.wrap === 'Yes' ? `<span class="tag tag-good">Wrapped</span>` : ''}
+            ${v.ownership ? `<span class="tag tag-good">${v.ownership}</span>` : ''}
+            ${v.fleet_type ? `<span class="tag tag-good">${v.fleet_type}</span>` : ''}
           </div>
         </div>
         <div class="vc-status" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
