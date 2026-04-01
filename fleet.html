@@ -1195,6 +1195,7 @@ function normalizeVehicle(r) {
     oil_due:          f('oil change due (miles)','oil change due (miles)'),
     notes:            f('notes'),
     ins_exp:          f('insurance exp date','insurance_exp_date'),
+    out_of_service:   f('out of service','out_of_service'),
   };
 }
 
@@ -1368,17 +1369,18 @@ function renderVehicles() {
 
   grid.innerHTML = filtered.map(v => {
     const isShop = (v.status||'').toLowerCase().includes('shop');
-    const sc   = vehicleStatusClass(v);
+    const isOOS  = (v.out_of_service||'').toLowerCase() === 'true' || (v.out_of_service||'').toLowerCase() === 'yes';
+    const sc   = isOOS ? 'vc-oos' : vehicleStatusClass(v);
     const ec   = evidClass(v);
-    const sl   = statusLabel(v);
+    const sl   = isOOS ? { dot: 'sdot-gray', label: 'Out of Service' } : statusLabel(v);
     const driverDisplay = v.driver || (v.last_driver ? `<em style="color:var(--gray-400);">${v.last_driver}</em>` : '<em style="color:var(--gray-400);">Unassigned</em>');
 
     return `
-    <div class="vehicle-card ${sc}" onclick="toggleDetail('${v.id}')">
+    <div class="vehicle-card ${sc}" onclick="toggleDetail('${v.id}')" style="${isOOS ? 'opacity:.5;' : ''}">
       <div class="vc-main">
         <div class="vc-evid ${ec}">${v.evid || '—'}</div>
         <div class="vc-info">
-          <div class="vc-vehicle">${[v.year, v.make, v.model].filter(Boolean).join(' ') || 'Unknown Vehicle'}</div>
+          <div class="vc-vehicle">${[v.year, v.make, v.model].filter(Boolean).join(' ') || 'Unknown Vehicle'}${isOOS ? ' <span style="font-size:10px;color:var(--gray-400);font-weight:400;">(OUT OF SERVICE)</span>' : ''}</div>
           <div class="vc-driver">${v.driver || (v.last_driver ? v.last_driver : 'Unassigned')}</div>
           <div class="vc-tags">
             ${v.plate ? `<span class="tag tag-plate">${v.plate}</span>` : ''}
@@ -1397,6 +1399,11 @@ function renderVehicles() {
             <div class="sdot ${sl.dot}"></div>
             <span style="color:var(--gray-600);font-size:11px;font-weight:700;">${sl.label}</span>
           </div>
+          <label onclick="event.stopPropagation();" style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:10px;color:var(--gray-400);font-weight:600;">
+            <input type="checkbox" ${isOOS ? 'checked' : ''} onchange="toggleOOS('${v.evid}', this.checked)"
+              style="width:13px;height:13px;accent-color:#DC2626;cursor:pointer;">
+            OOS
+          </label>
           <span class="safety-badge none" id="safety-badge-${v.evid}"
             onclick="event.stopPropagation();openSafety('${v.evid}','${v.make} ${v.model}')"
             style="font-size:11px;padding:3px 10px;border-radius:6px;border:1.5px solid currentColor;cursor:pointer;">
@@ -1442,6 +1449,23 @@ function toggleDetail(id) {
   const el = document.getElementById('detail-' + id);
   if (!el) return;
   el.classList.toggle('open');
+}
+
+async function toggleOOS(evid, checked) {
+  // Update local data
+  const v = allVehicles.find(x => x.evid === evid);
+  if (v) v.out_of_service = checked ? 'true' : '';
+  renderAll();
+  // Save to backend
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'updateVehicle', evid, vehicle: { out_of_service: checked ? 'TRUE' : '' } })
+    });
+    showToast(checked ? 'Vehicle marked out of service' : 'Vehicle returned to service', 'info');
+  } catch(e) {
+    showToast('Failed to update — try again', 'error');
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
