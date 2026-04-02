@@ -1621,7 +1621,11 @@ async function saveContractor() {
 
   if (isEdit) {
     const idx = allContractors.findIndex(c => c.id === currentId);
-    if (idx >= 0) allContractors[idx] = { ...allContractors[idx], ...vals };
+    if (idx >= 0) {
+      const c = allContractors[idx];
+      Object.assign(c, vals);
+      c.trade = vals.trade1 || c.trade;  // renderer uses 'trade' not 'trade1'
+    }
     showToast(`${vals.name} updated.`, 'info');
   } else {
     const newC = normalizeContractor({ ...vals, id: 'new-' + Date.now() });

@@ -1771,9 +1771,28 @@ async function saveDetailChanges() {
     });
     const data = await res.json();
     if (data.success) {
-      // Update local data
+      // Update local data with correct field names
       const idx = allContractors.findIndex(c => c.id === currentContractor.id);
-      if (idx >= 0) Object.assign(allContractors[idx], updates);
+      if (idx >= 0) {
+        const c = allContractors[idx];
+        c.contact = updates.contact;
+        c.contact2 = updates.contact2;
+        c.phone = updates.phone;
+        c.email = updates.email;
+        c.email2 = updates.email2;
+        c.supervisor = updates.supervisor;
+        c.address = updates.address;
+        c.city = updates.city;
+        c.state = updates.state;
+        c.zip = updates.zip;
+        c.trade = updates.trade1;
+        c.trade2 = updates.trade2;
+        c.trade3 = updates.trade3;
+        c.trade4 = updates.trade4;
+        c.contract_status = updates.contract_status;
+        c.will_travel = updates.will_travel;
+        c.travel_distance = updates.travel_distance;
+      }
       showToast('Saved ✓', 'info');
       closeDetailModal();
       applyFilters();
