@@ -1053,6 +1053,7 @@ function toggleDarkMode() {
       <table class="comp-table">
         <thead>
           <tr>
+            <th>Status</th>
             <th class="sortable" onclick="sortBy('name')">Contractor ↕</th>
             <th class="sortable" onclick="sortBy('trade')">Trade ↕</th>
             <th>Crews</th>
@@ -1598,8 +1599,11 @@ function renderTable() {
     const contractBadge = c.contract_status === 'Active' ? 'badge-active' : c.contract_status === 'Pending' ? 'badge-pending' : 'badge-inactive';
     const travelStr = c.will_travel === 'Yes' ? `✈ ${c.travel_distance ? c.travel_distance + ' mi' : 'Yes'}` : '—';
 
+    const isClear = glStatus === 'compliant' && wcStatus === 'compliant' && (c.contract_status||'').toLowerCase() === 'active';
+
     return `
       <tr onclick="openDetail(${JSON.stringify(c).replace(/"/g,'&quot;')})">
+        <td><span class="badge ${isClear ? 'badge-active' : 'badge-inactive'}">${isClear ? 'Clear' : 'Not Clear'}</span></td>
         <td>
           <div class="contractor-name">${c.name}</div>
           <div class="contractor-trade">${c.contact || ''}</div>

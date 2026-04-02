@@ -898,6 +898,7 @@ function toggleDarkMode() {
       <table class="comp-table">
         <thead>
           <tr>
+            <th>Status</th>
             <th onclick="sortBy('name')">Contractor ↕</th>
             <th onclick="sortBy('region')">Region ↕</th>
             <th onclick="sortBy('trade1')">Trade ↕</th>
@@ -1411,8 +1412,11 @@ function renderTable() {
     const contractBadge = isInactive ? 'badge-inactive' : c.contract_status === 'Active' ? 'badge-active' : 'badge-pending';
     const regionParts = (c.region || '').split(/[\s,]+/).filter(Boolean);
 
+    const isClear = glStatus === 'compliant' && wcStatus === 'compliant' && !isInactive;
+
     return `
       <tr class="${isInactive ? 'inactive-row' : ''} clickable-row" onclick="openEditModal('${c.id}')" style="cursor:pointer;">
+        <td><span class="badge ${isClear ? 'badge-active' : 'badge-inactive'}">${isClear ? 'Clear' : 'Not Clear'}</span></td>
         <td>
           <div class="contractor-name">${c.name || '—'}</div>
           <div class="contractor-trade">${c.contact || ''}</div>
