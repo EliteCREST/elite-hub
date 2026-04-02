@@ -348,7 +348,7 @@
   .upload-item .ui-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width .3s ease; }
   .upload-item .ui-status { font-size: 11px; color: var(--gray-400); flex-shrink: 0; }
   .upload-item.done .ui-bar { background: #22C55E; }
-  .upload-item.done .ui-status { color: #16A34A; }
+  .upload-item.done .ui-status { color: #1F5FAD; }
   .upload-item.error .ui-bar { background: #EF4444; }
   .upload-item.error .ui-status { color: #DC2626; }
 
@@ -524,7 +524,7 @@
   body.dark .form-group label { color: #9CA3AF !important; }
 
   /* Status/score badges */
-  body.dark .tag-geotab-ok, body.dark .tag-expiry-ok, body.dark .badge-green { background: #064E3B !important; color: #6EE7B7 !important; }
+  body.dark .tag-geotab-ok, body.dark .tag-expiry-ok, body.dark .badge-green { background: #1E3A5F !important; color: #93C5FD !important; }
   body.dark .tag-geotab-bad, body.dark .tag-expiry-exp, body.dark .badge-red { background: #7F1D1D !important; color: #FCA5A5 !important; }
   body.dark .tag-expiry-warn, body.dark .badge-yellow { background: #78350F !important; color: #FCD34D !important; }
   body.dark .tag-brand, body.dark .tag-plate, body.dark .badge-blue { background: #1E3A5F !important; color: #93C5FD !important; }
@@ -1275,6 +1275,24 @@ setInterval(initPage, 120000); // auto-refresh every 2 min
       });
     }
   } catch(e) {}
+})();
+</script>
+<script>
+(function(){
+  const s = JSON.parse(localStorage.getItem('elite_session')||'{}');
+  const u = ((s.user||{}).username||'').toLowerCase();
+  const r = ((s.user||{}).role||'').toLowerCase();
+  if (u === 'angel' || r === 'sr director' || r === 'sr manager compliance' || (s.user||{}).admin === 'true') {
+    document.querySelectorAll('.tool-nav').forEach(nav => {
+      if (!nav.querySelector('.tn-admin')) {
+        const a = document.createElement('a');
+        a.className = 'tn-btn tn-admin';
+        a.href = 'https://elitecrest.github.io/elite-hub/admin.html';
+        a.innerHTML = '<span class="tn-icon">⚙️</span>Admin';
+        nav.appendChild(a);
+      }
+    });
+  }
 })();
 </script>
 </body>

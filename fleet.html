@@ -1976,5 +1976,23 @@ function logout() {
   } catch(e) {}
 })();
 </script>
+<script>
+(function(){
+  const s = JSON.parse(localStorage.getItem('elite_session')||'{}');
+  const u = ((s.user||{}).username||'').toLowerCase();
+  const r = ((s.user||{}).role||'').toLowerCase();
+  if (u === 'angel' || r === 'sr director' || r === 'sr manager compliance' || (s.user||{}).admin === 'true') {
+    document.querySelectorAll('.tool-nav').forEach(nav => {
+      if (!nav.querySelector('.tn-admin')) {
+        const a = document.createElement('a');
+        a.className = 'tn-btn tn-admin';
+        a.href = 'https://elitecrest.github.io/elite-hub/admin.html';
+        a.innerHTML = '<span class="tn-icon">⚙️</span>Admin';
+        nav.appendChild(a);
+      }
+    });
+  }
+})();
+</script>
 </body>
 </html>

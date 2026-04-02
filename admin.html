@@ -486,7 +486,7 @@ window.addEventListener('DOMContentLoaded', fixDarkInlineStyles);
 window.addEventListener('DOMContentLoaded', function() {
   const sess = JSON.parse(localStorage.getItem('elite_session') || '{}');
   const username = ((sess.user || {}).username || '').toLowerCase();
-  if (username !== 'angel') {
+  if (username !== 'angel' && username !== 'sam' && username !== 'sara') {
     ['adminNotifications','adminNotes','adminQuickLinks','adminDashboards'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
