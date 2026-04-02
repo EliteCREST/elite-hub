@@ -353,7 +353,7 @@
     padding: 3px 8px; border-radius: 20px;
   }
   .badge-blue   { background: var(--blue-pale); color: var(--blue); }
-  .badge-green  { background: #DCFCE7; color: #15803D; }
+  .badge-green  { background: #EAF1FB; color: #1F5FAD; }
   .badge-yellow { background: #FEF9C3; color: #A16207; }
   .badge-gray   { background: var(--gray-200); color: var(--gray-600); }
 
@@ -364,8 +364,8 @@
   .d-comp-bar    { background: linear-gradient(90deg,#F97316,#FB923C); }
   .d-legal       { background:#F5F3FF; color:#6D28D9; }
   .d-legal-bar   { background: linear-gradient(90deg,#7C3AED,#8B5CF6); }
-  .d-pricing     { background:#F0FDF4; color:#15803D; }
-  .d-pricing-bar { background: linear-gradient(90deg,#16A34A,#22C55E); }
+  .d-pricing     { background:#EAF1FB; color:#1F5FAD; }
+  .d-pricing-bar { background: linear-gradient(90deg,#1F5FAD,#22C55E); }
   .d-cfb         { background:#FFF8E6; color:#92400E; }
   .d-cfb-bar     { background: linear-gradient(90deg,#C8A84B,#D4B96A); }
   .d-reviews     { background:#FDF4FF; color:#86198F; }
@@ -503,7 +503,7 @@
   body.dark .form-group label { color: #9CA3AF !important; }
 
   /* Status/score badges */
-  body.dark .tag-geotab-ok, body.dark .tag-expiry-ok, body.dark .badge-green { background: #064E3B !important; color: #6EE7B7 !important; }
+  body.dark .tag-geotab-ok, body.dark .tag-expiry-ok, body.dark .badge-green { background: #1E3A5F !important; color: #93C5FD !important; }
   body.dark .tag-geotab-bad, body.dark .tag-expiry-exp, body.dark .badge-red { background: #7F1D1D !important; color: #FCA5A5 !important; }
   body.dark .tag-expiry-warn, body.dark .badge-yellow { background: #78350F !important; color: #FCD34D !important; }
   body.dark .tag-brand, body.dark .tag-plate, body.dark .badge-blue { background: #1E3A5F !important; color: #93C5FD !important; }
@@ -534,7 +534,7 @@
   body.dark .safety-strip-card { background: #1F2937 !important; border-color: #374151 !important; }
   body.dark .ss-label { color: #9CA3AF !important; }
   body.dark .ss-value { color: #F1F5F9 !important; }
-  body.dark .ss-value.ok { color: #6EE7B7 !important; }
+  body.dark .ss-value.ok { color: #93C5FD !important; }
   body.dark .ss-value.warn { color: #FCD34D !important; }
   body.dark .ss-value.alert { color: #FCA5A5 !important; }
   body.dark .ss-sub { color: #6B7280 !important; }
@@ -919,7 +919,7 @@ function renderScore(score) {
   if (score === null || score === undefined) return;
   const pct   = Math.max(0, Math.min(1, score / 1200));
   const grade = score >= 960 ? 'Excellent' : score >= 720 ? 'Good' : score >= 480 ? 'Fair' : 'Needs Attention';
-  const color = score >= 960 ? '#16A34A' : score >= 720 ? '#2563EB' : score >= 480 ? '#D97706' : '#DC2626';
+  const color = score >= 960 ? '#1F5FAD' : score >= 720 ? '#2563EB' : score >= 480 ? '#D97706' : '#DC2626';
   const arcLen = Math.PI * 90; // half-circle arc length for r=90
   const offset = arcLen * (1 - pct);
 
@@ -1123,7 +1123,7 @@ function renderChat() {
   feed.innerHTML = chatMessages.map(m => {
     const isMine = m.author === me;
     const initials = getInitials(m.author);
-    const colors = ['#2563EB','#16A34A','#D97706','#DC2626','#7C3AED','#0891B2','#BE185D','#4F46E5'];
+    const colors = ['#2563EB','#1F5FAD','#D97706','#DC2626','#7C3AED','#0891B2','#BE185D','#4F46E5'];
     const colorIdx = Math.abs(String(m.author).split('').reduce((s,c) => s + c.charCodeAt(0), 0)) % colors.length;
     const avatarColor = colors[colorIdx];
 

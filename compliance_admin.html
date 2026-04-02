@@ -98,8 +98,8 @@
     --gray-600:    #64748B;
     --gray-800:    #334155;
     --text:        #1B2A4A;
-    --green:       #16A34A;
-    --green-pale:  #DCFCE7;
+    --green:       #1F5FAD;
+    --green-pale:  #EAF1FB;
     --yellow:      #D97706;
     --yellow-pale: #FEF9C3;
     --red:         #DC2626;
@@ -382,8 +382,8 @@
   .fs-region   .form-group input,
   .fs-region   .form-group select { background: white; }
 
-  .fs-gl       { background: #DCFCE7; border-left-color: #16A34A; }
-  .fs-gl       .form-section-title { color: #16A34A; }
+  .fs-gl       { background: #EAF1FB; border-left-color: #1F5FAD; }
+  .fs-gl       .form-section-title { color: #1F5FAD; }
   .fs-gl       .form-group input,
   .fs-gl       .form-group select { background: white; }
 
@@ -549,7 +549,7 @@
   body.dark .form-group label { color: #9CA3AF !important; }
 
   /* Status/score badges */
-  body.dark .tag-geotab-ok, body.dark .tag-expiry-ok, body.dark .badge-green { background: #064E3B !important; color: #6EE7B7 !important; }
+  body.dark .tag-geotab-ok, body.dark .tag-expiry-ok, body.dark .badge-green { background: #1E3A5F !important; color: #93C5FD !important; }
   body.dark .tag-geotab-bad, body.dark .tag-expiry-exp, body.dark .badge-red { background: #7F1D1D !important; color: #FCA5A5 !important; }
   body.dark .tag-expiry-warn, body.dark .badge-yellow { background: #78350F !important; color: #FCD34D !important; }
   body.dark .tag-brand, body.dark .tag-plate, body.dark .badge-blue { background: #1E3A5F !important; color: #93C5FD !important; }
@@ -613,10 +613,10 @@
   .he-label  { color:var(--gray-400);margin-bottom:1px; }
   .he-val    { color:var(--navy);font-weight:600; }
   .he-val.expired { color:#DC2626; }
-  .he-val.ok      { color:#16A34A; }
+  .he-val.ok      { color:#1F5FAD; }
 
 
-  .badge-ok   { background:#DCFCE7;color:#16A34A;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap; }
+  .badge-ok   { background:#EAF1FB;color:#1F5FAD;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap; }
   .badge-attn { background:#FEE2E2;color:#DC2626;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap; }
 
 
@@ -711,9 +711,9 @@
   .ob-text { font-size:12px;flex:1; }
   .ob-btns { display:flex;gap:6px;flex-shrink:0; }
   .ob-btn  { font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;cursor:pointer;border:none; }
-  .ob-approve { background:#16A34A;color:white; }
+  .ob-approve { background:#1F5FAD;color:white; }
   .ob-deny    { background:#DC2626;color:white; }
-  .ob-approve:hover { background:#15803D; }
+  .ob-approve:hover { background:#1F5FAD; }
   .ob-deny:hover    { background:#B91C1C; }
   .pending-offboard-count {
     background:#FDE047;color:#713F12;font-size:10px;font-weight:700;
@@ -1427,9 +1427,9 @@ function renderTable() {
         <td style="font-size:12px;color:var(--gray-600);">${c.trade1 || '—'}${c.trade2 ? ', ' + c.trade2 : ''}</td>
 
         <td>${expiryCell(c.gl_expiry)}</td>
-        <td>${c.gl_renewal ? '<span style="font-size:11px;color:#16A34A;font-weight:600;">✓ ' + new Date(c.gl_renewal).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + '</span>' : '<span style="color:var(--gray-300);font-size:11px;">—</span>'}</td>
+        <td>${c.gl_renewal ? '<span style="font-size:11px;color:#1F5FAD;font-weight:600;">✓ ' + new Date(c.gl_renewal).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + '</span>' : '<span style="color:var(--gray-300);font-size:11px;">—</span>'}</td>
         <td>${expiryCell(c.wc_expiry)}</td>
-        <td>${c.wc_renewal ? '<span style="font-size:11px;color:#16A34A;font-weight:600;">✓ ' + new Date(c.wc_renewal).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + '</span>' : '<span style="color:var(--gray-300);font-size:11px;">—</span>'}</td>
+        <td>${c.wc_renewal ? '<span style="font-size:11px;color:#1F5FAD;font-weight:600;">✓ ' + new Date(c.wc_renewal).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + '</span>' : '<span style="color:var(--gray-300);font-size:11px;">—</span>'}</td>
         <td>
           <span class="badge ${contractBadge}">${c.contract_status || '—'}</span>
           ${c.offboard_status === 'Pending' ? '<div class="offboard-banner" style="margin-top:6px;"><div class="ob-text">⏳ <strong>Offboard Pending</strong> — ' + (c.offboard_requested_by||'?') + ': ' + (c.offboard_reason||'') + '</div><div class="ob-btns"><button class="ob-btn ob-approve" onclick="event.stopPropagation();approveOffboard(\'' + c.name + '\')" >✓ Approve</button><button class="ob-btn ob-deny" onclick="event.stopPropagation();denyOffboard(\'' + c.name + '\')">✕ Deny</button></div></div>' : ''}
@@ -1902,9 +1902,9 @@ function updateHistoryBtn() {
   if (!btn) return;
   if (historyTracking) {
     btn.textContent = '⏺ History: ON';
-    btn.style.background = '#DCFCE7';
-    btn.style.color = '#16A34A';
-    btn.style.borderColor = '#16A34A';
+    btn.style.background = '#EAF1FB';
+    btn.style.color = '#1F5FAD';
+    btn.style.borderColor = '#1F5FAD';
   } else {
     btn.textContent = '⏸ History: OFF';
     btn.style.background = '#F3F4F6';

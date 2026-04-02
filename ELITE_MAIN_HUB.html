@@ -250,7 +250,7 @@
   }
 
   /* Score color helpers */
-  .score-excellent { color: #16A34A; }
+  .score-excellent { color: #1F5FAD; }
   .score-good      { color: #2563EB; }
   .score-fair      { color: #D97706; }
   .score-poor      { color: #DC2626; }
@@ -396,7 +396,7 @@
   body.dark .form-group label { color: #9CA3AF !important; }
 
   /* Status/score badges */
-  body.dark .tag-geotab-ok, body.dark .tag-expiry-ok, body.dark .badge-green { background: #064E3B !important; color: #6EE7B7 !important; }
+  body.dark .tag-geotab-ok, body.dark .tag-expiry-ok, body.dark .badge-green { background: #1E3A5F !important; color: #93C5FD !important; }
   body.dark .tag-geotab-bad, body.dark .tag-expiry-exp, body.dark .badge-red { background: #7F1D1D !important; color: #FCA5A5 !important; }
   body.dark .tag-expiry-warn, body.dark .badge-yellow { background: #78350F !important; color: #FCD34D !important; }
   body.dark .tag-brand, body.dark .tag-plate, body.dark .badge-blue { background: #1E3A5F !important; color: #93C5FD !important; }
@@ -685,7 +685,7 @@ function buildPodium() {
   document.getElementById('podium').innerHTML = top3.map((r, i) => {
     const sc  = scoreClass(r.score);
     const pct = scorePct(r.score);
-    const color = sc === 'excellent' ? '#16A34A' : sc === 'good' ? '#2563EB' : sc === 'fair' ? '#D97706' : sc === 'poor' ? '#DC2626' : 'var(--gray-400)';
+    const color = sc === 'excellent' ? '#1F5FAD' : sc === 'good' ? '#2563EB' : sc === 'fair' ? '#D97706' : sc === 'poor' ? '#DC2626' : 'var(--gray-400)';
     const pending = r.score === null;
 
     return `
