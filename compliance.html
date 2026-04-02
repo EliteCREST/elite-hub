@@ -301,7 +301,7 @@
   .badge-active     { background: #1E3A5F; color: #93C5FD; border: 1px solid #2563EB; }
   .badge-inactive   { background: #7F1D1D; color: #FCA5A5; border: 1px solid #DC2626; }
   .badge-pending    { background: var(--yellow-pale); color: var(--yellow); }
-  .badge-blue       { background: var(--blue-pale);   color: var(--blue); }
+  .badge-blue       { background: white; color: #1F5FAD; border: 1px solid #1F5FAD; }
 
   /* Expiry cell */
   .expiry-date { font-size: 12px; font-weight: 600; }
@@ -584,6 +584,10 @@
 
   /* OK / Attn badges */
   body.dark .badge-ok   { background: #064E3B !important; color: #6EE7B7 !important; }
+  body.dark .badge-active { background: #1E3A5F !important; color: #93C5FD !important; border-color: #2563EB !important; }
+  body.dark .badge-inactive { background: #7F1D1D !important; color: #FCA5A5 !important; border-color: #DC2626 !important; }
+  body.dark .badge-blue { background: #1E3A5F !important; color: #93C5FD !important; border-color: #2563EB !important; }
+  body.dark .badge-region { background: #1E3A5F !important; color: #93C5FD !important; border-color: #2563EB !important; }
   body.dark .badge-attn { background: #7F1D1D !important; color: #FCA5A5 !important; }
 
   /* Alert banner */
