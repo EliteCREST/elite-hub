@@ -1111,6 +1111,7 @@ function geotabTag(v) {
   const g = (v.geotab || '').toLowerCase().trim();
   if (!v.geotab) return '';
   if (g === 'ok' || g === 'active' || g.includes('active')) return `<span class="tag tag-good">${v.geotab}</span>`;
+  if (g === 'inactive') return `<span class="tag tag-bad">${v.geotab}</span>`;
   if (g.includes('no comm') || g.includes('disconnect')) return `<span class="tag tag-geotab-bad">${v.geotab}</span>`;
   return `<span class="tag tag-geotab-warn">${v.geotab}</span>`;
 }
