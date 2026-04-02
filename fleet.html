@@ -1239,9 +1239,9 @@ function tagExpiryTag(v) {
 }
 
 function geotabTag(v) {
-  const g = (v.geotab || '').toLowerCase();
+  const g = (v.geotab || '').toLowerCase().trim();
   if (!v.geotab) return '';
-  if (g === 'ok') return `<span class="tag tag-geotab-ok">OK</span>`;
+  if (g === 'ok' || g === 'active' || g.includes('active')) return `<span class="tag tag-good">${v.geotab}</span>`;
   if (g.includes('no comm') || g.includes('disconnect')) return `<span class="tag tag-geotab-bad">${v.geotab}</span>`;
   return `<span class="tag tag-geotab-warn">${v.geotab}</span>`;
 }
