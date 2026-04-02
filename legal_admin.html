@@ -183,7 +183,8 @@
   /* Case title cell */
   .case-title { font-weight: 700; color: var(--navy); font-size: 13px; }
   .case-note  { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
-  .case-link  { font-size: 10px; color: var(--blue); margin-top: 3px; display: inline-flex; align-items: center; gap: 3px; }
+  .case-link  { font-size: 10px; color: var(--blue); margin-top: 3px; display: inline-flex; align-items: center; gap: 3px; cursor: pointer; text-decoration: underline; }
+  .case-link:hover { color: var(--navy); }
 
   /* Type badges */
   .type-badge { display: inline-block; padding: 3px 9px; border-radius: 5px; font-size: 10px; font-weight: 700; letter-spacing: .3px; white-space: nowrap; }
@@ -783,7 +784,7 @@ function renderTable() {
       <td>
         <div class="case-title">${c.title || '—'}</div>
         ${c.notes ? `<div class="case-note">${c.notes.slice(0,60)}${c.notes.length>60?'…':''}</div>` : ''}
-        ${c.linked_id ? `<div class="case-link">🔗 Linked: ${c.linked_id}</div>` : ''}
+        ${c.linked_id ? `<div class="case-link" onclick="event.stopPropagation();openLinkedCase('${c.linked_id.replace(/'/g,"\\'")}')">🔗 Linked: ${c.linked_id}</div>` : ''}
       </td>
       <td>${typeBadge(c.type)}</td>
       <td>
@@ -796,7 +797,10 @@ function renderTable() {
       <td>${formatDate(c.filed_date)}</td>
       <td>${formatDate(c.resolved_date)}</td>
       <td style="font-size:12px;">${c.assigned_to || '—'}</td>
-      <td><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openEditModal('${c.id}')">✏ Edit</button></td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openEditModal('${c.id}')">✏ Edit</button>
+        ${(c.status||'').toLowerCase() === 'closed' ? `<button class="btn btn-sm" style="background:#1E3A5F;color:#93C5FD;border:1px solid #2563EB;margin-left:4px;" onclick="event.stopPropagation();reopenCase('${c.id}')">↩ Reopen</button>` : ''}
+      </td>
     </tr>`;
   }).join('');
 }
@@ -1012,7 +1016,7 @@ function buildFormHTML(type) {
       hiddens.map(f => '<input type="hidden" id="' + f.id + '" value="' + (f.value || '') + '">').join('') +
       rows.join('') +
       '</div>';
-  }).join('');
+  }).join('') + '<input type="hidden" id="fLinkedId" value="">';
 }
 
 let bbbComplaintCount = 0;
@@ -1071,6 +1075,59 @@ function openAddModal(type) {
   document.getElementById('caseModal').classList.add('open');
 }
 
+function openLinkedCase(linkedTitle) {
+  // Find the case by title match
+  const linked = allCases.find(c => c.title === linkedTitle || c.id === linkedTitle);
+  if (linked) {
+    openEditModal(linked.id);
+  } else {
+    showToast('Linked case not found', 'warn');
+  }
+}
+
+function reopenCase(id) {
+  const original = allCases.find(c => c.id === id);
+  if (!original) return;
+  
+  const newTitle = (original.title || '') + ' (Re-Opened)';
+  
+  // Update the original case to link back to the new one
+  original.linked_id = newTitle;
+  
+  // Create a new case carrying over key details
+  openAddModal(original.type || '');
+  
+  // Pre-fill the form after a short delay to let the modal render
+  setTimeout(() => {
+    const set = (fid, val) => { const el = document.getElementById(fid); if (el) el.value = val || ''; };
+    set('fTitle', newTitle);
+    set('fStatus', 'Open');
+    set('fBrand', original.brand);
+    set('fRegion', original.region);
+    set('fJobNumber', original.job_number);
+    set('fCustomerName', original.customer_name);
+    set('fCustomerPhone', original.customer_phone);
+    set('fCustomerEmail', original.customer_email);
+    set('fCustomerAddress', original.customer_address);
+    set('fLeadType', original.lead_type);
+    set('fAssignedTo', original.assigned_to);
+    set('fFiledDate', new Date().toISOString().split('T')[0]);
+    set('fNotes', 'Re-opened from: ' + (original.title || id));
+    set('fLinkedId', original.title || id);
+    // Update modal title
+    const titleEl = document.querySelector('#addModal .mh-title');
+    if (titleEl) titleEl.textContent = 'Reopen Case';
+    const subEl = document.querySelector('#addModal .mh-sub');
+    if (subEl) subEl.textContent = 'New case linked to: ' + (original.title || id);
+  }, 100);
+  
+  // Save the link back on the original (async, don't wait)
+  fetch(BACKEND_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'updateCase', id: original.id, caseData: { linked_id: newTitle } })
+  }).catch(() => {});
+}
+
 function openEditModal(id) {
   const c = allCases.find(x => x.id === id);
   if (!c) return;
@@ -1079,7 +1136,30 @@ function openEditModal(id) {
   bbbComplaintCount = 0;
   document.getElementById('modalTitle').textContent = 'Edit ' + currentFormType;
   document.getElementById('modalSub').textContent   = c.title || 'Case';
-  document.getElementById('modalBody').innerHTML    = buildFormHTML(currentFormType);
+  
+  let formHTML = buildFormHTML(currentFormType);
+  
+  // Add Related Cases section if this case has links
+  const relatedCases = allCases.filter(r => 
+    (r.linked_id && r.linked_id === c.title) || 
+    (c.linked_id && c.linked_id === r.title) ||
+    (r.id !== c.id && r.linked_id && c.linked_id && r.linked_id === c.linked_id)
+  );
+  if (relatedCases.length > 0 || c.linked_id) {
+    formHTML += '<div class="form-section" style="border-color:#6366F1;background:#EEF2FF;">' +
+      '<div class="form-section-title" style="color:#6366F1;">🔗 Related Cases</div>' +
+      (c.linked_id ? '<div style="font-size:12px;color:var(--gray-600);margin-bottom:8px;">Linked to: <strong>' + c.linked_id + '</strong></div>' : '') +
+      relatedCases.map(r => 
+        '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:white;border:1px solid var(--gray-200);border-radius:var(--radius);margin-bottom:6px;cursor:pointer;" onclick="closeModal();openEditModal(\'' + r.id + '\')">' +
+          '<div><div style="font-size:12px;font-weight:700;color:var(--navy);">' + (r.title||'—') + '</div>' +
+          '<div style="font-size:10px;color:var(--gray-400);">' + (r.type||'') + ' · ' + statusBadge(r.status) + '</div></div>' +
+          '<span style="font-size:11px;color:var(--blue);font-weight:700;">Open →</span>' +
+        '</div>'
+      ).join('') +
+      '</div>';
+  }
+  
+  document.getElementById('modalBody').innerHTML = formHTML;
   populateForm(c);
   document.getElementById('caseModal').classList.add('open');
 }
@@ -1117,6 +1197,7 @@ function populateForm(c) {
   set('fNatureOfComplaint', c.nature_of_complaint);
   set('fSiteVisit1', c.site_visit_1); set('fSiteVisit2', c.site_visit_2);
   set('fSiteVisit3', c.site_visit_3); set('fSiteVisit4', c.site_visit_4);
+  set('fLinkedId', c.linked_id);
   // Restore BBB additional complaints
   if (c.type === 'BBB Complaint') {
     for (let i = 1; i <= 7; i++) {
@@ -1160,6 +1241,7 @@ function getFormValues() {
     nature_of_complaint: g('fNatureOfComplaint'),
     site_visit_1: g('fSiteVisit1'), site_visit_2: g('fSiteVisit2'),
     site_visit_3: g('fSiteVisit3'), site_visit_4: g('fSiteVisit4'),
+    linked_id: g('fLinkedId'),
   };
   // Collect BBB additional complaints (1-7)
   for (let i = 1; i <= 7; i++) {
