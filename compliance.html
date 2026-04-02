@@ -1531,10 +1531,8 @@ function updateAlertBanner() {
   list.innerHTML = alerts.map(c => {
     const glS = getExpiryStatus(c.gl_expiry);
     const wcS = getExpiryStatus(c.wc_expiry);
-    const isExpired = glS === 'expired' || wcS === 'expired';
-    const isMissing = glS === 'missing' || wcS === 'missing';
-    const isInactive = (c.contract_status||'').toLowerCase() === 'inactive';
-    const icon = isExpired ? '🔴' : isMissing ? '⚫' : isInactive ? '🔴' : '⚠️';
+    const isExpiring = (glS === 'expiring30' || glS === 'expiring60' || wcS === 'expiring30' || wcS === 'expiring60');
+    const icon = isExpiring ? '⚠️' : '🔴';
     return `<div class="alert-chip" onclick="openDetail(${JSON.stringify(c).replace(/"/g,'&quot;')})">
       ${icon} ${c.name}
     </div>`;
