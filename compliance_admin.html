@@ -1412,7 +1412,7 @@ function renderTable() {
     const contractBadge = isInactive ? 'badge-inactive' : c.contract_status === 'Active' ? 'badge-active' : 'badge-pending';
     const regionParts = (c.region || '').split(/[\s,]+/).filter(Boolean);
 
-    const isClear = glStatus === 'compliant' && wcStatus === 'compliant' && !isInactive;
+    const isClear = (glStatus === 'ok' || glStatus === 'compliant') && (wcStatus === 'ok' || wcStatus === 'compliant') && !isInactive;
 
     return `
       <tr class="${isInactive ? 'inactive-row' : ''} clickable-row" onclick="openEditModal('${c.id}')" style="cursor:pointer;">
