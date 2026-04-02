@@ -986,7 +986,7 @@ function toggleDarkMode() {
 
   <!-- ALERT BANNER -->
   <div class="alert-banner" id="alertBanner">
-    <div class="alert-banner-title">⚠️ Compliance Alerts — Action Required</div>
+    <div class="alert-banner-title">⚠️ Not Clear to Schedule — Action Required</div>
     <div class="alert-list" id="alertList"></div>
   </div>
 
@@ -1518,17 +1518,25 @@ function updateKPIs() {
 /* ══ ALERT BANNER ════════════════════════════════════════════ */
 function updateAlertBanner() {
   const alerts = allContractors.filter(c => {
-    const s = getOverallStatus(c);
-    return s === 'expired' || s === 'expiring30';
+    const glS = getExpiryStatus(c.gl_expiry);
+    const wcS = getExpiryStatus(c.wc_expiry);
+    const isActive = (c.contract_status||'').toLowerCase() === 'active';
+    const isClear = (glS === 'ok' || glS === 'compliant') && (wcS === 'ok' || wcS === 'compliant') && isActive;
+    return !isClear;
   });
   const banner = document.getElementById('alertBanner');
   const list   = document.getElementById('alertList');
   if (!alerts.length) { banner.classList.remove('visible'); return; }
   banner.classList.add('visible');
   list.innerHTML = alerts.map(c => {
-    const s = getOverallStatus(c);
+    const glS = getExpiryStatus(c.gl_expiry);
+    const wcS = getExpiryStatus(c.wc_expiry);
+    const isExpired = glS === 'expired' || wcS === 'expired';
+    const isMissing = glS === 'missing' || wcS === 'missing';
+    const isInactive = (c.contract_status||'').toLowerCase() === 'inactive';
+    const icon = isExpired ? '🔴' : isMissing ? '⚫' : isInactive ? '🔴' : '⚠️';
     return `<div class="alert-chip" onclick="openDetail(${JSON.stringify(c).replace(/"/g,'&quot;')})">
-      ${s === 'expired' ? '🔴' : '⚠️'} ${c.name}
+      ${icon} ${c.name}
     </div>`;
   }).join('');
 }
