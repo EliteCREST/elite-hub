@@ -1300,5 +1300,34 @@ function logout() {
   }
 })();
 </script>
+<script>
+(function(){
+  const s = JSON.parse(localStorage.getItem('elite_session')||'{}');
+  const u = ((s.user||{}).username||'').toLowerCase();
+  const privileged = ['angel','sam','sara','emma','jaida'];
+  if (privileged.includes(u)) return;
+  // Disable fleet, legal, reviews nav links
+  document.querySelectorAll('.tool-nav .tn-btn').forEach(btn => {
+    const text = btn.textContent.toLowerCase().trim();
+    if (text.includes('fleet') || text.includes('legal') || text.includes('reviews')) {
+      btn.removeAttribute('href');
+      btn.style.opacity = '0.35';
+      btn.style.cursor = 'not-allowed';
+      btn.style.pointerEvents = 'none';
+    }
+  });
+  // Disable tool cards for fleet, litigation, reviews
+  document.querySelectorAll('.page-tile').forEach(tile => {
+    const name = (tile.querySelector('.pt-name')||{}).textContent || '';
+    const lower = name.toLowerCase();
+    if (lower.includes('fleet') || lower.includes('litigation') || lower.includes('reviews')) {
+      tile.removeAttribute('href');
+      tile.style.opacity = '0.35';
+      tile.style.cursor = 'not-allowed';
+      tile.style.pointerEvents = 'none';
+    }
+  });
+})();
+</script>
 </body>
 </html>

@@ -381,6 +381,17 @@ function toggleDarkMode() {
 }
 </script>
 
+<script>
+(function(){
+  const s = JSON.parse(localStorage.getItem('elite_session')||'{}');
+  const u = ((s.user||{}).username||'').toLowerCase();
+  const privileged = ['angel','sam','sara','emma','jaida'];
+  if (!privileged.includes(u)) {
+    alert('You do not have access to this page yet. Redirecting to your hub.');
+    window.location.href = 'https://elitecrest.github.io/elite-hub/index.html';
+  }
+})();
+</script>
 <!-- HEADER -->
 <header class="elite-header">
   <div class="header-accent"></div>
