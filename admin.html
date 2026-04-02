@@ -481,6 +481,18 @@ function fixDarkInlineStyles() {
   });
 }
 window.addEventListener('DOMContentLoaded', fixDarkInlineStyles);
+
+// Hide admin-only sections for non-Angel users
+window.addEventListener('DOMContentLoaded', function() {
+  const sess = JSON.parse(localStorage.getItem('elite_session') || '{}');
+  const username = ((sess.user || {}).username || '').toLowerCase();
+  if (username !== 'angel') {
+    ['adminNotifications','adminNotes','adminQuickLinks','adminDashboards'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  }
+});
 </script>
 
 
@@ -521,6 +533,7 @@ window.addEventListener('DOMContentLoaded', fixDarkInlineStyles);
 
 
   <!-- NOTIFICATIONS PANEL -->
+  <div id="adminNotifications">
   <div class="section-row" style="margin-bottom:16px;">
     <span class="sh">Notifications <span class="notif-badge" id="notifBadge">0</span></span>
     <div class="notif-filter-row">
@@ -537,6 +550,8 @@ window.addEventListener('DOMContentLoaded', fixDarkInlineStyles);
   </div>
 
   <!-- ADMIN NOTES PANEL -->
+  </div><!-- end adminNotifications -->
+  <div id="adminNotes">
   <div class="section-row" style="margin-bottom:16px;">
     <span class="sh">Admin Notes</span>
     <span style="font-size:11px;color:var(--gray-400);">Notes appear on region hub pages</span>
@@ -595,6 +610,8 @@ window.addEventListener('DOMContentLoaded', fixDarkInlineStyles);
   </div>
 
   <!-- QUICK LINKS -->
+  </div><!-- end adminNotes -->
+  <div id="adminQuickLinks">
   <div class="section-row">
     <span class="sh">Quick Links</span>
   </div>
@@ -609,6 +626,8 @@ window.addEventListener('DOMContentLoaded', fixDarkInlineStyles);
   </div>
 
   <!-- ADMIN PERSONAL DASHBOARDS -->
+  </div><!-- end adminQuickLinks -->
+  <div id="adminDashboards">
   <div class="section-row" style="margin-bottom:12px;margin-top:8px;">
     <span class="sh">Admin Dashboards</span>
     <span style="font-size:11px;color:var(--gray-400);">Personal notification pages</span>
@@ -622,6 +641,7 @@ window.addEventListener('DOMContentLoaded', fixDarkInlineStyles);
   </div>
 
   <!-- ADMIN TOOLS -->
+  </div><!-- end adminDashboards -->
   <div class="section-row">
     <span class="sh">Admin Tools</span>
     <span style="font-size:11px;color:var(--gray-400);">Select a section to manage</span>
