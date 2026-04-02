@@ -101,8 +101,8 @@
     --gray-600:    #64748B;
     --gray-800:    #334155;
     --text:        #1B2A4A;
-    --green:       #16A34A;
-    --green-pale:  #DCFCE7;
+    --green:       #1F5FAD;
+    --green-pale:  #EAF1FB;
     --yellow:      #D97706;
     --yellow-pale: #FEF9C3;
     --red:         #DC2626;
@@ -319,7 +319,7 @@
   .tag-expiry-ok   { background: white; color: #1F5FAD; border: 1px solid #1F5FAD; }
   .tag-expiry-warn { background: var(--yellow-pale); color: var(--yellow); }
   .tag-expiry-exp  { background: var(--red-pale); color: var(--red); }
-  .tag-wrap    { background: #F0FDF4; color: #15803D; }
+  .tag-wrap    { background: #EAF1FB; color: #1F5FAD; }
   .tag-gray    { background: var(--gray-100); color: var(--gray-600); }
 
   .vc-status {
@@ -573,7 +573,7 @@
   body.dark .form-group label { color: #9CA3AF !important; }
 
   /* Status/score badges */
-  body.dark .tag-geotab-ok, body.dark .badge-green { background: #064E3B !important; color: #6EE7B7 !important; }
+  body.dark .tag-geotab-ok, body.dark .badge-green { background: #1E3A5F !important; color: #93C5FD !important; }
   body.dark .tag-expiry-ok { background: #1E3A5F !important; color: #93C5FD !important; }
   body.dark .tag-geotab-bad, body.dark .tag-expiry-exp, body.dark .badge-red { background: #7F1D1D !important; color: #FCA5A5 !important; }
   body.dark .tag-expiry-warn, body.dark .badge-yellow { background: #78350F !important; color: #FCD34D !important; }
@@ -591,7 +591,7 @@
   body.dark .safety-strip-card { background: #1F2937 !important; border-color: #374151 !important; }
   body.dark .ss-label { color: #9CA3AF !important; }
   body.dark .ss-value { color: #F1F5F9 !important; }
-  body.dark .ss-value.ok { color: #6EE7B7 !important; }
+  body.dark .ss-value.ok { color: #93C5FD !important; }
   body.dark .ss-value.warn { color: #FCD34D !important; }
   body.dark .ss-value.alert { color: #FCA5A5 !important; }
   body.dark .ss-sub { color: #6B7280 !important; }
@@ -666,11 +666,11 @@
   }
   .sp-metric.alert { background:#FEF2F2;border-color:#FECACA; }
   .sp-metric.warn  { background:#FFF7ED;border-color:#FED7AA; }
-  .sp-metric.ok    { background:#F0FDF4;border-color:#BBF7D0; }
+  .sp-metric.ok    { background:#EAF1FB;border-color:#C7D9F0; }
   .sp-metric-val  { font-size:16px;font-weight:700;color:var(--navy); }
   .sp-metric-val.red    { color:#DC2626; }
   .sp-metric-val.orange { color:#F97316; }
-  .sp-metric-val.green  { color:#16A34A; }
+  .sp-metric-val.green  { color:#1F5FAD; }
   .sp-metric-lbl  { font-size:10px;color:var(--gray-400);margin-top:2px;letter-spacing:.3px; }
   .sp-trip-stats  { display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px; }
   .sp-trip-stat   { text-align:center;background:var(--blue-pale);border-radius:8px;padding:10px; }
@@ -684,7 +684,7 @@
     cursor:pointer;transition:opacity .15s;
   }
   .safety-badge:hover { opacity:.8; }
-  .safety-badge.excellent { background:#DCFCE7;color:#16A34A; }
+  .safety-badge.excellent { background:#EAF1FB;color:#1F5FAD; }
   .safety-badge.good      { background:#DBEAFE;color:#2563EB; }
   .safety-badge.fair      { background:#FFF7ED;color:#F97316; }
   .safety-badge.poor      { background:#FEE2E2;color:#DC2626; }
@@ -1753,7 +1753,7 @@ function closeSafety() {
 }
 
 function safetyScoreColor(score) {
-  if (score >= 450) return '#16A34A';
+  if (score >= 450) return '#1F5FAD';
   if (score >= 375) return '#2563EB';
   if (score >= 250) return '#F97316';
   return '#DC2626';

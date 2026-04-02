@@ -252,7 +252,7 @@
   }
 
   /* Score color helpers */
-  .score-excellent { color: #16A34A; }
+  .score-excellent { color: #1F5FAD; }
   .score-good      { color: #2563EB; }
   .score-fair      { color: #D97706; }
   .score-poor      { color: #DC2626; }
@@ -579,7 +579,7 @@ function buildPodium() {
   document.getElementById('podium').innerHTML = top3.map((r, i) => {
     const sc  = scoreClass(r.score);
     const pct = scorePct(r.score);
-    const color = sc === 'excellent' ? '#16A34A' : sc === 'good' ? '#2563EB' : sc === 'fair' ? '#D97706' : sc === 'poor' ? '#DC2626' : 'var(--gray-400)';
+    const color = sc === 'excellent' ? '#1F5FAD' : sc === 'good' ? '#2563EB' : sc === 'fair' ? '#D97706' : sc === 'poor' ? '#DC2626' : 'var(--gray-400)';
     const pending = r.score === null;
 
     return `
