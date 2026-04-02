@@ -1241,10 +1241,8 @@ function tagExpiryTag(v) {
 function geotabTag(v) {
   const g = (v.geotab || '').toLowerCase().trim();
   if (!v.geotab) return '';
-  if (g === 'inactive') return `<span class="tag tag-bad">${v.geotab}</span>`;
   if (g === 'ok' || g === 'active') return `<span class="tag tag-good">${v.geotab}</span>`;
-  if (g.includes('no comm') || g.includes('disconnect')) return `<span class="tag tag-geotab-bad">${v.geotab}</span>`;
-  return `<span class="tag tag-geotab-warn">${v.geotab}</span>`;
+  return `<span class="tag tag-bad">${v.geotab}</span>`;
 }
 
 function vehicleStatusClass(v) {
@@ -1274,10 +1272,8 @@ function evidClass(v) {
   const agree = (v.agreement || '').toLowerCase();
   if (agree && agree !== 'signed') hasIssue = true;
   // Geotab issue
-  const geo = (v.geotab || '').toLowerCase();
-  if (geo && geo !== 'ok' && geo !== '') hasIssue = true;
-  // No status set
-  if (!s) hasIssue = true;
+  const geo = (v.geotab || '').toLowerCase().trim();
+  if (geo && geo !== 'ok' && geo !== 'active') hasIssue = true;
 
   return hasIssue ? 'evid-alert' : 'evid-ok';
 }
