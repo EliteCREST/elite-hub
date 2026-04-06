@@ -664,14 +664,10 @@ function toggleDarkMode() {
 })();
 window.addEventListener('DOMContentLoaded', function() {
   if (!window.ELITE_VIEW_ONLY) return;
-  
-  // Add view-only banner
   const banner = document.createElement('div');
   banner.style.cssText = 'background:#FEF3C7;color:#92400E;padding:8px 16px;text-align:center;font-size:12px;font-weight:700;font-family:Arial,sans-serif;border-bottom:1px solid #F59E0B;position:sticky;top:0;z-index:9999;';
   banner.innerHTML = '\u{1F441}\uFE0F VIEW-ONLY MODE — You can view this data but cannot make changes';
   document.body.insertBefore(banner, document.body.firstChild);
-  
-  // Inject CSS to hide edit/save/upload/add/delete elements and disable inputs
   const style = document.createElement('style');
   style.textContent = `
     body.view-only input:not([type="search"]):not([id*="search"]):not([id*="Search"]),
@@ -695,24 +691,16 @@ window.addEventListener('DOMContentLoaded', function() {
     body.view-only [onclick*="openAdd"],
     body.view-only [onclick*="delete"],
     body.view-only [onclick*="Delete"],
-    body.view-only [onclick*="removeCrew"],
     body.view-only [onclick*="upload"],
     body.view-only [onclick*="Upload"],
     body.view-only [onclick*="openUpload"],
     body.view-only [onclick*="openEdit"],
-    body.view-only [onclick*="confirmDeactivate"],
-    body.view-only [onclick*="confirmRestore"],
-    body.view-only [onclick*="reopenCase"],
-    body.view-only [onclick*="approve"],
-    body.view-only [onclick*="deny"],
-    body.view-only [onclick*="sendToShop"],
-    body.view-only [onclick*="toggleOOS"],
+    body.view-only [onclick*="reply"],
+    body.view-only [onclick*="Reply"],
+    body.view-only [onclick*="respond"],
+    body.view-only [onclick*="Respond"],
     body.view-only .row-btn.upload-btn-sm,
-    body.view-only .row-btn.edit-btn,
-    body.view-only .crew-add-form,
-    body.view-only .upload-zone,
-    body.view-only #addCaseBtn,
-    body.view-only #addContractorBtn {
+    body.view-only .row-btn.edit-btn {
       display: none !important;
     }
   `;

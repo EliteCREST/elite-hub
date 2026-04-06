@@ -1308,8 +1308,26 @@ function logout() {
   const privileged = ['angel','sam','sara','emma','jaida'];
   if (privileged.includes(u)) return;
   // Disable fleet, legal, reviews nav links
-  // Tool nav links are clickable for everyone (view-only enforced on the page itself)
-  // Tool cards are clickable for everyone (view-only enforced on the page itself)
+  document.querySelectorAll('.tool-nav .tn-btn').forEach(btn => {
+    const text = btn.textContent.toLowerCase().trim();
+    if (text.includes('legal')) {
+      btn.removeAttribute('href');
+      btn.style.opacity = '0.35';
+      btn.style.cursor = 'not-allowed';
+      btn.style.pointerEvents = 'none';
+    }
+  });
+  // Disable tool cards for litigation only (fleet & reviews remain clickable for view)
+  document.querySelectorAll('.page-tile').forEach(tile => {
+    const name = (tile.querySelector('.pt-name')||{}).textContent || '';
+    const lower = name.toLowerCase();
+    if (lower.includes('litigation')) {
+      tile.removeAttribute('href');
+      tile.style.opacity = '0.35';
+      tile.style.cursor = 'not-allowed';
+      tile.style.pointerEvents = 'none';
+    }
+  });
 })();
 </script>
 </body>

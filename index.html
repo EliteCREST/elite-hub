@@ -890,7 +890,15 @@ window.addEventListener('load', function() {
   const u = ((s.user||{}).username||'').toLowerCase();
   const privileged = ['angel','sam','sara','emma','jaida'];
   if (privileged.includes(u)) return;
-  // Tool nav links are clickable for everyone (view-only enforced on the page itself)
+  document.querySelectorAll('.tool-nav .tn-btn').forEach(btn => {
+    const text = btn.textContent.toLowerCase().trim();
+    if (text.includes('legal')) {
+      btn.removeAttribute('href');
+      btn.style.opacity = '0.35';
+      btn.style.cursor = 'not-allowed';
+      btn.style.pointerEvents = 'none';
+    }
+  });
 })();
 </script>
 </body>
