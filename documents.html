@@ -1302,15 +1302,7 @@ setInterval(initPage, 120000); // auto-refresh every 2 min
   const privileged = ['angel','sam','sara','emma','jaida'];
   if (privileged.includes(u)) return;
   // Disable fleet, legal, reviews nav links
-  document.querySelectorAll('.tool-nav .tn-btn').forEach(btn => {
-    const text = btn.textContent.toLowerCase().trim();
-    if (text.includes('fleet') || text.includes('legal') || text.includes('reviews')) {
-      btn.removeAttribute('href');
-      btn.style.opacity = '0.35';
-      btn.style.cursor = 'not-allowed';
-      btn.style.pointerEvents = 'none';
-    }
-  });
+  // Tool nav links are clickable for everyone (view-only enforced on the page itself)
 })();
 </script>
 </body>

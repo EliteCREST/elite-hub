@@ -660,11 +660,65 @@ function toggleDarkMode() {
   const s = JSON.parse(localStorage.getItem('elite_session')||'{}');
   const u = ((s.user||{}).username||'').toLowerCase();
   const privileged = ['angel','sam','sara','emma','jaida'];
-  if (!privileged.includes(u)) {
-    alert('You do not have access to this page yet. Redirecting to your hub.');
-    window.location.href = 'https://elitecrest.github.io/elite-hub/index.html';
-  }
+  window.ELITE_VIEW_ONLY = !privileged.includes(u);
 })();
+window.addEventListener('DOMContentLoaded', function() {
+  if (!window.ELITE_VIEW_ONLY) return;
+  
+  // Add view-only banner
+  const banner = document.createElement('div');
+  banner.style.cssText = 'background:#FEF3C7;color:#92400E;padding:8px 16px;text-align:center;font-size:12px;font-weight:700;font-family:Arial,sans-serif;border-bottom:1px solid #F59E0B;position:sticky;top:0;z-index:9999;';
+  banner.innerHTML = '\u{1F441}\uFE0F VIEW-ONLY MODE — You can view this data but cannot make changes';
+  document.body.insertBefore(banner, document.body.firstChild);
+  
+  // Inject CSS to hide edit/save/upload/add/delete elements and disable inputs
+  const style = document.createElement('style');
+  style.textContent = `
+    body.view-only input:not([type="search"]):not([id*="search"]):not([id*="Search"]),
+    body.view-only textarea,
+    body.view-only select:not([id*="filter"]):not([id*="Filter"]) {
+      background: #f3f4f6 !important;
+      pointer-events: none !important;
+      cursor: not-allowed !important;
+    }
+    body.view-only [contenteditable="true"] {
+      pointer-events: none !important;
+      background: #f3f4f6 !important;
+    }
+    body.view-only .btn-save-detail,
+    body.view-only .btn-add,
+    body.view-only [onclick*="save"],
+    body.view-only [onclick*="Save"],
+    body.view-only [onclick*="addContractor"],
+    body.view-only [onclick*="addCase"],
+    body.view-only [onclick*="addVehicle"],
+    body.view-only [onclick*="openAdd"],
+    body.view-only [onclick*="delete"],
+    body.view-only [onclick*="Delete"],
+    body.view-only [onclick*="removeCrew"],
+    body.view-only [onclick*="upload"],
+    body.view-only [onclick*="Upload"],
+    body.view-only [onclick*="openUpload"],
+    body.view-only [onclick*="openEdit"],
+    body.view-only [onclick*="confirmDeactivate"],
+    body.view-only [onclick*="confirmRestore"],
+    body.view-only [onclick*="reopenCase"],
+    body.view-only [onclick*="approve"],
+    body.view-only [onclick*="deny"],
+    body.view-only [onclick*="sendToShop"],
+    body.view-only [onclick*="toggleOOS"],
+    body.view-only .row-btn.upload-btn-sm,
+    body.view-only .row-btn.edit-btn,
+    body.view-only .crew-add-form,
+    body.view-only .upload-zone,
+    body.view-only #addCaseBtn,
+    body.view-only #addContractorBtn {
+      display: none !important;
+    }
+  `;
+  document.head.appendChild(style);
+  document.body.classList.add('view-only');
+});
 </script>
 <!-- HEADER -->
 <header class="elite-header">
