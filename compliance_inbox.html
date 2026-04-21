@@ -156,7 +156,8 @@
     box-shadow: var(--shadow-sm);
     overflow: hidden;
   }
-  .notif-list-wrap { padding: 16px; }
+  .notif-list-wrap { padding: 0; }
+  .notif-list-wrap .notif-list { gap: 0; margin-top: 0; }
   .queue-item {
     padding: 14px 18px;
     border-bottom: 1px solid var(--gray-200);
@@ -309,19 +310,70 @@
   .notif-item.assigned { border-left:4px solid #F97316;background:#FFFBF5; }
   .notif-item.resolved { opacity:.55; }
 
-  /* When inside our list wrapper, flatten to match Review queue row style */
+  /* Inside the list wrapper: flatten to match Review queue row exactly.
+     Click-to-expand, same 14/18 padding, per-row bottom border, subtle left border accent by status. */
   .notif-list-wrap .notif-item {
+    display: block;
     border: none; border-radius: 0; background: transparent;
     border-bottom: 1px solid var(--gray-200);
     padding: 14px 18px; margin: 0;
+    cursor: pointer;
+    transition: background 0.1s;
+    border-left: 3px solid transparent;
   }
   .notif-list-wrap .notif-item:last-child { border-bottom: none; }
   .notif-list-wrap .notif-item:hover { box-shadow: none; background: var(--gray-50); }
+  .notif-list-wrap .notif-item.expanded { background: var(--blue-pale); }
+
+  /* Subtle left-border accent by status (option B — no inline pill) */
   .notif-list-wrap .notif-item.unread,
-  .notif-list-wrap .notif-item.assigned { border-left: none; }
-  /* Remove internal padding so the row extends to card edge like queue-item does */
-  .notif-list-wrap { padding: 0; }
-  .notif-list-wrap .notif-list { gap: 0; }
+  .notif-list-wrap .notif-item.new          { border-left-color: var(--gray-300); }
+  .notif-list-wrap .notif-item.assigned     { border-left-color: #F97316; }
+  .notif-list-wrap .notif-item.in-progress  { border-left-color: var(--blue); }
+  .notif-list-wrap .notif-item.pending-info,
+  .notif-list-wrap .notif-item.blaze-entry-required { border-left-color: #D97706; }
+  .notif-list-wrap .notif-item.escalated    { border-left-color: var(--red); }
+  .notif-list-wrap .notif-item.gl-confirmed,
+  .notif-list-wrap .notif-item.wc-confirmed { border-left-color: #0D9488; }
+  .notif-list-wrap .notif-item.entered      { border-left-color: #7C3AED; }
+  .notif-list-wrap .notif-item.resolved     { border-left-color: #059669; opacity: 1; }
+  .notif-list-wrap .notif-item.denied       { border-left-color: var(--red); }
+
+  /* Row layout — mirrors .queue-row-top */
+  .notif-row-top {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .notif-date-right {
+    font-size: 11px; color: var(--gray-400); margin-left: auto;
+  }
+  .notif-subtitle {
+    display: flex; gap: 10px; font-size: 11px; color: var(--gray-600);
+    margin-top: 6px; flex-wrap: wrap; align-items: center;
+  }
+
+  /* Expanded detail panel inside the notification row */
+  .notif-detail {
+    margin-top: 12px; padding: 14px 16px;
+    background: white; border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+  }
+  .notif-detail-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--gray-400); margin-bottom: 4px;
+  }
+  .notif-detail-text {
+    font-size: 13px; color: var(--gray-800); line-height: 1.6;
+    padding: 10px 12px; background: var(--gray-50);
+    border-left: 3px solid var(--blue);
+    border-radius: 4px; margin-bottom: 14px;
+    white-space: pre-wrap;
+  }
+  .notif-detail-actions {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px;
+    padding-top: 14px; border-top: 1px solid var(--gray-200);
+    align-items: center;
+  }
+
   .notif-icon  { font-size:20px;flex-shrink:0;margin-top:2px; }
   .notif-body  { flex:1;min-width:0; }
   .notif-title { font-size:13px;font-weight:700;color:var(--navy); }
@@ -979,6 +1031,7 @@ const NOTIF_STATUSES = [
 ];
 let allNotifications = [];
 let notifFilter = 'all';
+let expandedNotifId = null;   // id of currently expanded contractor notification
 
 async function loadNotifications() {
   try {
@@ -1046,41 +1099,63 @@ function renderNotifications() {
     const ts      = n['timestamp'] ? new Date(n['timestamp']).toLocaleString() : '—';
     const status  = n['status'] || 'New';
     const assignee = n['assigned_to'] || '';
+    const creator  = n['created_by'] || 'System';
     const id      = n['id'];
+    const isExpanded = String(expandedNotifId) === String(id);
+    // Normalize status into a class-safe token that matches the CSS left-border accents
+    const statusToken = String(status).toLowerCase().replace(/\s+/g, '-');
 
-    const assignSelect = `<select class="notif-assign-sel" onchange="assignNotif('${id}',this.value)">
-      <option value="">Assign to…</option>
-      ${ADMINS.map(a => `<option value="${a}" ${assignee===a?'selected':''}>${a}</option>`).join('')}
-    </select>`;
+    // Build row contents (same padding/structure as the Review row)
+    const collapsed = `
+      <div class="notif-row-top">
+        ${n['region'] ? `<span class="queue-region">${escapeHtml(regionLabel(n['region']))}</span>` : ''}
+        <span class="queue-reviewer">${escapeHtml(notifLabel(n['type']))} — ${escapeHtml(n['contractor_name'] || '—')}</span>
+        <span class="notif-date-right">${escapeHtml(ts)}</span>
+      </div>
+      <div class="notif-subtitle">
+        <span>📨 Submitted by <strong>${escapeHtml(creator)}</strong>${assignee ? ' → <strong>' + escapeHtml(assignee) + '</strong>' : ''}</span>
+      </div>
+    `;
 
-    // Status dropdown — shows all 11 statuses; matches legacy lowercase values too
-    const statusClass = 'status-' + String(status).toLowerCase().replace(/\s+/g, '-');
-    const statusSelect = `<div class="notif-status-wrap">
-      <span class="notif-status-label">Status</span>
-      <select class="notif-status-sel ${statusClass}" onchange="changeNotifStatus('${id}', this.value)">
-        ${NOTIF_STATUSES.map(s => `<option value="${s}" ${s === status || s.toLowerCase() === String(status).toLowerCase() ? 'selected' : ''}>${s}</option>`).join('')}
-      </select>
-    </div>`;
-
+    // Expanded detail (dropdowns for assign/status live inside here now)
+    const statusSelect = `
+      <div class="notif-status-wrap">
+        <span class="notif-status-label">Status</span>
+        <select class="notif-status-sel status-${statusToken}" onclick="event.stopPropagation();" onchange="changeNotifStatus('${id}', this.value)">
+          ${NOTIF_STATUSES.map(s => `<option value="${s}" ${s === status || s.toLowerCase() === String(status).toLowerCase() ? 'selected' : ''}>${s}</option>`).join('')}
+        </select>
+      </div>`;
+    const assignSelect = `
+      <select class="notif-assign-sel" onclick="event.stopPropagation();" onchange="assignNotif('${id}',this.value)">
+        <option value="">Assign to…</option>
+        ${ADMINS.map(a => `<option value="${a}" ${assignee===a?'selected':''}>${a}</option>`).join('')}
+      </select>`;
     const resolvedNote = String(status).toLowerCase() === 'resolved' && n['resolved_at']
-      ? `<span style="font-size:11px;color:var(--gray-400);margin-left:4px;">✓ ${new Date(n['resolved_at']).toLocaleDateString()}</span>`
+      ? `<span style="font-size:11px;color:var(--gray-400);">✓ Resolved ${new Date(n['resolved_at']).toLocaleDateString()}</span>`
       : '';
 
-    return `<div class="notif-item ${status}" id="notif-${id}">
-      <div class="notif-body">
-        <div class="notif-title" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          ${n['region'] ? `<span class="queue-region">${escapeHtml(regionLabel(n['region']))}</span>` : ''}
-          <span>${notifLabel(n['type'])} — ${n['contractor_name'] || '—'}</span>
-        </div>
-        <div class="notif-meta">${n['detail'] || ''} · ${ts}${assignee ? ' · <strong>→ ' + assignee + '</strong>' : ''}</div>
-        <div class="notif-actions">
+    const detail = isExpanded ? `
+      <div class="notif-detail" onclick="event.stopPropagation();">
+        <div class="notif-detail-label">Notification Detail</div>
+        <div class="notif-detail-text">${escapeHtml(n['detail'] || '(No additional detail)')}</div>
+        <div class="notif-detail-actions">
           ${assignSelect}
           ${statusSelect}
           ${resolvedNote}
         </div>
       </div>
+    ` : '';
+
+    return `<div class="notif-item ${statusToken} ${isExpanded ? 'expanded' : ''}" id="notif-${id}" onclick="toggleNotifDetail('${id}')">
+      ${collapsed}
+      ${detail}
     </div>`;
   }).join('');
+}
+
+function toggleNotifDetail(id) {
+  expandedNotifId = (String(expandedNotifId) === String(id)) ? null : id;
+  renderNotifications();
 }
 
 async function assignNotif(id, assignee) {
