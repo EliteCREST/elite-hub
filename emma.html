@@ -116,34 +116,79 @@
   .sticky-delete:hover{background:rgba(0,0,0,.08);color:var(--red);}
   .add-note-card{border:2px dashed var(--gray-300);background:transparent;color:var(--gray-400);display:flex;align-items:center;justify-content:center;min-height:110px;cursor:pointer;font-size:13px;font-weight:700;border-radius:8px;}
   .add-note-card:hover{border-color:var(--blue);color:var(--blue);}
+  /* ─── Search bar (shared) ─────────────────────────── */
+  .widget-search{display:flex;align-items:center;gap:8px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:6px;padding:6px 10px;margin-bottom:10px;}
+  .widget-search input{flex:1;border:none;outline:none;background:transparent;font-family:inherit;font-size:12px;color:var(--text);}
+  .widget-search input::placeholder{color:var(--gray-400);}
+  .widget-search-icon{color:var(--gray-400);font-size:12px;}
+
+  /* ─── Add footer button (shared style) ────────────── */
+  .add-toggle{width:100%;padding:9px 12px;margin-top:10px;border:1px dashed var(--gray-300);border-radius:6px;background:transparent;color:var(--gray-600);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .add-toggle:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-pale);}
+  .add-form{display:none;padding:12px;margin-top:10px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:6px;}
+  .add-form.open{display:block;}
+  .add-form-title{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--gray-600);margin-bottom:8px;}
+  .add-form-grid{display:grid;gap:6px;}
+  .add-form-grid.cols-2{grid-template-columns:1fr 1fr;}
+  .add-form-grid input{padding:8px 10px;border:1px solid var(--gray-300);border-radius:5px;font-family:inherit;font-size:12px;outline:none;background:white;}
+  .add-form-grid input:focus{border-color:var(--blue);}
+  .add-form-grid input.full{grid-column:1 / -1;}
+  .add-form-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:8px;}
+  .add-form-btn{padding:7px 14px;border-radius:5px;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+  .add-form-btn.primary{background:var(--blue);color:white;}
+  .add-form-btn.primary:hover{opacity:.9;}
+  .add-form-btn.secondary{background:white;color:var(--gray-600);border:1px solid var(--gray-300);}
+  .add-form-btn.secondary:hover{border-color:var(--gray-400);color:var(--navy);}
+
+  /* ─── Quick Links ─────────────────────────────────── */
   .links-list{display:flex;flex-direction:column;gap:6px;}
-  .link-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--gray-200);border-radius:6px;background:white;text-decoration:none;color:var(--text);}
+  .link-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--gray-200);border-radius:6px;background:white;position:relative;}
   .link-item:hover{border-color:var(--blue);background:var(--blue-pale);}
-  .link-icon{width:26px;height:26px;border-radius:4px;background:var(--blue-pale);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;font-weight:800;}
-  .link-label{flex:1;font-size:13px;font-weight:600;color:var(--navy);}
-  .link-url{font-size:10px;color:var(--gray-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
-  .link-del{background:none;border:none;color:var(--gray-400);cursor:pointer;padding:4px;font-size:12px;opacity:0;}
-  .link-item:hover .link-del{opacity:1;}
-  .link-del:hover{color:var(--red);}
-  .add-inline-form{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-200);}
-  .add-inline-form input{padding:7px 10px;border:1px solid var(--gray-300);border-radius:5px;font-family:inherit;font-size:12px;outline:none;}
-  .add-inline-form input:focus{border-color:var(--blue);}
-  .add-inline-form button{padding:7px 12px;border-radius:5px;border:none;background:var(--blue);color:white;font-weight:700;font-size:12px;cursor:pointer;}
+  .link-item-main{flex:1;min-width:0;display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;}
+  .link-icon{width:28px;height:28px;border-radius:4px;background:var(--blue-pale);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;font-weight:800;}
+  .link-text-wrap{flex:1;min-width:0;overflow:hidden;}
+  .link-label{font-size:13px;font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .link-url{font-size:10px;color:var(--gray-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+  .link-actions{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:opacity .1s;}
+  .link-item:hover .link-actions{opacity:1;}
+  .link-action-btn{width:26px;height:26px;border-radius:4px;border:none;background:transparent;cursor:pointer;font-size:12px;color:var(--gray-400);display:flex;align-items:center;justify-content:center;}
+  .link-action-btn:hover{background:var(--gray-200);color:var(--navy);}
+  .link-action-btn.delete:hover{background:var(--red-pale);color:var(--red);}
+  .link-item.editing{background:var(--gray-50);border-color:var(--blue);flex-direction:column;align-items:stretch;gap:8px;}
+  .link-item.editing .link-item-main,
+  .link-item.editing .link-actions{display:none;}
+  .link-edit-fields{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .link-edit-fields input{padding:7px 10px;border:1px solid var(--gray-300);border-radius:5px;font-family:inherit;font-size:12px;outline:none;}
+  .link-edit-fields input:focus{border-color:var(--blue);}
+  .link-edit-actions{display:flex;gap:6px;justify-content:flex-end;}
+
+  /* ─── Contacts ────────────────────────────────────── */
   .contacts-list{display:flex;flex-direction:column;gap:8px;}
-  .contact-item{padding:10px 12px;border:1px solid var(--gray-200);border-radius:6px;background:white;position:relative;}
+  .contact-item{padding:12px;border:1px solid var(--gray-200);border-radius:6px;background:white;position:relative;}
   .contact-item:hover{border-color:var(--blue);}
-  .contact-name{font-size:13px;font-weight:800;color:var(--navy);}
-  .contact-role{font-size:11px;color:var(--gray-600);margin-bottom:4px;}
-  .contact-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray-800);margin-top:2px;}
-  .contact-copy{background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:11px;padding:0 4px;}
-  .contact-copy:hover{color:var(--blue);}
-  .contact-del{position:absolute;top:6px;right:6px;background:none;border:none;color:var(--gray-400);cursor:pointer;padding:2px 5px;font-size:11px;opacity:0;border-radius:3px;}
-  .contact-item:hover .contact-del{opacity:1;}
-  .contact-del:hover{color:var(--red);background:var(--red-pale);}
-  .contact-form{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-200);}
-  .contact-form input{padding:7px 10px;border:1px solid var(--gray-300);border-radius:5px;font-family:inherit;font-size:12px;outline:none;}
-  .contact-form input.full{grid-column:1 / -1;}
-  .contact-form button{grid-column:1 / -1;padding:7px 12px;border-radius:5px;border:none;background:var(--blue);color:white;font-weight:700;font-size:12px;cursor:pointer;}
+  .contact-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;}
+  .contact-head-text{flex:1;min-width:0;}
+  .contact-name{font-size:13px;font-weight:800;color:var(--navy);word-break:break-word;}
+  .contact-role{font-size:11px;color:var(--gray-600);margin-top:2px;word-break:break-word;}
+  .contact-actions{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:opacity .1s;}
+  .contact-item:hover .contact-actions{opacity:1;}
+  .contact-action-btn{width:24px;height:24px;border-radius:4px;border:none;background:transparent;cursor:pointer;font-size:11px;color:var(--gray-400);display:flex;align-items:center;justify-content:center;}
+  .contact-action-btn:hover{background:var(--gray-200);color:var(--navy);}
+  .contact-action-btn.delete:hover{background:var(--red-pale);color:var(--red);}
+  .contact-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray-800);margin-top:4px;min-width:0;}
+  .contact-row a{color:inherit;text-decoration:none;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .contact-row a:hover{color:var(--blue);text-decoration:underline;}
+  .contact-copy{background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:11px;padding:2px 6px;border-radius:3px;flex-shrink:0;}
+  .contact-copy:hover{color:var(--blue);background:var(--blue-pale);}
+  .contact-item.editing{background:var(--gray-50);border-color:var(--blue);}
+  .contact-item.editing .contact-head-text,
+  .contact-item.editing .contact-row{display:none;}
+  .contact-item.editing .contact-actions{display:none;}
+  .contact-edit-fields{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .contact-edit-fields input{padding:7px 10px;border:1px solid var(--gray-300);border-radius:5px;font-family:inherit;font-size:12px;outline:none;}
+  .contact-edit-fields input:focus{border-color:var(--blue);}
+  .contact-edit-fields input.full{grid-column:1 / -1;}
+  .contact-edit-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:8px;}
   .scratchpad{width:100%;min-height:160px;padding:12px 14px;border:1px solid var(--gray-300);border-radius:6px;font-family:inherit;font-size:13px;color:var(--text);resize:vertical;outline:none;background:#FFFEF0;}
   .scratchpad:focus{border-color:var(--blue);}
   .scratch-status{font-size:10px;color:var(--gray-400);margin-top:4px;text-align:right;}
@@ -250,22 +295,44 @@
       <div>
         <div class="card">
           <div class="section-head"><div class="section-title">🔗 Quick Links</div><div class="section-sub">Your bookmarks</div></div>
+          <div class="widget-search">
+            <span class="widget-search-icon">🔍</span>
+            <input type="text" id="link-search" placeholder="Search links..." oninput="renderLinks()">
+          </div>
           <div class="links-list" id="links-list"></div>
-          <div class="add-inline-form">
-            <input type="text" id="link-label-input" placeholder="Label">
-            <input type="text" id="link-url-input" placeholder="https://...">
-            <button onclick="addLink()">+</button>
+          <button class="add-toggle" onclick="toggleAddForm('link')">+ Add Link</button>
+          <div class="add-form" id="link-add-form">
+            <div class="add-form-title">New Link</div>
+            <div class="add-form-grid cols-2">
+              <input type="text" id="link-label-input" placeholder="Label" class="full">
+              <input type="text" id="link-url-input" placeholder="https://..." class="full">
+            </div>
+            <div class="add-form-actions">
+              <button class="add-form-btn secondary" onclick="toggleAddForm('link')">Cancel</button>
+              <button class="add-form-btn primary" onclick="addLink()">Save</button>
+            </div>
           </div>
         </div>
         <div class="card">
           <div class="section-head"><div class="section-title">👤 Quick Contacts</div><div class="section-sub">Click to copy</div></div>
+          <div class="widget-search">
+            <span class="widget-search-icon">🔍</span>
+            <input type="text" id="contact-search" placeholder="Search contacts..." oninput="renderContacts()">
+          </div>
           <div class="contacts-list" id="contacts-list"></div>
-          <div class="contact-form">
-            <input class="full" type="text" id="contact-name-input" placeholder="Name">
-            <input class="full" type="text" id="contact-role-input" placeholder="Role / Company (optional)">
-            <input type="text" id="contact-phone-input" placeholder="Phone">
-            <input type="email" id="contact-email-input" placeholder="Email">
-            <button onclick="addContact()">+ Add Contact</button>
+          <button class="add-toggle" onclick="toggleAddForm('contact')">+ Add Contact</button>
+          <div class="add-form" id="contact-add-form">
+            <div class="add-form-title">New Contact</div>
+            <div class="add-form-grid cols-2">
+              <input class="full" type="text" id="contact-name-input" placeholder="Name">
+              <input class="full" type="text" id="contact-role-input" placeholder="Role / Company (optional)">
+              <input type="text" id="contact-phone-input" placeholder="Phone">
+              <input type="email" id="contact-email-input" placeholder="Email">
+            </div>
+            <div class="add-form-actions">
+              <button class="add-form-btn secondary" onclick="toggleAddForm('contact')">Cancel</button>
+              <button class="add-form-btn primary" onclick="addContact()">Save</button>
+            </div>
           </div>
         </div>
       </div>
@@ -580,30 +647,95 @@ function deleteNote(id){
   saveWorkspaceToLocal(); renderNotes(); deleteWidgetOnBackend(id);
 }
 
-/* LINKS */
+/* ADD-FORM TOGGLES (Links + Contacts) */
+function toggleAddForm(kind){
+  const form=document.getElementById(kind+'-add-form');
+  if(!form)return;
+  form.classList.toggle('open');
+  // Focus first input when opening
+  if(form.classList.contains('open')){
+    const first=form.querySelector('input');
+    if(first)setTimeout(()=>first.focus(),30);
+  }
+}
+function closeAddForm(kind){
+  const form=document.getElementById(kind+'-add-form');
+  if(form)form.classList.remove('open');
+}
+
+/* LINKS — full CRUD + search */
+let editingLinkId=null;
+
 function renderLinks(){
   const l=document.getElementById('links-list');
-  const items=(ws.links||[]).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
-  if(!items.length){l.innerHTML=`<div class="task-empty" style="padding:14px;">No links yet. Add one below.</div>`;return;}
+  const search=(document.getElementById('link-search')?.value||'').trim().toLowerCase();
+  let items=(ws.links||[]).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+  if(search){
+    items=items.filter(x=>((x.label||'')+' '+(x.url||'')).toLowerCase().includes(search));
+  }
+  if(!items.length){
+    l.innerHTML=`<div class="task-empty" style="padding:14px;">${search?'No links match your search.':'No links yet. Click "Add Link" below.'}</div>`;
+    return;
+  }
   l.innerHTML=items.map(x=>{
+    if(String(editingLinkId)===String(x.id)){
+      return `<div class="link-item editing" data-id="${x.id}">
+        <div class="link-edit-fields">
+          <input type="text" id="edit-link-label-${x.id}" value="${escapeHtml(x.label||'')}" placeholder="Label">
+          <input type="text" id="edit-link-url-${x.id}" value="${escapeHtml(x.url||'')}" placeholder="https://...">
+        </div>
+        <div class="link-edit-actions">
+          <button class="add-form-btn secondary" onclick="cancelEditLink()">Cancel</button>
+          <button class="add-form-btn primary" onclick="saveEditLink('${x.id}')">Save</button>
+        </div>
+      </div>`;
+    }
     const init=((x.label||x.url||'?')[0]||'?').toUpperCase();
     const url=escapeHtml(x.url||'#');
-    return `<a class="link-item" href="${url}" target="_blank" rel="noopener">
-      <div class="link-icon">${escapeHtml(init)}</div>
-      <div style="flex:1;min-width:0;"><div class="link-label">${escapeHtml(x.label||x.url||'')}</div><div class="link-url">${escapeHtml(x.url||'')}</div></div>
-      <button class="link-del" onclick="event.preventDefault();event.stopPropagation();deleteLink('${x.id}');">✕</button>
-    </a>`;
+    return `<div class="link-item" data-id="${x.id}">
+      <a class="link-item-main" href="${url}" target="_blank" rel="noopener">
+        <div class="link-icon">${escapeHtml(init)}</div>
+        <div class="link-text-wrap">
+          <div class="link-label">${escapeHtml(x.label||x.url||'')}</div>
+          <div class="link-url">${escapeHtml(x.url||'')}</div>
+        </div>
+      </a>
+      <div class="link-actions">
+        <button class="link-action-btn" title="Edit" onclick="startEditLink('${x.id}')">✎</button>
+        <button class="link-action-btn delete" title="Delete" onclick="deleteLink('${x.id}')">🗑</button>
+      </div>
+    </div>`;
   }).join('');
 }
+
 function addLink(){
   const L=document.getElementById('link-label-input'), U=document.getElementById('link-url-input');
-  let label=(L.value||'').trim(); let url=(U.value||'').trim(); if(!url)return;
+  let label=(L.value||'').trim(); let url=(U.value||'').trim();
+  if(!url){showToast('URL is required');return;}
   if(!/^https?:\/\//i.test(url))url='https://'+url;
   if(!label)label=url.replace(/^https?:\/\//i,'').split('/')[0];
   const now=new Date().toISOString();
   const lk={id:newId('L'),label,url,sort_order:Date.now(),created_at:now,updated_at:now};
-  ws.links.push(lk); saveWorkspaceToLocal(); L.value=''; U.value=''; renderLinks();
+  ws.links.push(lk); saveWorkspaceToLocal();
+  L.value=''; U.value='';
+  closeAddForm('link');
+  renderLinks();
   saveWidgetToBackend({...lk,widget_type:'link'});
+}
+function startEditLink(id){editingLinkId=id; renderLinks();}
+function cancelEditLink(){editingLinkId=null; renderLinks();}
+function saveEditLink(id){
+  const lk=ws.links.find(x=>x.id===id); if(!lk)return;
+  let label=(document.getElementById('edit-link-label-'+id).value||'').trim();
+  let url=(document.getElementById('edit-link-url-'+id).value||'').trim();
+  if(!url){showToast('URL is required');return;}
+  if(!/^https?:\/\//i.test(url))url='https://'+url;
+  if(!label)label=url.replace(/^https?:\/\//i,'').split('/')[0];
+  lk.label=label; lk.url=url; lk.updated_at=new Date().toISOString();
+  saveWorkspaceToLocal();
+  editingLinkId=null;
+  renderLinks();
+  saveWidgetToBackend({id:lk.id,widget_type:'link',sort_order:lk.sort_order||0,label,url,created_at:lk.created_at});
 }
 function deleteLink(id){
   if(!confirm('Delete this link?'))return;
@@ -611,30 +743,79 @@ function deleteLink(id){
   saveWorkspaceToLocal(); renderLinks(); deleteWidgetOnBackend(id);
 }
 
-/* CONTACTS */
+/* CONTACTS — full CRUD + search */
+let editingContactId=null;
+
 function renderContacts(){
   const l=document.getElementById('contacts-list');
-  const items=(ws.contacts||[]).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
-  if(!items.length){l.innerHTML=`<div class="task-empty" style="padding:14px;">No contacts yet. Add one below.</div>`;return;}
+  const search=(document.getElementById('contact-search')?.value||'').trim().toLowerCase();
+  let items=(ws.contacts||[]).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+  if(search){
+    items=items.filter(c=>((c.name||'')+' '+(c.role||'')+' '+(c.phone||'')+' '+(c.email||'')).toLowerCase().includes(search));
+  }
+  if(!items.length){
+    l.innerHTML=`<div class="task-empty" style="padding:14px;">${search?'No contacts match your search.':'No contacts yet. Click "Add Contact" below.'}</div>`;
+    return;
+  }
   l.innerHTML=items.map(c=>{
+    if(String(editingContactId)===String(c.id)){
+      return `<div class="contact-item editing" data-id="${c.id}">
+        <div class="contact-edit-fields">
+          <input class="full" type="text" id="edit-contact-name-${c.id}" value="${escapeHtml(c.name||'')}" placeholder="Name">
+          <input class="full" type="text" id="edit-contact-role-${c.id}" value="${escapeHtml(c.role||'')}" placeholder="Role / Company (optional)">
+          <input type="text" id="edit-contact-phone-${c.id}" value="${escapeHtml(c.phone||'')}" placeholder="Phone">
+          <input type="email" id="edit-contact-email-${c.id}" value="${escapeHtml(c.email||'')}" placeholder="Email">
+        </div>
+        <div class="contact-edit-actions">
+          <button class="add-form-btn secondary" onclick="cancelEditContact()">Cancel</button>
+          <button class="add-form-btn primary" onclick="saveEditContact('${c.id}')">Save</button>
+        </div>
+      </div>`;
+    }
     const p=c.phone||'', e=c.email||'';
-    return `<div class="contact-item">
-      <button class="contact-del" onclick="deleteContact('${c.id}')">✕</button>
-      <div class="contact-name">${escapeHtml(c.name||'—')}</div>
-      ${c.role?`<div class="contact-role">${escapeHtml(c.role)}</div>`:''}
-      ${p?`<div class="contact-row">📞 <a href="tel:${escapeHtml(p)}" style="color:inherit;text-decoration:none;">${escapeHtml(p)}</a> <button class="contact-copy" onclick="copyText('${escapeHtml(p)}')">copy</button></div>`:''}
-      ${e?`<div class="contact-row">✉️ <a href="mailto:${escapeHtml(e)}" style="color:inherit;text-decoration:none;">${escapeHtml(e)}</a> <button class="contact-copy" onclick="copyText('${escapeHtml(e)}')">copy</button></div>`:''}
+    return `<div class="contact-item" data-id="${c.id}">
+      <div class="contact-head">
+        <div class="contact-head-text">
+          <div class="contact-name">${escapeHtml(c.name||'—')}</div>
+          ${c.role?`<div class="contact-role">${escapeHtml(c.role)}</div>`:''}
+        </div>
+        <div class="contact-actions">
+          <button class="contact-action-btn" title="Edit" onclick="startEditContact('${c.id}')">✎</button>
+          <button class="contact-action-btn delete" title="Delete" onclick="deleteContact('${c.id}')">🗑</button>
+        </div>
+      </div>
+      ${p?`<div class="contact-row"><span style="color:var(--gray-400);">📞</span> <a href="tel:${escapeHtml(p)}">${escapeHtml(p)}</a> <button class="contact-copy" onclick="copyText('${escapeHtml(p)}')">copy</button></div>`:''}
+      ${e?`<div class="contact-row"><span style="color:var(--gray-400);">✉️</span> <a href="mailto:${escapeHtml(e)}">${escapeHtml(e)}</a> <button class="contact-copy" onclick="copyText('${escapeHtml(e)}')">copy</button></div>`:''}
     </div>`;
   }).join('');
 }
+
 function addContact(){
   const n=document.getElementById('contact-name-input'),r=document.getElementById('contact-role-input'),p=document.getElementById('contact-phone-input'),e=document.getElementById('contact-email-input');
   const name=(n.value||'').trim(); if(!name){showToast('Name is required');return;}
   const now=new Date().toISOString();
   const c={id:newId('C'),name,role:(r.value||'').trim(),phone:(p.value||'').trim(),email:(e.value||'').trim(),sort_order:Date.now(),created_at:now,updated_at:now};
   ws.contacts.push(c); saveWorkspaceToLocal();
-  n.value=''; r.value=''; p.value=''; e.value=''; renderContacts();
+  n.value=''; r.value=''; p.value=''; e.value='';
+  closeAddForm('contact');
+  renderContacts();
   saveWidgetToBackend({...c,widget_type:'contact'});
+}
+function startEditContact(id){editingContactId=id; renderContacts();}
+function cancelEditContact(){editingContactId=null; renderContacts();}
+function saveEditContact(id){
+  const c=ws.contacts.find(x=>x.id===id); if(!c)return;
+  const name=(document.getElementById('edit-contact-name-'+id).value||'').trim();
+  if(!name){showToast('Name is required');return;}
+  c.name=name;
+  c.role =(document.getElementById('edit-contact-role-'+id).value||'').trim();
+  c.phone=(document.getElementById('edit-contact-phone-'+id).value||'').trim();
+  c.email=(document.getElementById('edit-contact-email-'+id).value||'').trim();
+  c.updated_at=new Date().toISOString();
+  saveWorkspaceToLocal();
+  editingContactId=null;
+  renderContacts();
+  saveWidgetToBackend({id:c.id,widget_type:'contact',sort_order:c.sort_order||0,name:c.name,role:c.role,phone:c.phone,email:c.email,created_at:c.created_at});
 }
 function deleteContact(id){
   if(!confirm('Delete this contact?'))return;
