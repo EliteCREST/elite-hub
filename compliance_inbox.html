@@ -575,7 +575,7 @@
           <div class="notif-section-header">
             <span class="notif-section-title">Contractor &amp; Insurance Notifications <span class="notif-badge" id="notifBadge">0</span></span>
             <div class="notif-filter-row">
-              <button class="notif-pill active" onclick="setNotifFilter('unread',this)">Unread <span class="pill-count" id="pc-contr-unread">0</span></button>
+              <button class="notif-pill active" onclick="setNotifFilter('new',this)">New <span class="pill-count" id="pc-contr-new">0</span></button>
               <button class="notif-pill" onclick="setNotifFilter('assigned',this)">Assigned <span class="pill-count" id="pc-contr-assigned">0</span></button>
               <button class="notif-pill" onclick="setNotifFilter('resolved',this)">Resolved <span class="pill-count" id="pc-contr-resolved">0</span></button>
               <button class="notif-pill" onclick="setNotifFilter('archived',this)">Archived <span class="pill-count" id="pc-contr-archived">0</span></button>
@@ -1077,7 +1077,7 @@ const NOTIF_STATUSES = [
 ];
 const NOTIF_FAILED_STATUS = 'Failed';
 let allNotifications = [];
-let notifFilter = 'unread';
+let notifFilter = 'new';
 let expandedNotifId = null;   // id of currently expanded contractor notification
 
 async function loadNotifications() {
@@ -1116,39 +1116,54 @@ function notifLabel(type) {
   return 'Notification';
 }
 
+// Derive pill state from a notification's status + assignee.
+// Rules:
+//   status === 'Failed'              → 'archived'
+//   status === 'Notified Clearance'  → 'resolved'
+//   else if assigned_to is set       → 'assigned'
+//   else                             → 'new'
+function derivePillState(n) {
+  const status   = String(n['status'] || '').toLowerCase();
+  const assignee = String(n['assigned_to'] || '').trim();
+  if (status === NOTIF_FAILED_STATUS.toLowerCase())    return 'archived';
+  if (status === 'notified clearance')                 return 'resolved';
+  // Legacy: treat explicit 'resolved' status as resolved too (backward compat)
+  if (status === 'resolved')                           return 'resolved';
+  if (assignee)                                        return 'assigned';
+  return 'new';
+}
+
 function renderNotifications() {
   const list = document.getElementById('notifList');
-  const isFailed = (n) => String(n['status'] || '').toLowerCase() === NOTIF_FAILED_STATUS.toLowerCase();
 
-  let filtered = allNotifications;
-  if (notifFilter === 'archived') {
-    filtered = filtered.filter(isFailed);
-  } else if (notifFilter === 'all') {
-    // "All" hides archived/failed per spec (Archived has its own pill)
-    filtered = filtered.filter(n => !isFailed(n));
+  // Partition notifications by derived pill state
+  const byState = { new: [], assigned: [], resolved: [], archived: [] };
+  allNotifications.forEach(n => {
+    const state = derivePillState(n);
+    if (byState[state]) byState[state].push(n);
+  });
+
+  // Filter based on active pill
+  let filtered;
+  if (notifFilter === 'all') {
+    // "All" hides archived (Archived has its own pill)
+    filtered = [...byState.new, ...byState.assigned, ...byState.resolved];
   } else {
-    // Specific status filter — also auto-excludes failed (no overlap)
-    filtered = filtered.filter(n => n['status'] === notifFilter && !isFailed(n));
+    filtered = byState[notifFilter] || [];
   }
 
-  // Badge — count unresolved, non-archived
-  const unresolved = allNotifications.filter(n => n['status'] !== 'resolved' && !isFailed(n)).length;
+  // Badge — count non-archived, non-resolved
+  const unresolved = byState.new.length + byState.assigned.length;
   const badge = document.getElementById('notifBadge');
   if (badge) { badge.textContent = unresolved; badge.style.display = unresolved > 0 ? '' : 'none'; }
 
-  // Pill counts — exclude archived from everything except the Archived pill
-  const nonArchived = allNotifications.filter(n => !isFailed(n));
-  const cAll       = nonArchived.length;
-  const cUnread    = nonArchived.filter(n => n['status'] === 'unread').length;
-  const cAssigned  = nonArchived.filter(n => n['status'] === 'assigned').length;
-  const cResolved  = nonArchived.filter(n => n['status'] === 'resolved').length;
-  const cArchived  = allNotifications.filter(isFailed).length;
+  // Pill counts — each pill shows count of its own state
   const setPC = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
-  setPC('pc-contr-all',      cAll);
-  setPC('pc-contr-unread',   cUnread);
-  setPC('pc-contr-assigned', cAssigned);
-  setPC('pc-contr-resolved', cResolved);
-  setPC('pc-contr-archived', cArchived);
+  setPC('pc-contr-new',      byState.new.length);
+  setPC('pc-contr-assigned', byState.assigned.length);
+  setPC('pc-contr-resolved', byState.resolved.length);
+  setPC('pc-contr-archived', byState.archived.length);
+  setPC('pc-contr-all',      byState.new.length + byState.assigned.length + byState.resolved.length);
 
   if (!filtered.length) {
     list.innerHTML = '<div class="notif-empty">No notifications' + (notifFilter !== 'all' ? ' in this category' : '') + '.</div>';
@@ -1210,22 +1225,36 @@ function renderNotifications() {
 }
 
 // Renders the 8 workflow step buttons for a given notification.
-// Rules: Paylocity Final is locked until Paylocity Entered; Failed is pinned right.
-// Current status is highlighted blue; "Failed" is red & archives.
+// Rules:
+//   - Paylocity Final is locked until Paylocity Entered (or later) has been reached
+//   - Notified Clearance is locked until status === "Resolved" (per order-implied progress)
+//   - Failed is always clickable; pinned right
+//   - Current status is highlighted blue
 function renderWorkflowButtons(id, currentStatus) {
   const steps = NOTIF_STATUSES.filter(s => s !== NOTIF_FAILED_STATUS);
   const cur   = String(currentStatus || '');
-  // Paylocity Final disabled if Paylocity Entered hasn't been reached
+  // Paylocity Final unlocks when Paylocity Entered (or later) has been reached
   const paylocityEnteredDone = cur === 'Paylocity Entered' || cur === 'Paylocity Final' ||
                                cur === 'Blaze Entered'     || cur === 'Blaze Final' ||
                                cur === 'Resolved'          || cur === 'Notified Clearance';
+  // Notified Clearance unlocks ONLY when status is currently "Resolved" (the 6th step).
+  // Order-implied: to reach "Resolved" the user has already progressed through the chain.
+  const notifiedClearanceUnlocked = cur === 'Resolved' || cur === 'Notified Clearance';
   const parts = [];
   steps.forEach(step => {
     const isCurrent = cur === step;
-    const locked    = step === 'Paylocity Final' && !paylocityEnteredDone;
-    const cls       = ['wf-btn', isCurrent ? 'current' : ''].filter(Boolean).join(' ');
-    const icon      = isCurrent ? '●' : '○';
-    parts.push(`<button class="${cls}" ${locked ? 'disabled title="Complete Paylocity Entered first"' : ''} onclick="event.stopPropagation(); changeNotifStatus('${id}', '${step}')">${icon} ${escapeHtml(step)}</button>`);
+    let locked = false;
+    let lockReason = '';
+    if (step === 'Paylocity Final' && !paylocityEnteredDone) {
+      locked = true;
+      lockReason = 'Complete Paylocity Entered first';
+    } else if (step === 'Notified Clearance' && !notifiedClearanceUnlocked) {
+      locked = true;
+      lockReason = 'Complete all prior steps first (must reach Resolved)';
+    }
+    const cls  = ['wf-btn', isCurrent ? 'current' : ''].filter(Boolean).join(' ');
+    const icon = isCurrent ? '●' : '○';
+    parts.push(`<button class="${cls}" ${locked ? 'disabled title="' + lockReason + '"' : ''} onclick="event.stopPropagation(); changeNotifStatus('${id}', '${step}')">${icon} ${escapeHtml(step)}</button>`);
   });
   // Divider pushes Failed to the right
   parts.push(`<span class="wf-divider"></span>`);
