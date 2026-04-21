@@ -215,15 +215,57 @@
     margin-bottom: 8px;
   }
   .history-entry.latest { background: #FFFBEB; border-color: #FDE68A; }
+  /* Compliance → Field response entries (visually distinct from field submissions) */
+  .history-entry.from-compliance {
+    background: #EAF1FB; border-color: #BBD4F0;
+    border-left: 3px solid var(--blue);
+  }
+  .history-entry.from-compliance.kind-resolution {
+    background: #D1FAE5; border-color: #6EE7B7;
+    border-left: 3px solid var(--green);
+  }
+  .entry-direction-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 3px; margin-right: 6px;
+    background: var(--blue); color: white;
+  }
+  .entry-direction-badge.resolution { background: var(--green); }
+  .entry-direction-badge.field { background: var(--gray-400); }
   .history-meta {
     font-size: 11px; color: var(--gray-600); margin-bottom: 4px;
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;
   }
   .history-msg { font-size: 13px; color: var(--text); white-space: pre-wrap; }
 
   .detail-actions {
     display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px;
     padding-top: 14px; border-top: 1px solid var(--gray-200);
+  }
+
+  /* Inline reply form (shown when user clicks Needs Follow-Up or Resolved) */
+  .reply-form {
+    margin-top: 12px; padding: 14px;
+    background: var(--gray-50); border: 1px solid var(--gray-200);
+    border-radius: 6px;
+  }
+  .reply-form.kind-followup { background: #FEF3C7; border-color: #FCD34D; }
+  .reply-form.kind-resolution { background: #ECFDF5; border-color: #6EE7B7; }
+  .reply-form-title {
+    font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--navy); margin-bottom: 8px;
+  }
+  .reply-form-sub {
+    font-size: 11px; color: var(--gray-600); margin-bottom: 10px; font-weight: 600;
+  }
+  .reply-form textarea {
+    width: 100%; min-height: 90px; padding: 10px 12px;
+    border: 1px solid var(--gray-300); border-radius: 6px;
+    font-family: inherit; font-size: 13px; color: var(--text);
+    resize: vertical; outline: none; background: white;
+  }
+  .reply-form textarea:focus { border-color: var(--blue); }
+  .reply-form-actions {
+    display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px;
   }
   .btn {
     padding: 8px 14px; border-radius: 6px;
@@ -518,6 +560,7 @@ let historyMap  = {};   // reviewId -> array of all submissions for that review
 let activeFilter = 'New';
 let searchQuery  = '';
 let expandedRowKey = null;   // "rowNum" of the expanded submission
+let activeReplyForm = {};    // { rowNum: 'followup' | 'resolution' } — which reply form is open per row
 
 async function loadQueue() {
   const wrap = document.getElementById('queue-wrap');
@@ -529,10 +572,10 @@ async function loadQueue() {
       wrap.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Error loading queue</div><div>${escapeHtml(data.error)}</div></div>`;
       return;
     }
-    allItems   = (data.items    || []).sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
-    reviewsMap = data.reviewsMap || {};
+    const rawItems = data.items || [];
+    // historyMap shows the FULL thread (submissions + compliance replies)
     historyMap = {};
-    allItems.forEach(item => {
+    rawItems.forEach(item => {
       const rid = item.reviewId;
       if (!historyMap[rid]) historyMap[rid] = [];
       historyMap[rid].push(item);
@@ -540,6 +583,11 @@ async function loadQueue() {
     Object.keys(historyMap).forEach(k => {
       historyMap[k].sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
     });
+    // allItems (queue list + KPIs) only counts original submissions, not Compliance replies
+    allItems   = rawItems
+      .filter(i => (i.entry_type || 'submission') === 'submission')
+      .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+    reviewsMap = data.reviewsMap || {};
     updateKPIs();
     renderQueue();
   } catch(e) {
@@ -613,29 +661,75 @@ function renderDetail(item) {
   const review  = reviewsMap[item.reviewId] || {};
   const history = historyMap[item.reviewId] || [];
   const status  = item.status || 'New';
+  const replyKind = activeReplyForm[item.rowNum] || null;
   return `
     <div class="detail" onclick="event.stopPropagation();">
       <div class="detail-label">Original Review</div>
       <div class="detail-review-text">${escapeHtml(review.text || '(No review text on record)')}</div>
 
       <div class="detail-label">Submission History (${history.length})</div>
-      ${history.map((h, i) => `
-        <div class="history-entry ${String(h.rowNum) === String(item.rowNum) ? 'latest' : ''}">
-          <div class="history-meta">
-            <span><strong>${escapeHtml(h.submittedBy || 'unknown')}</strong> — ${formatDateTime(h.submittedAt)}</span>
-            <span class="status-badge ${statusClass(h.status)}">${escapeHtml(h.status || 'New')}</span>
+      ${history.map((h, i) => {
+        const isCompliance = h.direction === 'compliance_to_field';
+        const kind         = h.entry_type || (isCompliance ? 'followup_request' : 'submission');
+        const isResolution = isCompliance && kind === 'resolution';
+        const cls = [
+          'history-entry',
+          String(h.rowNum) === String(item.rowNum) ? 'latest' : '',
+          isCompliance ? 'from-compliance' : '',
+          isResolution ? 'kind-resolution' : ''
+        ].filter(Boolean).join(' ');
+        const badgeClass = isResolution ? 'resolution' : (isCompliance ? '' : 'field');
+        const badgeText  = isResolution ? '✓ Resolved Reply'
+                          : isCompliance ? '💬 Compliance Reply'
+                          : '📨 Field Submission';
+        const statusBadge = (!isCompliance && h.status)
+          ? `<span class="status-badge ${statusClass(h.status)}">${escapeHtml(h.status)}</span>`
+          : '';
+        return `
+          <div class="${cls}">
+            <div class="history-meta">
+              <span>
+                <span class="entry-direction-badge ${badgeClass}">${badgeText}</span>
+                <strong>${escapeHtml(h.submittedBy || 'unknown')}</strong> — ${formatDateTime(h.submittedAt)}
+              </span>
+              ${statusBadge}
+            </div>
+            <div class="history-msg">${escapeHtml(h.message || (isResolution && !h.message ? '(no note included)' : ''))}</div>
           </div>
-          <div class="history-msg">${escapeHtml(h.message || '')}</div>
-        </div>
-      `).join('')}
+        `;
+      }).join('')}
 
       <div class="detail-actions">
         <button class="btn btn-reviewed" onclick="setStatus('${item.rowNum}','Reviewed')" ${status === 'Reviewed' ? 'disabled' : ''}>✓ Mark Reviewed</button>
-        <button class="btn btn-follow"   onclick="setStatus('${item.rowNum}','Needs Follow-Up')" ${status === 'Needs Follow-Up' ? 'disabled' : ''}>⚠ Needs Follow-Up</button>
-        <button class="btn btn-resolved" onclick="setStatus('${item.rowNum}','Resolved')" ${status === 'Resolved' ? 'disabled' : ''}>✓ Resolved</button>
+        <button class="btn btn-follow"   onclick="openReplyForm('${item.rowNum}','followup')" ${status === 'Needs Follow-Up' ? 'disabled' : ''}>⚠ Needs Follow-Up</button>
+        <button class="btn btn-resolved" onclick="openReplyForm('${item.rowNum}','resolution')" ${status === 'Resolved' ? 'disabled' : ''}>✓ Resolved</button>
         ${review.url ? `<a class="btn btn-open-review" href="${escapeAttr(review.url)}" target="_blank">🔗 Open Original Review</a>` : ''}
         ${item.region ? `<a class="btn btn-open-review" href="https://elitecrest.github.io/elite-hub/reviews.html?region=${escapeAttr(item.region)}" target="_blank">📄 Go to Region Reviews</a>` : ''}
       </div>
+
+      ${replyKind === 'followup' ? `
+        <div class="reply-form kind-followup">
+          <div class="reply-form-title">⚠ Needs Follow-Up — Send to Region</div>
+          <div class="reply-form-sub">Required: explain what additional info Compliance needs from the region.</div>
+          <textarea id="reply-text-${item.rowNum}" placeholder="What additional information do you need?" autofocus></textarea>
+          <div class="reply-form-actions">
+            <button class="btn btn-open-review" onclick="closeReplyForm('${item.rowNum}')">Cancel</button>
+            <button class="btn btn-follow" onclick="submitReply('${item.rowNum}','followup')">Send Follow-Up Request</button>
+          </div>
+        </div>
+      ` : ''}
+
+      ${replyKind === 'resolution' ? `
+        <div class="reply-form kind-resolution">
+          <div class="reply-form-title">✓ Mark Resolved — Send to Region</div>
+          <div class="reply-form-sub">Optional: add a note explaining the resolution. Leave blank to send a plain "Resolved" notice.</div>
+          <textarea id="reply-text-${item.rowNum}" placeholder="Optional resolution note..." autofocus></textarea>
+          <div class="reply-form-actions">
+            <button class="btn btn-open-review" onclick="closeReplyForm('${item.rowNum}')">Cancel</button>
+            <button class="btn btn-resolved" onclick="submitReply('${item.rowNum}','resolution')">Mark Resolved &amp; Send</button>
+          </div>
+        </div>
+      ` : ''}
     </div>
   `;
 }
@@ -645,7 +739,82 @@ function toggleDetail(rowNum) {
   renderQueue();
 }
 
-async function setStatus(rowNum, status) {
+function openReplyForm(rowNum, kind) {
+  activeReplyForm[rowNum] = kind;
+  renderQueue();
+}
+
+function closeReplyForm(rowNum) {
+  delete activeReplyForm[rowNum];
+  renderQueue();
+}
+
+async function submitReply(rowNum, kind) {
+  const item = allItems.find(i => String(i.rowNum) === String(rowNum));
+  if (!item) return;
+  const ta = document.getElementById(`reply-text-${rowNum}`);
+  const message = (ta && ta.value || '').trim();
+
+  // Required validation for follow-up
+  if (kind === 'followup' && !message) {
+    showToast('Please enter a follow-up message — it is required.', true);
+    if (ta) ta.focus();
+    return;
+  }
+
+  const sess     = getSession();
+  const sentBy   = sess && sess.user ? (sess.user.username || 'unknown') : 'unknown';
+  const newStatus = kind === 'followup' ? 'Needs Follow-Up' : 'Resolved';
+  const entryKind = kind === 'followup' ? 'followup_request' : 'resolution';
+
+  // 1) Update the original submission row's status
+  await setStatus(rowNum, newStatus, /*silent*/ true);
+
+  // 2) Append a Compliance → Field response row to ADDRESSED_ISSUES
+  const compliancePayload = {
+    action:     'addComplianceResponse',
+    reviewId:   item.reviewId,
+    region:     item.region,
+    reviewer:   item.reviewer,
+    stars:      item.stars,
+    platform:   item.platform,
+    reviewDate: item.reviewDate,
+    reviewText: item.reviewText,
+    message:    message,
+    kind:       entryKind,
+    sentBy:     sentBy
+  };
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(compliancePayload)
+    });
+    // Optimistic local update — append to historyMap so the new entry shows immediately
+    const newEntry = {
+      rowNum: 'pending-' + Date.now(),
+      submittedAt: new Date().toISOString(),
+      submittedBy: sentBy,
+      region:      item.region,
+      reviewId:    item.reviewId,
+      reviewer:    item.reviewer,
+      message:     message || (kind === 'resolution' ? '' : ''),
+      status:      '',
+      direction:   'compliance_to_field',
+      entry_type:  entryKind
+    };
+    if (!historyMap[item.reviewId]) historyMap[item.reviewId] = [];
+    historyMap[item.reviewId].unshift(newEntry);
+    delete activeReplyForm[rowNum];
+    showToast(kind === 'followup' ? 'Follow-up sent to region.' : 'Marked Resolved & sent to region.');
+    renderQueue();
+  } catch(e) {
+    showToast('Reply failed to send — please try again.', true);
+  }
+}
+
+
+async function setStatus(rowNum, status, silent) {
   const sess = getSession();
   const reviewer = sess && sess.user ? (sess.user.username || 'unknown') : 'unknown';
   const payload = {
@@ -669,11 +838,11 @@ async function setStatus(rowNum, status) {
       item.reviewedBy = reviewer;
       item.reviewedAt = payload.reviewedAt;
     }
-    showToast(`Marked as "${status}".`);
+    if (!silent) showToast(`Marked as "${status}".`);
     updateKPIs();
     renderQueue();
   } catch(e) {
-    showToast('Update failed — please try again.', true);
+    if (!silent) showToast('Update failed — please try again.', true);
   }
 }
 
