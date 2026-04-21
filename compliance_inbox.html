@@ -82,6 +82,42 @@
   .kpi.reviewed .kpi-value { color: var(--blue); }
   .kpi.resolved .kpi-value { color: var(--green); }
 
+  /* ─── User switcher ────────────────────────────────── */
+  .user-switcher {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-bottom: 18px;
+  }
+  .user-btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+    text-decoration: none; color: var(--gray-600);
+    font-weight: 700; font-size: 14px; letter-spacing: 0.3px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.08s, box-shadow 0.08s, border-color 0.08s;
+  }
+  .user-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--blue);
+    color: var(--navy);
+  }
+  .user-btn.current {
+    background: var(--blue); color: var(--white); border-color: var(--blue);
+    box-shadow: 0 4px 12px rgba(31,95,173,.35);
+  }
+  .user-btn.current:hover { color: var(--white); }
+  .user-btn-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--blue-pale); color: var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 13px;
+  }
+  .user-btn.current .user-btn-avatar {
+    background: rgba(255,255,255,.2); color: var(--white);
+  }
+
   /* ─── Toolbar ─────────────────────────────────────── */
   .toolbar {
     display: flex; align-items: center; justify-content: space-between;
@@ -232,6 +268,7 @@
 
   @media (max-width: 720px) {
     .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+    .user-switcher { grid-template-columns: repeat(2, 1fr); }
     .search-wrap { min-width: 100%; }
     .toolbar { flex-direction: column; align-items: stretch; }
   }
@@ -258,6 +295,8 @@
   </header>
 
   <main class="container">
+    <div class="user-switcher" id="user-switcher"></div>
+
     <div class="kpi-strip">
       <div class="kpi new"><div class="kpi-label">New</div><div class="kpi-value" id="kpi-new">0</div></div>
       <div class="kpi follow"><div class="kpi-label">Needs Follow-Up</div><div class="kpi-value" id="kpi-follow">0</div></div>
@@ -319,6 +358,29 @@ function checkAccess() {
   document.getElementById('app-loading').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   return true;
+}
+
+function renderUserSwitcher() {
+  const sess = getSession();
+  const currentUser = sess && sess.user ? String(sess.user.username || '').toLowerCase() : '';
+  const users = [
+    { username: 'angel', name: 'Angel', initials: 'A' },
+    { username: 'sam',   name: 'Sam',   initials: 'S' },
+    { username: 'sara',  name: 'Sara',  initials: 'S' },
+    { username: 'emma',  name: 'Emma',  initials: 'E' },
+  ];
+  const wrap = document.getElementById('user-switcher');
+  if (!wrap) return;
+  wrap.innerHTML = users.map(u => {
+    const isCurrent = u.username === currentUser;
+    return `
+      <a class="user-btn ${isCurrent ? 'current' : ''}"
+         href="https://elitecrest.github.io/elite-hub/${u.username}.html">
+        <span class="user-btn-avatar">${u.initials}</span>
+        <span>${u.name}${isCurrent ? ' (You)' : ''}</span>
+      </a>
+    `;
+  }).join('');
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -558,6 +620,7 @@ function showToast(msg, isError) {
    INIT
 ══════════════════════════════════════════════════════════════ */
 if (checkAccess()) {
+  renderUserSwitcher();
   loadQueue();
 }
 </script>
