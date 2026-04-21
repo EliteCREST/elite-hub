@@ -337,6 +337,19 @@
   .notif-filter-row { display:flex;gap:8px;align-items:center;flex-wrap:wrap; }
   .notif-pill  { font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;border:1.5px solid var(--gray-200);cursor:pointer;background:white;color:var(--gray-500);transition:all .15s; }
   .notif-pill.active { background:var(--navy);color:white;border-color:var(--navy); }
+
+  /* Inline count bubble inside filter pills */
+  .pill-count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 18px; height: 16px; padding: 0 5px;
+    margin-left: 4px;
+    border-radius: 10px;
+    background: var(--gray-200); color: var(--gray-600);
+    font-size: 10px; font-weight: 800; letter-spacing: 0;
+  }
+  .notif-pill.active .pill-count {
+    background: rgba(255,255,255,.25); color: white;
+  }
   .notif-section-header { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:40px;margin-bottom:16px; }
   .notif-section-title { font-size:13px;font-weight:800;color:var(--navy);letter-spacing:1.5px;text-transform:uppercase; }
 
@@ -454,11 +467,11 @@
         <div class="notif-section-header" style="margin-top:0;">
           <span class="notif-section-title">Review Notifications <span class="notif-badge" id="reviewQueueBadge">0</span></span>
           <div class="notif-filter-row" id="filter-pills">
-            <button class="notif-pill active" data-status="New">New</button>
-            <button class="notif-pill" data-status="Needs Follow-Up">Needs Follow-Up</button>
-            <button class="notif-pill" data-status="Reviewed">Reviewed</button>
-            <button class="notif-pill" data-status="Resolved">Resolved</button>
-            <button class="notif-pill" data-status="all">All</button>
+            <button class="notif-pill active" data-status="New">New <span class="pill-count" id="pc-review-new">0</span></button>
+            <button class="notif-pill" data-status="Needs Follow-Up">Needs Follow-Up <span class="pill-count" id="pc-review-follow">0</span></button>
+            <button class="notif-pill" data-status="Reviewed">Reviewed <span class="pill-count" id="pc-review-reviewed">0</span></button>
+            <button class="notif-pill" data-status="Resolved">Resolved <span class="pill-count" id="pc-review-resolved">0</span></button>
+            <button class="notif-pill" data-status="all">All <span class="pill-count" id="pc-review-all">0</span></button>
           </div>
         </div>
         <div class="queue-wrap" id="queue-wrap">
@@ -472,10 +485,10 @@
           <div class="notif-section-header">
             <span class="notif-section-title">Contractor &amp; Insurance Notifications <span class="notif-badge" id="notifBadge">0</span></span>
             <div class="notif-filter-row">
-              <button class="notif-pill active" onclick="setNotifFilter('all',this)">All</button>
-              <button class="notif-pill" onclick="setNotifFilter('unread',this)">Unread</button>
-              <button class="notif-pill" onclick="setNotifFilter('assigned',this)">Assigned</button>
-              <button class="notif-pill" onclick="setNotifFilter('resolved',this)">Resolved</button>
+              <button class="notif-pill active" onclick="setNotifFilter('all',this)">All <span class="pill-count" id="pc-contr-all">0</span></button>
+              <button class="notif-pill" onclick="setNotifFilter('unread',this)">Unread <span class="pill-count" id="pc-contr-unread">0</span></button>
+              <button class="notif-pill" onclick="setNotifFilter('assigned',this)">Assigned <span class="pill-count" id="pc-contr-assigned">0</span></button>
+              <button class="notif-pill" onclick="setNotifFilter('resolved',this)">Resolved <span class="pill-count" id="pc-contr-resolved">0</span></button>
             </div>
           </div>
           <div class="notif-list-wrap">
@@ -630,6 +643,8 @@ function renderQueue() {
   // Live count badge — reflects whatever filter is active
   const badge = document.getElementById('reviewQueueBadge');
   if (badge) { badge.textContent = list.length; }
+  // Pill counts — each pill shows the count of items matching its own filter
+  updateReviewPillCounts();
   if (!list.length) {
     wrap.innerHTML = `<div class="empty"><div class="empty-icon">✨</div><div class="empty-title">Nothing in this view</div><div>No submissions match the current filter.</div></div>`;
     return;
@@ -655,6 +670,21 @@ function renderQueue() {
         ${isExpanded ? renderDetail(item) : ''}
       </div>`;
   }).join('');
+}
+
+// Each pill shows the count of items matching its own filter (not the active one)
+function updateReviewPillCounts() {
+  const counts = { 'New': 0, 'Needs Follow-Up': 0, 'Reviewed': 0, 'Resolved': 0 };
+  allItems.forEach(i => {
+    const s = i.status || 'New';
+    if (counts[s] !== undefined) counts[s]++;
+  });
+  const set = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
+  set('pc-review-new',      counts['New']);
+  set('pc-review-follow',   counts['Needs Follow-Up']);
+  set('pc-review-reviewed', counts['Reviewed']);
+  set('pc-review-resolved', counts['Resolved']);
+  set('pc-review-all',      allItems.length);
 }
 
 function renderDetail(item) {
@@ -966,7 +996,8 @@ async function loadNotifications() {
 
 function setNotifFilter(filter, btn) {
   notifFilter = filter;
-  document.querySelectorAll('.notif-pill').forEach(p => p.classList.remove('active'));
+  // Scope to Contractor section so it doesn't wipe .active from the Review Notifications pills
+  document.querySelectorAll('#adminNotifications .notif-pill').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   renderNotifications();
 }
@@ -994,6 +1025,17 @@ function renderNotifications() {
   const unresolved = allNotifications.filter(n => n['status'] !== 'resolved').length;
   const badge = document.getElementById('notifBadge');
   if (badge) { badge.textContent = unresolved; badge.style.display = unresolved > 0 ? '' : 'none'; }
+
+  // Pill counts — each pill shows count of its own filter
+  const cAll      = allNotifications.length;
+  const cUnread   = allNotifications.filter(n => n['status'] === 'unread').length;
+  const cAssigned = allNotifications.filter(n => n['status'] === 'assigned').length;
+  const cResolved = allNotifications.filter(n => n['status'] === 'resolved').length;
+  const setPC = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
+  setPC('pc-contr-all',      cAll);
+  setPC('pc-contr-unread',   cUnread);
+  setPC('pc-contr-assigned', cAssigned);
+  setPC('pc-contr-resolved', cResolved);
 
   if (!filtered.length) {
     list.innerHTML = '<div class="notif-empty">No notifications' + (notifFilter !== 'all' ? ' in this category' : '') + '.</div>';
