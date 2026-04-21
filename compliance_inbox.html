@@ -266,6 +266,20 @@
   .notif-item.unread { border-left:4px solid var(--blue);background:#F8FAFF; }
   .notif-item.assigned { border-left:4px solid #F97316;background:#FFFBF5; }
   .notif-item.resolved { opacity:.55; }
+
+  /* When inside our list wrapper, flatten to match Review queue row style */
+  .notif-list-wrap .notif-item {
+    border: none; border-radius: 0; background: transparent;
+    border-bottom: 1px solid var(--gray-200);
+    padding: 14px 18px; margin: 0;
+  }
+  .notif-list-wrap .notif-item:last-child { border-bottom: none; }
+  .notif-list-wrap .notif-item:hover { box-shadow: none; background: var(--gray-50); }
+  .notif-list-wrap .notif-item.unread,
+  .notif-list-wrap .notif-item.assigned { border-left: none; }
+  /* Remove internal padding so the row extends to card edge like queue-item does */
+  .notif-list-wrap { padding: 0; }
+  .notif-list-wrap .notif-list { gap: 0; }
   .notif-icon  { font-size:20px;flex-shrink:0;margin-top:2px; }
   .notif-body  { flex:1;min-width:0; }
   .notif-title { font-size:13px;font-weight:700;color:var(--navy); }
