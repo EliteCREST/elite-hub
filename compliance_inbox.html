@@ -1202,7 +1202,8 @@ function renderNotifications() {
       ? `<span style="font-size:11px;color:var(--gray-400);">✓ Resolved ${new Date(n['resolved_at']).toLocaleDateString()}</span>`
       : '';
 
-    const workflowButtons = renderWorkflowButtons(id, status);
+    const completedSteps = String(n['completed_steps'] || '').split(',').map(s => s.trim()).filter(Boolean);
+    const workflowButtons = renderWorkflowButtons(id, status, completedSteps);
 
     const detail = isExpanded ? `
       <div class="notif-detail" onclick="event.stopPropagation();">
@@ -1225,42 +1226,83 @@ function renderNotifications() {
 }
 
 // Renders the 8 workflow step buttons for a given notification.
-// Rules:
-//   - Paylocity Final is locked until Paylocity Entered (or later) has been reached
-//   - Notified Clearance is locked until status === "Resolved" (per order-implied progress)
-//   - Failed is always clickable; pinned right
-//   - Current status is highlighted blue
-function renderWorkflowButtons(id, currentStatus) {
-  const steps = NOTIF_STATUSES.filter(s => s !== NOTIF_FAILED_STATUS);
-  const cur   = String(currentStatus || '');
-  // Paylocity Final unlocks when Paylocity Entered (or later) has been reached
-  const paylocityEnteredDone = cur === 'Paylocity Entered' || cur === 'Paylocity Final' ||
-                               cur === 'Blaze Entered'     || cur === 'Blaze Final' ||
-                               cur === 'Resolved'          || cur === 'Notified Clearance';
-  // Notified Clearance unlocks ONLY when status is currently "Resolved" (the 6th step).
-  // Order-implied: to reach "Resolved" the user has already progressed through the chain.
-  const notifiedClearanceUnlocked = cur === 'Resolved' || cur === 'Notified Clearance';
+// Each step is a toggle — clicked = dark/completed, click again = un-darkens.
+// Locks:
+//   - Paylocity Final locked until Paylocity Entered is completed
+//   - Notified Clearance locked until the 6 prior steps are all completed
+//   - Failed always clickable; pinned right
+function renderWorkflowButtons(id, currentStatus, completedSteps) {
+  const steps  = NOTIF_STATUSES.filter(s => s !== NOTIF_FAILED_STATUS);
+  const cur    = String(currentStatus || '');
+  const done   = (completedSteps || []).map(s => s.toLowerCase());
+  const isDone = (step) => done.indexOf(step.toLowerCase()) >= 0;
+  const priorToClearance = ['Reviewed Documentation','Paylocity Entered','Paylocity Final','Blaze Entered','Blaze Final','Resolved'];
   const parts = [];
   steps.forEach(step => {
+    const completed = isDone(step);
     const isCurrent = cur === step;
     let locked = false;
     let lockReason = '';
-    if (step === 'Paylocity Final' && !paylocityEnteredDone) {
+    if (step === 'Paylocity Final' && !isDone('Paylocity Entered')) {
       locked = true;
       lockReason = 'Complete Paylocity Entered first';
-    } else if (step === 'Notified Clearance' && !notifiedClearanceUnlocked) {
+    } else if (step === 'Notified Clearance' && !priorToClearance.every(isDone)) {
       locked = true;
-      lockReason = 'Complete all prior steps first (must reach Resolved)';
+      lockReason = 'Complete all prior steps first';
     }
-    const cls  = ['wf-btn', isCurrent ? 'current' : ''].filter(Boolean).join(' ');
-    const icon = isCurrent ? '●' : '○';
-    parts.push(`<button class="${cls}" ${locked ? 'disabled title="' + lockReason + '"' : ''} onclick="event.stopPropagation(); changeNotifStatus('${id}', '${step}')">${icon} ${escapeHtml(step)}</button>`);
+    const cls  = ['wf-btn', completed ? 'completed' : '', isCurrent && !completed ? 'current' : ''].filter(Boolean).join(' ');
+    const icon = completed ? '✓' : '○';
+    parts.push(`<button class="${cls}" ${locked ? 'disabled title="' + lockReason + '"' : ''} onclick="event.stopPropagation(); toggleNotifStep('${id}', '${step}')">${icon} ${escapeHtml(step)}</button>`);
   });
   // Divider pushes Failed to the right
   parts.push(`<span class="wf-divider"></span>`);
   const failedCurrent = cur === NOTIF_FAILED_STATUS;
   parts.push(`<button class="wf-btn failed ${failedCurrent ? 'current' : ''}" onclick="event.stopPropagation(); changeNotifStatus('${id}', '${NOTIF_FAILED_STATUS}')" title="${failedCurrent ? 'Currently failed — click another step to un-archive' : 'Archive as Failed'}">⚠ Failed</button>`);
   return parts.join('');
+}
+
+// Toggle a workflow step on/off for a notification.
+// On click: flip its presence in the completed_steps list. Persist to backend.
+// Also sync the notification's status to this step when toggling ON
+// (or clear it to the most recent other completed step when toggling OFF,
+// so pill state derivation stays correct).
+async function toggleNotifStep(id, step) {
+  const n = allNotifications.find(x => x['id'] === id);
+  if (!n) return;
+  const steps = String(n['completed_steps'] || '').split(',').map(s => s.trim()).filter(Boolean);
+  const idx   = steps.findIndex(s => s.toLowerCase() === step.toLowerCase());
+  let newStatus;
+  if (idx >= 0) {
+    steps.splice(idx, 1);
+    // Toggled OFF — if this was the current status, set status to the last remaining completed step (or empty)
+    if (String(n['status']).toLowerCase() === step.toLowerCase()) {
+      newStatus = steps.length ? steps[steps.length - 1] : '';
+    } else {
+      newStatus = n['status'];
+    }
+  } else {
+    steps.push(step);
+    newStatus = step;  // Toggled ON — becomes the current step
+  }
+  // Optimistic local update
+  n['completed_steps'] = steps.join(', ');
+  n['status']          = newStatus;
+  renderNotifications();
+  // Persist: toggle the step in the list, AND update status
+  try {
+    fetch(BACKEND_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'toggleNotificationStep', id, step })
+    });
+    fetch(BACKEND_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'updateNotificationStatus', id, status: newStatus })
+    });
+  } catch(e) {
+    showToast('Failed to save — please try again.', true);
+  }
 }
 
 function toggleNotifDetail(id) {
