@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compliance Inbox — Elite Hub</title>
+<style>
+  :root {
+    --navy:        #1B2A4A;
+    --blue:        #1F5FAD;
+    --blue-pale:   #EAF1FB;
+    --white:       #FFFFFF;
+    --gray-50:     #F8FAFC;
+    --gray-100:    #F4F6FA;
+    --gray-200:    #E2E8F2;
+    --gray-300:    #CBD5E1;
+    --gray-400:    #94A3B8;
+    --gray-600:    #64748B;
+    --gray-800:    #334155;
+    --text:        #1B2A4A;
+    --star:        #F59E0B;
+    --amber:       #D97706;
+    --amber-pale:  #FEF3C7;
+    --green:       #059669;
+    --green-pale:  #D1FAE5;
+    --red:         #DC2626;
+    --red-pale:    #FEE2E2;
+    --shadow-sm:   0 1px 3px rgba(27,42,74,.08);
+    --shadow-md:   0 4px 16px rgba(27,42,74,.12);
+    --radius:      8px;
+    --radius-lg:   12px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    background: var(--gray-100); color: var(--text);
+    min-height: 100vh; display: flex; flex-direction: column;
+  }
+
+  /* ─── Header ───────────────────────────────────────── */
+  .hdr {
+    background: var(--navy); color: var(--white);
+    padding: 18px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 14px;
+  }
+  .hdr-left { display: flex; align-items: center; gap: 14px; }
+  .hdr-logo {
+    background: var(--blue); color: var(--white);
+    width: 46px; height: 46px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 12px; letter-spacing: 1px;
+  }
+  .hdr-title { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+  .hdr-sub   { font-size: 11px; color: #CBD5E1; margin-top: 2px; text-transform: uppercase; letter-spacing: 1.2px; }
+  .hdr-right { display: flex; align-items: center; gap: 10px; }
+  .hdr-user  { font-size: 12px; color: #CBD5E1; }
+  .hdr-link  {
+    color: var(--white); text-decoration: none;
+    font-size: 12px; padding: 6px 12px;
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: 6px;
+  }
+  .hdr-link:hover { background: rgba(255,255,255,.08); }
+
+  /* ─── Main container ───────────────────────────────── */
+  .container { max-width: 1280px; margin: 0 auto; padding: 24px 28px; width: 100%; flex: 1; }
+
+  /* ─── KPI strip ────────────────────────────────────── */
+  .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+  .kpi {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+  }
+  .kpi-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-400); margin-bottom: 6px; }
+  .kpi-value { font-size: 26px; font-weight: 800; color: var(--navy); }
+  .kpi.new   .kpi-value { color: var(--amber); }
+  .kpi.follow .kpi-value { color: var(--red); }
+  .kpi.reviewed .kpi-value { color: var(--blue); }
+  .kpi.resolved .kpi-value { color: var(--green); }
+
+  /* ─── Toolbar ─────────────────────────────────────── */
+  .toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 12px 14px; margin-bottom: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .filter-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-pill {
+    padding: 6px 14px; border-radius: 999px;
+    background: var(--gray-100); border: 1px solid var(--gray-200);
+    font-size: 12px; font-weight: 600; color: var(--gray-600);
+    cursor: pointer; user-select: none;
+  }
+  .filter-pill:hover { background: var(--gray-200); }
+  .filter-pill.active { background: var(--blue); color: var(--white); border-color: var(--blue); }
+  .search-wrap {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--gray-50); border: 1px solid var(--gray-200);
+    border-radius: 999px; padding: 6px 14px; min-width: 280px;
+  }
+  .search-wrap input {
+    border: none; outline: none; background: transparent; width: 100%;
+    font-family: inherit; font-size: 13px; color: var(--text);
+  }
+  .search-wrap input::placeholder { color: var(--gray-400); }
+
+  /* ─── Queue list ──────────────────────────────────── */
+  .queue-wrap {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .queue-item {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--gray-200);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .queue-item:last-child { border-bottom: none; }
+  .queue-item:hover { background: var(--gray-50); }
+  .queue-item.expanded { background: var(--blue-pale); }
+  .queue-row-top {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .queue-region {
+    background: var(--navy); color: var(--white);
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    padding: 3px 8px; border-radius: 4px;
+  }
+  .queue-reviewer { font-weight: 700; color: var(--navy); font-size: 14px; }
+  .queue-stars { color: var(--star); font-size: 13px; }
+  .queue-date { font-size: 11px; color: var(--gray-400); margin-left: auto; }
+  .queue-meta {
+    display: flex; gap: 10px; font-size: 11px; color: var(--gray-600);
+    margin-top: 6px; flex-wrap: wrap; align-items: center;
+  }
+  .queue-msg-preview {
+    font-size: 12px; color: var(--gray-800); margin-top: 6px;
+    overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+  .status-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 4px;
+  }
+  .status-new      { background: var(--amber-pale); color: var(--amber); }
+  .status-follow   { background: var(--red-pale); color: var(--red); }
+  .status-reviewed { background: var(--blue-pale); color: var(--blue); }
+  .status-resolved { background: var(--green-pale); color: var(--green); }
+
+  /* ─── Detail panel ────────────────────────────────── */
+  .detail {
+    margin-top: 12px; padding: 14px 16px;
+    background: white; border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+  }
+  .detail-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-400); margin-bottom: 4px; }
+  .detail-review-text {
+    font-size: 13px; color: var(--gray-800); line-height: 1.6;
+    padding: 10px 12px; background: var(--gray-50);
+    border-left: 3px solid var(--blue);
+    border-radius: 4px; margin-bottom: 14px;
+    white-space: pre-wrap;
+  }
+  .history-entry {
+    padding: 10px 12px; background: var(--gray-50);
+    border: 1px solid var(--gray-200); border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  .history-entry.latest { background: #FFFBEB; border-color: #FDE68A; }
+  .history-meta {
+    font-size: 11px; color: var(--gray-600); margin-bottom: 4px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .history-msg { font-size: 13px; color: var(--text); white-space: pre-wrap; }
+
+  .detail-actions {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px;
+    padding-top: 14px; border-top: 1px solid var(--gray-200);
+  }
+  .btn {
+    padding: 8px 14px; border-radius: 6px;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer; border: 1px solid transparent;
+    transition: opacity 0.1s;
+  }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-reviewed { background: var(--blue); color: var(--white); border-color: var(--blue); }
+  .btn-follow   { background: var(--red); color: var(--white); border-color: var(--red); }
+  .btn-resolved { background: var(--green); color: var(--white); border-color: var(--green); }
+  .btn-open-review {
+    background: white; color: var(--navy); border-color: var(--gray-300);
+    text-decoration: none; display: inline-flex; align-items: center;
+  }
+
+  /* ─── States ──────────────────────────────────────── */
+  .empty {
+    padding: 60px 20px; text-align: center;
+    color: var(--gray-400);
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 10px; }
+  .empty-title { font-size: 15px; font-weight: 700; color: var(--gray-600); margin-bottom: 4px; }
+  .loading { padding: 40px 20px; text-align: center; color: var(--gray-400); font-size: 13px; }
+
+  /* ─── Toast ───────────────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: white; border-radius: 6px;
+    padding: 12px 18px; box-shadow: var(--shadow-md);
+    font-size: 13px; z-index: 9999;
+    max-width: 340px;
+  }
+
+  /* ─── Denied ──────────────────────────────────────── */
+  .denied {
+    max-width: 520px; margin: 80px auto;
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+    padding: 40px 36px; text-align: center;
+  }
+  .denied-icon { font-size: 48px; margin-bottom: 16px; }
+  .denied-title { font-size: 18px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+  .denied-sub { font-size: 13px; color: var(--gray-600); margin-bottom: 20px; }
+
+  @media (max-width: 720px) {
+    .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+    .search-wrap { min-width: 100%; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header renders only after access check passes; by default we show a loader -->
+<div id="app-loading" class="loading" style="margin:80px auto;">Loading…</div>
+
+<div id="app" style="display:none;">
+  <header class="hdr">
+    <div class="hdr-left">
+      <div class="hdr-logo">ECS</div>
+      <div>
+        <div class="hdr-title">Compliance Inbox</div>
+        <div class="hdr-sub">Submissions queue · All regions</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <span class="hdr-user" id="hdr-user"></span>
+      <a class="hdr-link" href="javascript:history.back()">← Back</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="kpi-strip">
+      <div class="kpi new"><div class="kpi-label">New</div><div class="kpi-value" id="kpi-new">0</div></div>
+      <div class="kpi follow"><div class="kpi-label">Needs Follow-Up</div><div class="kpi-value" id="kpi-follow">0</div></div>
+      <div class="kpi reviewed"><div class="kpi-label">Reviewed</div><div class="kpi-value" id="kpi-reviewed">0</div></div>
+      <div class="kpi resolved"><div class="kpi-label">Resolved</div><div class="kpi-value" id="kpi-resolved">0</div></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="filter-pills" id="filter-pills">
+        <div class="filter-pill active" data-status="New">New</div>
+        <div class="filter-pill" data-status="Needs Follow-Up">Needs Follow-Up</div>
+        <div class="filter-pill" data-status="Reviewed">Reviewed</div>
+        <div class="filter-pill" data-status="Resolved">Resolved</div>
+        <div class="filter-pill" data-status="all">All</div>
+      </div>
+      <div class="search-wrap">
+        <span style="color:var(--gray-400);">🔍</span>
+        <input type="text" id="search" placeholder="Search by reviewer, region, submitter, or message...">
+      </div>
+    </div>
+
+    <div class="queue-wrap" id="queue-wrap">
+      <div class="loading">Loading submissions...</div>
+    </div>
+  </main>
+</div>
+
+<!-- Access denied view -->
+<div id="denied" class="denied" style="display:none;">
+  <div class="denied-icon">🔒</div>
+  <div class="denied-title">Access Restricted</div>
+  <div class="denied-sub">The Compliance Inbox is only available to authorized users.</div>
+  <a class="btn btn-reviewed" href="https://elitecrest.github.io/elite-hub/index.html" style="text-decoration:none;display:inline-block;">Return to Hub</a>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   ACCESS CONTROL — privileged users only
+══════════════════════════════════════════════════════════════ */
+const PRIVILEGED = ['angel','sam','sara','emma'];
+
+function getSession() {
+  try { return JSON.parse(localStorage.getItem('elite_session') || 'null'); } catch { return null; }
+}
+
+function checkAccess() {
+  const sess = getSession();
+  const username = sess && sess.user ? String(sess.user.username || '').toLowerCase() : '';
+  if (!username || !PRIVILEGED.includes(username)) {
+    // Redirect to reviews page (falls back to hub home if no region)
+    setTimeout(() => {
+      window.location.href = 'https://elitecrest.github.io/elite-hub/index.html';
+    }, 1500);
+    document.getElementById('app-loading').style.display = 'none';
+    document.getElementById('denied').style.display = 'block';
+    return false;
+  }
+  document.getElementById('hdr-user').textContent = 'Signed in as ' + (sess.user.name || sess.user.username);
+  document.getElementById('app-loading').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  return true;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STATE + BACKEND
+══════════════════════════════════════════════════════════════ */
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec';
+
+let allItems    = [];   // flat list of submissions (one row per submission)
+let reviewsMap  = {};   // reviewId -> full review (text, stars, url, etc.)
+let historyMap  = {};   // reviewId -> array of all submissions for that review
+let activeFilter = 'New';
+let searchQuery  = '';
+let expandedRowKey = null;   // "rowNum" of the expanded submission
+
+async function loadQueue() {
+  const wrap = document.getElementById('queue-wrap');
+  wrap.innerHTML = '<div class="loading">Loading submissions...</div>';
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=allAddressedIssues`);
+    const data = await res.json();
+    if (data.error) {
+      wrap.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Error loading queue</div><div>${escapeHtml(data.error)}</div></div>`;
+      return;
+    }
+    allItems   = (data.items    || []).sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+    reviewsMap = data.reviewsMap || {};
+    historyMap = {};
+    allItems.forEach(item => {
+      const rid = item.reviewId;
+      if (!historyMap[rid]) historyMap[rid] = [];
+      historyMap[rid].push(item);
+    });
+    Object.keys(historyMap).forEach(k => {
+      historyMap[k].sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+    });
+    updateKPIs();
+    renderQueue();
+  } catch(e) {
+    wrap.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Failed to load</div><div>${escapeHtml(e.message)}</div></div>`;
+  }
+}
+
+function updateKPIs() {
+  const counts = { 'New': 0, 'Needs Follow-Up': 0, 'Reviewed': 0, 'Resolved': 0 };
+  allItems.forEach(i => {
+    const s = i.status || 'New';
+    if (counts[s] !== undefined) counts[s]++;
+  });
+  document.getElementById('kpi-new').textContent      = counts['New'];
+  document.getElementById('kpi-follow').textContent   = counts['Needs Follow-Up'];
+  document.getElementById('kpi-reviewed').textContent = counts['Reviewed'];
+  document.getElementById('kpi-resolved').textContent = counts['Resolved'];
+}
+
+function getFiltered() {
+  let list = allItems.slice();
+  if (activeFilter !== 'all') {
+    list = list.filter(i => (i.status || 'New') === activeFilter);
+  }
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    list = list.filter(i =>
+      (i.reviewer||'').toLowerCase().includes(q) ||
+      (i.region||'').toLowerCase().includes(q) ||
+      (i.submittedBy||'').toLowerCase().includes(q) ||
+      (i.message||'').toLowerCase().includes(q)
+    );
+  }
+  return list;
+}
+
+function renderQueue() {
+  const wrap = document.getElementById('queue-wrap');
+  const list = getFiltered();
+  if (!list.length) {
+    wrap.innerHTML = `<div class="empty"><div class="empty-icon">✨</div><div class="empty-title">Nothing in this view</div><div>No submissions match the current filter.</div></div>`;
+    return;
+  }
+  wrap.innerHTML = list.map(item => {
+    const review = reviewsMap[item.reviewId] || {};
+    const stars  = Number(review.stars || item.stars) || 0;
+    const isExpanded = String(expandedRowKey) === String(item.rowNum);
+    return `
+      <div class="queue-item ${isExpanded ? 'expanded' : ''}" data-row="${item.rowNum}" onclick="toggleDetail('${item.rowNum}')">
+        <div class="queue-row-top">
+          <span class="queue-region">${escapeHtml(regionLabel(item.region))}</span>
+          <span class="queue-reviewer">${escapeHtml(item.reviewer || 'Unknown')}</span>
+          <span class="queue-stars">${'★'.repeat(stars)}${'☆'.repeat(5-stars)}</span>
+          <span class="status-badge ${statusClass(item.status)}">${escapeHtml(item.status || 'New')}</span>
+          <span class="queue-date">${formatDateTime(item.submittedAt)}</span>
+        </div>
+        <div class="queue-meta">
+          <span>📨 Submitted by <strong>${escapeHtml(item.submittedBy || 'unknown')}</strong></span>
+          ${historyMap[item.reviewId] && historyMap[item.reviewId].length > 1 ? `<span style="color:var(--blue);">· ${historyMap[item.reviewId].length} total submissions on this review</span>` : ''}
+        </div>
+        <div class="queue-msg-preview">${escapeHtml(item.message || '')}</div>
+        ${isExpanded ? renderDetail(item) : ''}
+      </div>`;
+  }).join('');
+}
+
+function renderDetail(item) {
+  const review  = reviewsMap[item.reviewId] || {};
+  const history = historyMap[item.reviewId] || [];
+  const status  = item.status || 'New';
+  return `
+    <div class="detail" onclick="event.stopPropagation();">
+      <div class="detail-label">Original Review</div>
+      <div class="detail-review-text">${escapeHtml(review.text || '(No review text on record)')}</div>
+
+      <div class="detail-label">Submission History (${history.length})</div>
+      ${history.map((h, i) => `
+        <div class="history-entry ${String(h.rowNum) === String(item.rowNum) ? 'latest' : ''}">
+          <div class="history-meta">
+            <span><strong>${escapeHtml(h.submittedBy || 'unknown')}</strong> — ${formatDateTime(h.submittedAt)}</span>
+            <span class="status-badge ${statusClass(h.status)}">${escapeHtml(h.status || 'New')}</span>
+          </div>
+          <div class="history-msg">${escapeHtml(h.message || '')}</div>
+        </div>
+      `).join('')}
+
+      <div class="detail-actions">
+        <button class="btn btn-reviewed" onclick="setStatus('${item.rowNum}','Reviewed')" ${status === 'Reviewed' ? 'disabled' : ''}>✓ Mark Reviewed</button>
+        <button class="btn btn-follow"   onclick="setStatus('${item.rowNum}','Needs Follow-Up')" ${status === 'Needs Follow-Up' ? 'disabled' : ''}>⚠ Needs Follow-Up</button>
+        <button class="btn btn-resolved" onclick="setStatus('${item.rowNum}','Resolved')" ${status === 'Resolved' ? 'disabled' : ''}>✓ Resolved</button>
+        ${review.url ? `<a class="btn btn-open-review" href="${escapeAttr(review.url)}" target="_blank">🔗 Open Original Review</a>` : ''}
+        ${item.region ? `<a class="btn btn-open-review" href="https://elitecrest.github.io/elite-hub/reviews.html?region=${escapeAttr(item.region)}" target="_blank">📄 Go to Region Reviews</a>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function toggleDetail(rowNum) {
+  expandedRowKey = (String(expandedRowKey) === String(rowNum)) ? null : rowNum;
+  renderQueue();
+}
+
+async function setStatus(rowNum, status) {
+  const sess = getSession();
+  const reviewer = sess && sess.user ? (sess.user.username || 'unknown') : 'unknown';
+  const payload = {
+    action: 'updateAddressedIssueStatus',
+    rowNum: Number(rowNum),
+    status: status,
+    reviewedBy: reviewer,
+    reviewedAt: new Date().toISOString()
+  };
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    // Optimistic local update
+    const item = allItems.find(i => String(i.rowNum) === String(rowNum));
+    if (item) {
+      item.status     = status;
+      item.reviewedBy = reviewer;
+      item.reviewedAt = payload.reviewedAt;
+    }
+    showToast(`Marked as "${status}".`);
+    updateKPIs();
+    renderQueue();
+  } catch(e) {
+    showToast('Update failed — please try again.', true);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FILTERS / SEARCH
+══════════════════════════════════════════════════════════════ */
+document.addEventListener('click', (e) => {
+  const pill = e.target.closest('.filter-pill');
+  if (pill && pill.dataset.status) {
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    activeFilter = pill.dataset.status;
+    expandedRowKey = null;
+    renderQueue();
+  }
+});
+document.getElementById('search').addEventListener('input', (e) => {
+  searchQuery = e.target.value;
+  expandedRowKey = null;
+  renderQueue();
+});
+
+/* ══════════════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════════════ */
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function escapeAttr(s) { return escapeHtml(s); }
+
+function regionLabel(r) {
+  const map = {
+    cleveland:'CLE', phoenix:'PHX', albuquerque:'ABQ', minneapolis:'MSP',
+    stlouis:'STL', chicago:'CHI', indianapolis:'IND', pittsburgh:'PIT', milwaukee:'MKE'
+  };
+  const k = String(r||'').toLowerCase();
+  return map[k] || (r || '—').toString().toUpperCase();
+}
+
+function statusClass(status) {
+  switch (status) {
+    case 'Needs Follow-Up': return 'status-follow';
+    case 'Reviewed':        return 'status-reviewed';
+    case 'Resolved':        return 'status-resolved';
+    default:                return 'status-new';
+  }
+}
+
+function formatDateTime(raw) {
+  if (!raw) return '';
+  try {
+    const d = new Date(raw);
+    if (isNaN(d)) return '';
+    return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'2-digit' })
+         + ' ' + d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+  } catch { return ''; }
+}
+
+function showToast(msg, isError) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.style.borderLeft = `4px solid ${isError ? 'var(--red)' : 'var(--blue)'}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════ */
+if (checkAccess()) {
+  loadQueue();
+}
+</script>
+</body>
+</html>
