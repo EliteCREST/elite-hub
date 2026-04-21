@@ -1214,7 +1214,8 @@ function renderList(tab) {
               <div class="review-date">${formatDate(r.date)}</div>
             </div>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            ${window.ELITE_VIEW_ONLY ? `<button class="btn btn-outline btn-sm ai-toggle-btn" onclick="toggleAddressIssues('${r.id}')" style="border-color:#1F5FAD;color:#1F5FAD;">Address Issues</button>` : ''}
             <div style="color:var(--star);font-size:14px;">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
           </div>
         </div>
@@ -1222,15 +1223,12 @@ function renderList(tab) {
         <div class="review-footer">
           <span class="badge ${badgeCls}">${platLabel}</span>
           <span class="badge ${starCls}">${r.stars} ★</span>
-          <span class="badge ${r.responded === 'responded' ? 'badge-responded' : 'badge-pending'}">
-            ${r.responded === 'responded' ? '✓ Responded' : '⏳ Needs Response'}
-          </span>
+          ${r.addressedAt
+            ? `<span class="badge badge-responded">✓ Updated Compliance ${formatShortDate(r.addressedAt)}</span>`
+            : `<span class="badge ${r.responded === 'responded' ? 'badge-responded' : 'badge-pending'}">${r.responded === 'responded' ? '✓ Responded' : '⏳ Needs Response'}</span>`
+          }
           ${r.url ? `<a class="badge badge-url" href="${r.url}" target="_blank">🔗 View Original</a>` : ''}
           ${r.monitor ? `<span style="font-size:10px;color:var(--gray-400);">${r.monitor}</span>` : ''}
-          <button class="btn btn-outline btn-sm" onclick="toggleResponse('${r.id}')">
-            ${r.responded === 'responded' ? 'Mark Pending' : 'Mark Responded'}
-          </button>
-          ${window.ELITE_VIEW_ONLY ? `<button class="btn btn-outline btn-sm ai-toggle-btn" onclick="toggleAddressIssues('${r.id}')" style="border-color:#1F5FAD;color:#1F5FAD;">Address Issues</button>` : ''}
         </div>
         ${window.ELITE_VIEW_ONLY ? `
         <div id="ai-box-${r.id}" class="ai-box" style="display:none;margin-top:10px;padding:12px;background:#F1F5F9;border:1px solid #CBD5E1;border-radius:6px;">
@@ -1296,6 +1294,12 @@ async function submitAddressIssues(id) {
   ta.value = '';
   const box = document.getElementById(`ai-box-${id}`);
   if (box) box.style.display = 'none';
+  // Optimistic UI update: mark this review as addressed now so badge flips immediately
+  const idx = reviewsData.findIndex(r => String(r.id) === String(id));
+  if (idx >= 0) {
+    reviewsData[idx].addressedAt = payload.submittedAt;
+    renderReviewLists();
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1426,6 +1430,15 @@ function formatDate(raw) {
   if (!raw) return '—';
   try { return new Date(raw).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); }
   catch { return raw; }
+}
+
+function formatShortDate(raw) {
+  if (!raw) return '';
+  try {
+    const d = new Date(raw);
+    if (isNaN(d)) return '';
+    return (d.getMonth()+1) + '/' + d.getDate() + '/' + String(d.getFullYear()).slice(-2);
+  } catch { return ''; }
 }
 
 function showToast(msg, type = 'info') {
