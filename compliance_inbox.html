@@ -1069,8 +1069,11 @@ function renderNotifications() {
     return `<div class="notif-item ${status}" id="notif-${id}">
       <div class="notif-icon">${notifIcon(n['type'])}</div>
       <div class="notif-body">
-        <div class="notif-title">${notifLabel(n['type'])} — ${n['contractor_name'] || '—'}</div>
-        <div class="notif-meta">${n['region'] || 'All'} · ${n['detail'] || ''} · ${ts}${assignee ? ' · <strong>→ ' + assignee + '</strong>' : ''}</div>
+        <div class="notif-title" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          ${n['region'] ? `<span class="queue-region">${escapeHtml(regionLabel(n['region']))}</span>` : ''}
+          <span>${notifLabel(n['type'])} — ${n['contractor_name'] || '—'}</span>
+        </div>
+        <div class="notif-meta">${n['detail'] || ''} · ${ts}${assignee ? ' · <strong>→ ' + assignee + '</strong>' : ''}</div>
         <div class="notif-actions">
           ${assignSelect}
           ${statusSelect}
