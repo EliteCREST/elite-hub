@@ -29,6 +29,8 @@
     --shadow-md:   0 4px 16px rgba(27,42,74,.12);
     --radius:      8px;
     --radius-lg:   12px;
+    --radius-xl:   16px;
+    --gray-500:    #64748B;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -255,6 +257,32 @@
     max-width: 340px;
   }
 
+  /* ══ NOTIFICATIONS (contractor/insurance — moved from admin.html) ═══ */
+  .notif-panel { background:white;border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:22px;margin-bottom:36px;box-shadow:var(--shadow-sm); }
+  .notif-list  { display:flex;flex-direction:column;gap:10px;margin-top:16px; }
+  .notif-item  { border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px;transition:box-shadow .15s; }
+  .notif-item:hover { box-shadow:var(--shadow-md); }
+  .notif-item.unread { border-left:4px solid var(--blue);background:#F8FAFF; }
+  .notif-item.assigned { border-left:4px solid #F97316;background:#FFFBF5; }
+  .notif-item.resolved { opacity:.55; }
+  .notif-icon  { font-size:20px;flex-shrink:0;margin-top:2px; }
+  .notif-body  { flex:1;min-width:0; }
+  .notif-title { font-size:13px;font-weight:700;color:var(--navy); }
+  .notif-meta  { font-size:11px;color:var(--gray-400);margin-top:3px; }
+  .notif-actions { display:flex;gap:6px;margin-top:8px;flex-wrap:wrap; }
+  .notif-btn   { font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;cursor:pointer;border:1.5px solid;transition:all .15s; }
+  .notif-btn.assign { background:#EAF1FB;color:#1F5FAD;border-color:#1F5FAD; }
+  .notif-btn.resolve { background:#EAF1FB;color:#1F5FAD;border-color:#1F5FAD; }
+  .notif-btn.resolve:hover { background:#1F5FAD;color:white; }
+  .notif-assign-sel { font-size:11px;padding:4px 8px;border:1.5px solid var(--gray-300);border-radius:6px;color:var(--navy);cursor:pointer; }
+  .notif-badge { display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--blue);color:white;font-size:10px;font-weight:700;margin-left:6px; }
+  .notif-empty { text-align:center;padding:32px;color:var(--gray-400);font-size:13px; }
+  .notif-filter-row { display:flex;gap:8px;align-items:center;flex-wrap:wrap; }
+  .notif-pill  { font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;border:1.5px solid var(--gray-200);cursor:pointer;background:white;color:var(--gray-500);transition:all .15s; }
+  .notif-pill.active { background:var(--navy);color:white;border-color:var(--navy); }
+  .notif-section-header { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:40px;margin-bottom:16px; }
+  .notif-section-title { font-size:13px;font-weight:800;color:var(--navy);letter-spacing:1.5px;text-transform:uppercase; }
+
   /* ─── Denied ──────────────────────────────────────── */
   .denied {
     max-width: 520px; margin: 80px auto;
@@ -320,6 +348,24 @@
 
     <div class="queue-wrap" id="queue-wrap">
       <div class="loading">Loading submissions...</div>
+    </div>
+
+    <!-- CONTRACTOR / INSURANCE NOTIFICATIONS PANEL (moved from admin.html) -->
+    <div id="adminNotifications">
+      <div class="notif-section-header">
+        <span class="notif-section-title">Contractor &amp; Insurance Notifications <span class="notif-badge" id="notifBadge">0</span></span>
+        <div class="notif-filter-row">
+          <button class="notif-pill active" onclick="setNotifFilter('all',this)">All</button>
+          <button class="notif-pill" onclick="setNotifFilter('unread',this)">Unread</button>
+          <button class="notif-pill" onclick="setNotifFilter('assigned',this)">Assigned</button>
+          <button class="notif-pill" onclick="setNotifFilter('resolved',this)">Resolved</button>
+        </div>
+      </div>
+      <div class="notif-panel">
+        <div class="notif-list" id="notifList">
+          <div class="notif-empty">Loading notifications…</div>
+        </div>
+      </div>
     </div>
   </main>
 </div>
@@ -617,11 +663,116 @@ function showToast(msg, isError) {
 }
 
 /* ══════════════════════════════════════════════════════════════
+   CONTRACTOR / INSURANCE NOTIFICATIONS (moved from admin.html)
+══════════════════════════════════════════════════════════════ */
+const ADMINS = ['Angel','Sara','Emma','Carlynn','Jaida'];
+let allNotifications = [];
+let notifFilter = 'all';
+
+async function loadNotifications() {
+  try {
+    const res  = await fetch(`${BACKEND_URL}?action=getNotifications`);
+    const data = await res.json();
+    // Also load resolved
+    const res2  = await fetch(`${BACKEND_URL}?action=getNotifications&status=resolved`);
+    const data2 = await res2.json();
+    allNotifications = [...(data.notifications||[]), ...(data2.notifications||[])];
+    renderNotifications();
+  } catch(e) {
+    document.getElementById('notifList').innerHTML = '<div class="notif-empty">Could not load notifications.</div>';
+  }
+}
+
+function setNotifFilter(filter, btn) {
+  notifFilter = filter;
+  document.querySelectorAll('.notif-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  renderNotifications();
+}
+
+function notifIcon(type) {
+  if (type === 'new_contractor') return '🆕';
+  if (type === 'gl_update')      return '🛡';
+  if (type === 'wc_update')      return '🦺';
+  return '🔔';
+}
+
+function notifLabel(type) {
+  if (type === 'new_contractor') return 'New Contractor Added';
+  if (type === 'gl_update')      return 'GL Insurance Updated';
+  if (type === 'wc_update')      return 'WC Insurance Updated';
+  return 'Notification';
+}
+
+function renderNotifications() {
+  const list = document.getElementById('notifList');
+  let filtered = allNotifications;
+  if (notifFilter !== 'all') filtered = filtered.filter(n => n['status'] === notifFilter);
+
+  // Update badge — count unread + assigned
+  const unresolved = allNotifications.filter(n => n['status'] !== 'resolved').length;
+  const badge = document.getElementById('notifBadge');
+  if (badge) { badge.textContent = unresolved; badge.style.display = unresolved > 0 ? '' : 'none'; }
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="notif-empty">No notifications' + (notifFilter !== 'all' ? ' in this category' : '') + '.</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(n => {
+    const ts      = n['timestamp'] ? new Date(n['timestamp']).toLocaleString() : '—';
+    const status  = n['status'] || 'unread';
+    const assignee = n['assigned_to'] || '';
+    const id      = n['id'];
+
+    const assignSelect = `<select class="notif-assign-sel" onchange="assignNotif('${id}',this.value)">
+      <option value="">Assign to…</option>
+      ${ADMINS.map(a => `<option value="${a}" ${assignee===a?'selected':''}>${a}</option>`).join('')}
+    </select>`;
+
+    const resolveBtn = status !== 'resolved'
+      ? `<button class="notif-btn resolve" onclick="resolveNotif('${id}')">✓ Resolve</button>`
+      : `<span style="font-size:11px;color:var(--gray-400);">✓ Resolved ${n['resolved_at'] ? new Date(n['resolved_at']).toLocaleDateString() : ''}</span>`;
+
+    return `<div class="notif-item ${status}" id="notif-${id}">
+      <div class="notif-icon">${notifIcon(n['type'])}</div>
+      <div class="notif-body">
+        <div class="notif-title">${notifLabel(n['type'])} — ${n['contractor_name'] || '—'}</div>
+        <div class="notif-meta">${n['region'] || 'All'} · ${n['detail'] || ''} · ${ts}${assignee ? ' · <strong>→ ' + assignee + '</strong>' : ''}</div>
+        <div class="notif-actions">
+          ${assignSelect}
+          ${resolveBtn}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function assignNotif(id, assignee) {
+  if (!assignee) return;
+  await fetch(`${BACKEND_URL}?action=assignNotification&id=${encodeURIComponent(id)}&assignee=${encodeURIComponent(assignee)}`);
+  const n = allNotifications.find(x => x['id'] === id);
+  if (n) { n['assigned_to'] = assignee; n['status'] = 'assigned'; }
+  renderNotifications();
+  showToast(`Assigned to ${assignee}`);
+}
+
+async function resolveNotif(id) {
+  await fetch(`${BACKEND_URL}?action=resolveNotification&id=${encodeURIComponent(id)}`);
+  const n = allNotifications.find(x => x['id'] === id);
+  if (n) { n['status'] = 'resolved'; n['resolved_at'] = new Date().toISOString(); }
+  renderNotifications();
+  showToast('Marked resolved');
+}
+
+/* ══════════════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════════════ */
 if (checkAccess()) {
   renderUserSwitcher();
   loadQueue();
+  loadNotifications();
+  setInterval(loadNotifications, 60000); // refresh every minute
 }
 </script>
 </body>
