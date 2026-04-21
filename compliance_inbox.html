@@ -283,6 +283,24 @@
   .notif-section-header { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:40px;margin-bottom:16px; }
   .notif-section-title { font-size:13px;font-weight:800;color:var(--navy);letter-spacing:1.5px;text-transform:uppercase; }
 
+  /* Status dropdown on notification items */
+  .notif-status-wrap { display:inline-flex;align-items:center;gap:6px; }
+  .notif-status-label { font-size:10px;font-weight:700;color:var(--gray-500);letter-spacing:.5px;text-transform:uppercase; }
+  .notif-status-sel { font-size:11px;font-weight:700;padding:4px 10px;border:1.5px solid var(--gray-300);border-radius:6px;background:white;color:var(--navy);cursor:pointer;outline:none; }
+  .notif-status-sel:focus { border-color:var(--blue); }
+  .notif-status-sel.status-resolved     { background:#D1FAE5;color:#059669;border-color:#6EE7B7; }
+  .notif-status-sel.status-denied       { background:#FEE2E2;color:#DC2626;border-color:#FCA5A5; }
+  .notif-status-sel.status-escalated    { background:#FEE2E2;color:#DC2626;border-color:#FCA5A5; }
+  .notif-status-sel.status-in-progress  { background:#EAF1FB;color:#1F5FAD;border-color:#93C5FD; }
+  .notif-status-sel.status-assigned     { background:#FFEDD5;color:#C2410C;border-color:#FDBA74; }
+  .notif-status-sel.status-pending-info { background:#FEF3C7;color:#D97706;border-color:#FCD34D; }
+  .notif-status-sel.status-gl-confirmed,
+  .notif-status-sel.status-wc-confirmed { background:#CCFBF1;color:#0D9488;border-color:#5EEAD4; }
+  .notif-status-sel.status-blaze-entry-required { background:#FEF3C7;color:#D97706;border-color:#FCD34D; }
+  .notif-status-sel.status-entered      { background:#EDE9FE;color:#7C3AED;border-color:#C4B5FD; }
+  .notif-status-sel.status-new,
+  .notif-status-sel.status-unread       { background:white;color:var(--navy); }
+
   /* ─── Header nav ──────────────────────────────────── */
   .hdr-wrap { background: var(--navy); }
   .hdr-nav {
@@ -693,6 +711,11 @@ function showToast(msg, isError) {
    CONTRACTOR / INSURANCE NOTIFICATIONS (moved from admin.html)
 ══════════════════════════════════════════════════════════════ */
 const ADMINS = ['Angel','Sara','Emma','Carlynn','Jaida'];
+const NOTIF_STATUSES = [
+  'New','Assigned','In Progress','Pending Info','Escalated',
+  'GL Confirmed','WC Confirmed','Blaze Entry Required','Entered',
+  'Resolved','Denied'
+];
 let allNotifications = [];
 let notifFilter = 'all';
 
@@ -748,7 +771,7 @@ function renderNotifications() {
 
   list.innerHTML = filtered.map(n => {
     const ts      = n['timestamp'] ? new Date(n['timestamp']).toLocaleString() : '—';
-    const status  = n['status'] || 'unread';
+    const status  = n['status'] || 'New';
     const assignee = n['assigned_to'] || '';
     const id      = n['id'];
 
@@ -757,9 +780,18 @@ function renderNotifications() {
       ${ADMINS.map(a => `<option value="${a}" ${assignee===a?'selected':''}>${a}</option>`).join('')}
     </select>`;
 
-    const resolveBtn = status !== 'resolved'
-      ? `<button class="notif-btn resolve" onclick="resolveNotif('${id}')">✓ Resolve</button>`
-      : `<span style="font-size:11px;color:var(--gray-400);">✓ Resolved ${n['resolved_at'] ? new Date(n['resolved_at']).toLocaleDateString() : ''}</span>`;
+    // Status dropdown — shows all 11 statuses; matches legacy lowercase values too
+    const statusClass = 'status-' + String(status).toLowerCase().replace(/\s+/g, '-');
+    const statusSelect = `<div class="notif-status-wrap">
+      <span class="notif-status-label">Status</span>
+      <select class="notif-status-sel ${statusClass}" onchange="changeNotifStatus('${id}', this.value)">
+        ${NOTIF_STATUSES.map(s => `<option value="${s}" ${s === status || s.toLowerCase() === String(status).toLowerCase() ? 'selected' : ''}>${s}</option>`).join('')}
+      </select>
+    </div>`;
+
+    const resolvedNote = String(status).toLowerCase() === 'resolved' && n['resolved_at']
+      ? `<span style="font-size:11px;color:var(--gray-400);margin-left:4px;">✓ ${new Date(n['resolved_at']).toLocaleDateString()}</span>`
+      : '';
 
     return `<div class="notif-item ${status}" id="notif-${id}">
       <div class="notif-icon">${notifIcon(n['type'])}</div>
@@ -768,7 +800,8 @@ function renderNotifications() {
         <div class="notif-meta">${n['region'] || 'All'} · ${n['detail'] || ''} · ${ts}${assignee ? ' · <strong>→ ' + assignee + '</strong>' : ''}</div>
         <div class="notif-actions">
           ${assignSelect}
-          ${resolveBtn}
+          ${statusSelect}
+          ${resolvedNote}
         </div>
       </div>
     </div>`;
@@ -779,9 +812,34 @@ async function assignNotif(id, assignee) {
   if (!assignee) return;
   await fetch(`${BACKEND_URL}?action=assignNotification&id=${encodeURIComponent(id)}&assignee=${encodeURIComponent(assignee)}`);
   const n = allNotifications.find(x => x['id'] === id);
-  if (n) { n['assigned_to'] = assignee; n['status'] = 'assigned'; }
+  if (n) { n['assigned_to'] = assignee; n['status'] = 'Assigned'; }
   renderNotifications();
   showToast(`Assigned to ${assignee}`);
+}
+
+async function changeNotifStatus(id, newStatus) {
+  if (!newStatus) return;
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'updateNotificationStatus', id, status: newStatus })
+    });
+    // Optimistic local update
+    const n = allNotifications.find(x => x['id'] === id);
+    if (n) {
+      n['status'] = newStatus;
+      if (String(newStatus).toLowerCase() === 'resolved') {
+        n['resolved_at'] = new Date().toISOString();
+      } else {
+        n['resolved_at'] = '';
+      }
+    }
+    renderNotifications();
+    showToast(`Status: ${newStatus}`);
+  } catch(e) {
+    showToast('Status update failed', true);
+  }
 }
 
 async function resolveNotif(id) {
