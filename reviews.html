@@ -1229,7 +1229,7 @@ function renderList(tab) {
             ? `<span class="badge badge-responded">✓ Updated Compliance ${formatShortDate(r.addressedAt)}</span>`
             : `<span class="badge ${r.responded === 'responded' ? 'badge-responded' : 'badge-pending'}">${r.responded === 'responded' ? '✓ Responded' : '⏳ Needs Response'}</span>`
           }
-          ${r.url ? `<a class="badge badge-url" href="${r.url}" target="_blank">🔗 View Original</a>` : ''}
+          ${r.url ? `<a class="badge badge-url" href="${r.url}" target="_blank" style="margin-left:auto;">🔗 View Original</a>` : ''}
           ${r.monitor ? `<span style="font-size:10px;color:var(--gray-400);">${r.monitor}</span>` : ''}
         </div>
         ${window.ELITE_VIEW_ONLY ? `
