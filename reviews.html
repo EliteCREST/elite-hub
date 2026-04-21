@@ -1209,13 +1209,15 @@ function renderList(tab) {
           <div class="reviewer-left">
             <div class="reviewer-avatar">${initials}</div>
             <div>
-              <div class="reviewer-name">${r.reviewer}</div>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <div class="reviewer-name">${r.reviewer}</div>
+                ${window.ELITE_VIEW_ONLY ? `<button class="btn btn-outline btn-sm ai-toggle-btn" onclick="toggleAddressIssues('${r.id}')" style="border-color:#1F5FAD;color:#1F5FAD;">Address Issues</button>` : ''}
+              </div>
               ${r.title ? `<div class="reviewer-title">"${r.title}"</div>` : ''}
               <div class="review-date">${formatDate(r.date)}</div>
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:10px;">
-            ${window.ELITE_VIEW_ONLY ? `<button class="btn btn-outline btn-sm ai-toggle-btn" onclick="toggleAddressIssues('${r.id}')" style="border-color:#1F5FAD;color:#1F5FAD;">Address Issues</button>` : ''}
             <div style="color:var(--star);font-size:14px;">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
           </div>
         </div>
