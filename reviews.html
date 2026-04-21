@@ -659,7 +659,7 @@ function toggleDarkMode() {
 (function(){
   const s = JSON.parse(localStorage.getItem('elite_session')||'{}');
   const u = ((s.user||{}).username||'').toLowerCase();
-  const privileged = ['angel','sam','sara','emma','jaida'];
+  const privileged = ['angel','sam','sara','emma'];
   window.ELITE_VIEW_ONLY = !privileged.includes(u);
 })();
 window.addEventListener('DOMContentLoaded', function() {
@@ -1230,9 +1230,72 @@ function renderList(tab) {
           <button class="btn btn-outline btn-sm" onclick="toggleResponse('${r.id}')">
             ${r.responded === 'responded' ? 'Mark Pending' : 'Mark Responded'}
           </button>
+          ${window.ELITE_VIEW_ONLY ? `<button class="btn btn-outline btn-sm ai-toggle-btn" onclick="toggleAddressIssues('${r.id}')" style="border-color:#1F5FAD;color:#1F5FAD;">Address Issues</button>` : ''}
         </div>
+        ${window.ELITE_VIEW_ONLY ? `
+        <div id="ai-box-${r.id}" class="ai-box" style="display:none;margin-top:10px;padding:12px;background:#F1F5F9;border:1px solid #CBD5E1;border-radius:6px;">
+          <textarea id="ai-text-${r.id}" placeholder="Please let Compliance know how this has been addressed. Include all actions, dates, contacts, etc." style="width:100%;min-height:90px;padding:8px;font-family:Arial,sans-serif;font-size:13px;border:1px solid #CBD5E1;border-radius:4px;resize:vertical;box-sizing:border-box;"></textarea>
+          <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end;">
+            <button class="btn btn-outline btn-sm" onclick="toggleAddressIssues('${r.id}')">Cancel</button>
+            <button class="btn btn-sm" onclick="submitAddressIssues('${r.id}')" style="background:#1F5FAD;color:#fff;border:1px solid #1F5FAD;">Submit to Compliance</button>
+          </div>
+        </div>` : ''}
       </div>`;
   }).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ADDRESS ISSUES (field users submit to Compliance)
+══════════════════════════════════════════════════════════════ */
+function toggleAddressIssues(id) {
+  const box = document.getElementById(`ai-box-${id}`);
+  if (!box) return;
+  box.style.display = (box.style.display === 'none' || !box.style.display) ? 'block' : 'none';
+  if (box.style.display === 'block') {
+    const ta = document.getElementById(`ai-text-${id}`);
+    if (ta) ta.focus();
+  }
+}
+
+async function submitAddressIssues(id) {
+  const ta = document.getElementById(`ai-text-${id}`);
+  if (!ta) return;
+  const msg = (ta.value || '').trim();
+  if (!msg) {
+    showToast('Please enter a message before submitting.', 'warn');
+    return;
+  }
+  const sess = (()=>{ try { return JSON.parse(localStorage.getItem('elite_session')||'{}'); } catch { return {}; } })();
+  const user = (sess.user || {}).username || 'unknown';
+  const review = reviewsData.find(r => String(r.id) === String(id)) || {};
+  const payload = {
+    action: 'submitAddressedIssue',
+    region: regionKey,
+    reviewId: id,
+    reviewer: review.reviewer || '',
+    stars: review.stars || '',
+    reviewText: review.text || '',
+    platform: review.platformRaw || review.platform || '',
+    reviewDate: review.date || '',
+    submittedBy: user,
+    submittedAt: new Date().toISOString(),
+    message: msg
+  };
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    showToast('Submitted to Compliance.', 'info');
+  } catch(e) {
+    showToast('Submission failed — please try again.', 'error');
+    return;
+  }
+  ta.value = '';
+  const box = document.getElementById(`ai-box-${id}`);
+  if (box) box.style.display = 'none';
 }
 
 /* ══════════════════════════════════════════════════════════════
