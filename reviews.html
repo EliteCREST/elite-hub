@@ -1203,6 +1203,10 @@ function renderList(tab) {
     const badgeCls  = platformBadgeClass(r.platformRaw || r.platform);
     const platLabel = r.platformRaw ? platformLabel(r.platformRaw) : (r.platform === 'google' ? 'Google' : r.platform === 'bbb' ? 'BBB' : 'Other');
 
+    const hasAddressed = r.addressedCount && r.addressedCount > 0;
+    const btnLabel     = hasAddressed ? 'Add Update' : 'Address Issues';
+    const countSuffix  = r.addressedCount > 1 ? ` (${r.addressedCount} updates)` : '';
+
     return `
       <div class="review-row" data-id="${r.id}">
         <div class="review-top">
@@ -1211,7 +1215,7 @@ function renderList(tab) {
             <div>
               <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                 <div class="reviewer-name">${r.reviewer}</div>
-                ${window.ELITE_VIEW_ONLY ? `<button class="btn btn-outline btn-sm ai-toggle-btn" onclick="toggleAddressIssues('${r.id}')" style="border-color:#1F5FAD;color:#1F5FAD;">Address Issues</button>` : ''}
+                ${window.ELITE_VIEW_ONLY ? `<button class="btn btn-outline btn-sm ai-toggle-btn" onclick="toggleAddressIssues('${r.id}')" style="border-color:#1F5FAD;color:#1F5FAD;">${btnLabel}</button>` : ''}
               </div>
               ${r.title ? `<div class="reviewer-title">"${r.title}"</div>` : ''}
               <div class="review-date">${formatDate(r.date)}</div>
@@ -1225,13 +1229,25 @@ function renderList(tab) {
         <div class="review-footer">
           <span class="badge ${badgeCls}">${platLabel}</span>
           <span class="badge ${starCls}">${r.stars} ★</span>
-          ${r.addressedAt
-            ? `<span class="badge badge-responded">✓ Updated Compliance ${formatShortDate(r.addressedAt)}</span>`
+          ${hasAddressed
+            ? `<span class="badge badge-responded">✓ Updated Compliance ${formatShortDate(r.addressedAt)}${countSuffix}</span>`
             : `<span class="badge ${r.responded === 'responded' ? 'badge-responded' : 'badge-pending'}">${r.responded === 'responded' ? '✓ Responded' : '⏳ Needs Response'}</span>`
           }
+          ${hasAddressed ? `<a href="#" onclick="toggleAddressHistory('${r.id}');return false;" id="ai-hist-link-${r.id}" style="font-size:11px;color:#1F5FAD;text-decoration:underline;cursor:pointer;">View ${r.addressedCount} previous update${r.addressedCount === 1 ? '' : 's'}</a>` : ''}
           ${r.url ? `<a class="badge badge-url" href="${r.url}" target="_blank" style="margin-left:auto;">🔗 View Original</a>` : ''}
           ${r.monitor ? `<span style="font-size:10px;color:var(--gray-400);">${r.monitor}</span>` : ''}
         </div>
+        ${hasAddressed ? `
+        <div id="ai-hist-${r.id}" class="ai-history" style="display:none;margin-top:8px;padding:10px 12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;font-size:12px;">
+          ${(r.addressedHistory || []).map(h => `
+            <div style="padding:6px 0;border-bottom:1px solid #E2E8F0;">
+              <div style="color:#475569;margin-bottom:3px;">
+                <strong style="color:#1B2A4A;">${formatShortDate(h.submittedAt)}</strong> — ${h.submittedBy || 'unknown'}
+              </div>
+              <div style="color:#1E293B;white-space:pre-wrap;">${(h.message || '').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+            </div>
+          `).join('')}
+        </div>` : ''}
         ${window.ELITE_VIEW_ONLY ? `
         <div id="ai-box-${r.id}" class="ai-box" style="display:none;margin-top:10px;padding:12px;background:#F1F5F9;border:1px solid #CBD5E1;border-radius:6px;">
           <textarea id="ai-text-${r.id}" placeholder="Please let Compliance know how this has been addressed. Include all actions, dates, contacts, etc." style="width:100%;min-height:90px;padding:8px;font-family:Arial,sans-serif;font-size:13px;border:1px solid #CBD5E1;border-radius:4px;resize:vertical;box-sizing:border-box;"></textarea>
@@ -1296,11 +1312,33 @@ async function submitAddressIssues(id) {
   ta.value = '';
   const box = document.getElementById(`ai-box-${id}`);
   if (box) box.style.display = 'none';
-  // Optimistic UI update: mark this review as addressed now so badge flips immediately
+  // Optimistic UI update: push submission into history so badge/count/history all update immediately
   const idx = reviewsData.findIndex(r => String(r.id) === String(id));
   if (idx >= 0) {
-    reviewsData[idx].addressedAt = payload.submittedAt;
+    if (!Array.isArray(reviewsData[idx].addressedHistory)) reviewsData[idx].addressedHistory = [];
+    reviewsData[idx].addressedHistory.unshift({
+      submittedAt: payload.submittedAt,
+      submittedBy: user,
+      message: msg
+    });
+    reviewsData[idx].addressedAt    = payload.submittedAt;
+    reviewsData[idx].addressedCount = reviewsData[idx].addressedHistory.length;
     renderReviewLists();
+  }
+}
+
+function toggleAddressHistory(id) {
+  const box  = document.getElementById(`ai-hist-${id}`);
+  const link = document.getElementById(`ai-hist-link-${id}`);
+  if (!box) return;
+  const isOpen = box.style.display === 'block';
+  box.style.display = isOpen ? 'none' : 'block';
+  if (link) {
+    const review = reviewsData.find(r => String(r.id) === String(id));
+    const n = review ? (review.addressedCount || 0) : 0;
+    link.textContent = isOpen
+      ? `View ${n} previous update${n === 1 ? '' : 's'}`
+      : `Hide ${n} previous update${n === 1 ? '' : 's'}`;
   }
 }
 
