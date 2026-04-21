@@ -377,17 +377,15 @@
       <div class="kpi resolved"><div class="kpi-label">Resolved</div><div class="kpi-value" id="kpi-resolved">0</div></div>
     </div>
 
-    <div class="toolbar">
-      <div class="filter-pills" id="filter-pills">
-        <div class="filter-pill active" data-status="New">New</div>
-        <div class="filter-pill" data-status="Needs Follow-Up">Needs Follow-Up</div>
-        <div class="filter-pill" data-status="Reviewed">Reviewed</div>
-        <div class="filter-pill" data-status="Resolved">Resolved</div>
-        <div class="filter-pill" data-status="all">All</div>
-      </div>
-      <div class="search-wrap">
-        <span style="color:var(--gray-400);">🔍</span>
-        <input type="text" id="search" placeholder="Search by reviewer, region, submitter, or message...">
+    <!-- REVIEW NOTIFICATIONS (Address Issues queue, restyled to match Contractor section) -->
+    <div class="notif-section-header" style="margin-top:0;">
+      <span class="notif-section-title">Review Notifications <span class="notif-badge" id="reviewQueueBadge">0</span></span>
+      <div class="notif-filter-row" id="filter-pills">
+        <button class="notif-pill active" data-status="New">New</button>
+        <button class="notif-pill" data-status="Needs Follow-Up">Needs Follow-Up</button>
+        <button class="notif-pill" data-status="Reviewed">Reviewed</button>
+        <button class="notif-pill" data-status="Resolved">Resolved</button>
+        <button class="notif-pill" data-status="all">All</button>
       </div>
     </div>
 
@@ -546,6 +544,9 @@ function getFiltered() {
 function renderQueue() {
   const wrap = document.getElementById('queue-wrap');
   const list = getFiltered();
+  // Live count badge — reflects whatever filter is active
+  const badge = document.getElementById('reviewQueueBadge');
+  if (badge) { badge.textContent = list.length; }
   if (!list.length) {
     wrap.innerHTML = `<div class="empty"><div class="empty-icon">✨</div><div class="empty-title">Nothing in this view</div><div>No submissions match the current filter.</div></div>`;
     return;
@@ -642,22 +643,18 @@ async function setStatus(rowNum, status) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   FILTERS / SEARCH
+   FILTERS
 ══════════════════════════════════════════════════════════════ */
 document.addEventListener('click', (e) => {
-  const pill = e.target.closest('.filter-pill');
+  // Scope to the Review Notifications filter row to avoid conflicting with Contractor notif pills
+  const pill = e.target.closest('#filter-pills .notif-pill');
   if (pill && pill.dataset.status) {
-    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('#filter-pills .notif-pill').forEach(p => p.classList.remove('active'));
     pill.classList.add('active');
     activeFilter = pill.dataset.status;
     expandedRowKey = null;
     renderQueue();
   }
-});
-document.getElementById('search').addEventListener('input', (e) => {
-  searchQuery = e.target.value;
-  expandedRowKey = null;
-  renderQueue();
 });
 
 /* ══════════════════════════════════════════════════════════════
