@@ -319,6 +319,19 @@
   .hdr-nav-link:hover { background: rgba(255,255,255,.08); color: var(--white); }
   .hdr-nav-link.active { background: var(--blue); color: var(--white); }
 
+  /* ─── 2-column queue layout (Review + Contractor side-by-side) ─ */
+  .queue-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .queue-col { min-width: 0; }
+  .queue-col .notif-section-header { margin-top: 0; }
+  @media (max-width: 1100px) {
+    .queue-cols { grid-template-columns: 1fr; }
+  }
+
   /* ─── Denied ──────────────────────────────────────── */
   .denied {
     max-width: 520px; margin: 80px auto;
@@ -377,38 +390,45 @@
       <div class="kpi resolved"><div class="kpi-label">Resolved</div><div class="kpi-value" id="kpi-resolved">0</div></div>
     </div>
 
-    <!-- REVIEW NOTIFICATIONS (Address Issues queue, restyled to match Contractor section) -->
-    <div class="notif-section-header" style="margin-top:0;">
-      <span class="notif-section-title">Review Notifications <span class="notif-badge" id="reviewQueueBadge">0</span></span>
-      <div class="notif-filter-row" id="filter-pills">
-        <button class="notif-pill active" data-status="New">New</button>
-        <button class="notif-pill" data-status="Needs Follow-Up">Needs Follow-Up</button>
-        <button class="notif-pill" data-status="Reviewed">Reviewed</button>
-        <button class="notif-pill" data-status="Resolved">Resolved</button>
-        <button class="notif-pill" data-status="all">All</button>
-      </div>
-    </div>
+    <div class="queue-cols">
 
-    <div class="queue-wrap" id="queue-wrap">
-      <div class="loading">Loading submissions...</div>
-    </div>
-
-    <!-- CONTRACTOR / INSURANCE NOTIFICATIONS PANEL (moved from admin.html) -->
-    <div id="adminNotifications">
-      <div class="notif-section-header">
-        <span class="notif-section-title">Contractor &amp; Insurance Notifications <span class="notif-badge" id="notifBadge">0</span></span>
-        <div class="notif-filter-row">
-          <button class="notif-pill active" onclick="setNotifFilter('all',this)">All</button>
-          <button class="notif-pill" onclick="setNotifFilter('unread',this)">Unread</button>
-          <button class="notif-pill" onclick="setNotifFilter('assigned',this)">Assigned</button>
-          <button class="notif-pill" onclick="setNotifFilter('resolved',this)">Resolved</button>
+      <!-- LEFT COLUMN: REVIEW NOTIFICATIONS -->
+      <div class="queue-col">
+        <div class="notif-section-header" style="margin-top:0;">
+          <span class="notif-section-title">Review Notifications <span class="notif-badge" id="reviewQueueBadge">0</span></span>
+          <div class="notif-filter-row" id="filter-pills">
+            <button class="notif-pill active" data-status="New">New</button>
+            <button class="notif-pill" data-status="Needs Follow-Up">Needs Follow-Up</button>
+            <button class="notif-pill" data-status="Reviewed">Reviewed</button>
+            <button class="notif-pill" data-status="Resolved">Resolved</button>
+            <button class="notif-pill" data-status="all">All</button>
+          </div>
+        </div>
+        <div class="queue-wrap" id="queue-wrap">
+          <div class="loading">Loading submissions...</div>
         </div>
       </div>
-      <div class="notif-panel">
-        <div class="notif-list" id="notifList">
-          <div class="notif-empty">Loading notifications…</div>
+
+      <!-- RIGHT COLUMN: CONTRACTOR / INSURANCE NOTIFICATIONS -->
+      <div class="queue-col">
+        <div id="adminNotifications">
+          <div class="notif-section-header">
+            <span class="notif-section-title">Contractor &amp; Insurance Notifications <span class="notif-badge" id="notifBadge">0</span></span>
+            <div class="notif-filter-row">
+              <button class="notif-pill active" onclick="setNotifFilter('all',this)">All</button>
+              <button class="notif-pill" onclick="setNotifFilter('unread',this)">Unread</button>
+              <button class="notif-pill" onclick="setNotifFilter('assigned',this)">Assigned</button>
+              <button class="notif-pill" onclick="setNotifFilter('resolved',this)">Resolved</button>
+            </div>
+          </div>
+          <div class="notif-panel">
+            <div class="notif-list" id="notifList">
+              <div class="notif-empty">Loading notifications…</div>
+            </div>
+          </div>
         </div>
       </div>
+
     </div>
   </main>
 </div>
