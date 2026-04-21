@@ -374,6 +374,44 @@
     align-items: center;
   }
 
+  /* Workflow step buttons (8-step contractor pipeline) */
+  .workflow-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--gray-400); margin-top: 14px; margin-bottom: 8px;
+  }
+  .workflow-btns {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .wf-btn {
+    font-size: 11px; font-weight: 700;
+    padding: 7px 11px; border-radius: 6px;
+    border: 1.5px solid var(--gray-300);
+    background: white; color: var(--gray-600);
+    cursor: pointer; transition: all 0.1s;
+    font-family: inherit;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .wf-btn:hover:not(:disabled) { border-color: var(--blue); color: var(--blue); }
+  .wf-btn.current {
+    background: var(--blue); color: white; border-color: var(--blue);
+    box-shadow: 0 2px 6px rgba(31,95,173,.3);
+  }
+  .wf-btn.completed {
+    background: #D1FAE5; color: #059669; border-color: #6EE7B7;
+  }
+  .wf-btn.completed:hover { background: #A7F3D0; }
+  .wf-btn:disabled {
+    opacity: 0.4; cursor: not-allowed;
+  }
+  .wf-btn.failed {
+    background: #FEE2E2; color: #DC2626; border-color: #FCA5A5;
+    margin-left: auto;  /* pin to far right */
+  }
+  .wf-btn.failed.current {
+    background: var(--red); color: white; border-color: var(--red);
+  }
+  .wf-divider { flex: 1; min-width: 0; }   /* pushes failed button right */
+
   .notif-icon  { font-size:20px;flex-shrink:0;margin-top:2px; }
   .notif-body  { flex:1;min-width:0; }
   .notif-title { font-size:13px;font-weight:700;color:var(--navy); }
@@ -537,10 +575,11 @@
           <div class="notif-section-header">
             <span class="notif-section-title">Contractor &amp; Insurance Notifications <span class="notif-badge" id="notifBadge">0</span></span>
             <div class="notif-filter-row">
-              <button class="notif-pill active" onclick="setNotifFilter('all',this)">All <span class="pill-count" id="pc-contr-all">0</span></button>
-              <button class="notif-pill" onclick="setNotifFilter('unread',this)">Unread <span class="pill-count" id="pc-contr-unread">0</span></button>
+              <button class="notif-pill active" onclick="setNotifFilter('unread',this)">Unread <span class="pill-count" id="pc-contr-unread">0</span></button>
               <button class="notif-pill" onclick="setNotifFilter('assigned',this)">Assigned <span class="pill-count" id="pc-contr-assigned">0</span></button>
               <button class="notif-pill" onclick="setNotifFilter('resolved',this)">Resolved <span class="pill-count" id="pc-contr-resolved">0</span></button>
+              <button class="notif-pill" onclick="setNotifFilter('archived',this)">Archived <span class="pill-count" id="pc-contr-archived">0</span></button>
+              <button class="notif-pill" onclick="setNotifFilter('all',this)">All <span class="pill-count" id="pc-contr-all">0</span></button>
             </div>
           </div>
           <div class="notif-list-wrap">
@@ -1024,13 +1063,21 @@ function showToast(msg, isError) {
    CONTRACTOR / INSURANCE NOTIFICATIONS (moved from admin.html)
 ══════════════════════════════════════════════════════════════ */
 const ADMINS = ['Angel','Sara','Emma','Carlynn','Jaida'];
+// Workflow steps for contractor notifications. Order suggests typical flow but isn't strict
+// (except Paylocity Final is locked until Paylocity Entered). Failed is a terminal/archive kill switch.
 const NOTIF_STATUSES = [
-  'New','Assigned','In Progress','Pending Info','Escalated',
-  'GL Confirmed','WC Confirmed','Blaze Entry Required','Entered',
-  'Resolved','Denied'
+  'Reviewed Documentation',
+  'Paylocity Entered',
+  'Paylocity Final',
+  'Blaze Entered',
+  'Blaze Final',
+  'Resolved',
+  'Notified Clearance',
+  'Failed'
 ];
+const NOTIF_FAILED_STATUS = 'Failed';
 let allNotifications = [];
-let notifFilter = 'all';
+let notifFilter = 'unread';
 let expandedNotifId = null;   // id of currently expanded contractor notification
 
 async function loadNotifications() {
@@ -1071,24 +1118,37 @@ function notifLabel(type) {
 
 function renderNotifications() {
   const list = document.getElementById('notifList');
-  let filtered = allNotifications;
-  if (notifFilter !== 'all') filtered = filtered.filter(n => n['status'] === notifFilter);
+  const isFailed = (n) => String(n['status'] || '').toLowerCase() === NOTIF_FAILED_STATUS.toLowerCase();
 
-  // Update badge — count unread + assigned
-  const unresolved = allNotifications.filter(n => n['status'] !== 'resolved').length;
+  let filtered = allNotifications;
+  if (notifFilter === 'archived') {
+    filtered = filtered.filter(isFailed);
+  } else if (notifFilter === 'all') {
+    // "All" hides archived/failed per spec (Archived has its own pill)
+    filtered = filtered.filter(n => !isFailed(n));
+  } else {
+    // Specific status filter — also auto-excludes failed (no overlap)
+    filtered = filtered.filter(n => n['status'] === notifFilter && !isFailed(n));
+  }
+
+  // Badge — count unresolved, non-archived
+  const unresolved = allNotifications.filter(n => n['status'] !== 'resolved' && !isFailed(n)).length;
   const badge = document.getElementById('notifBadge');
   if (badge) { badge.textContent = unresolved; badge.style.display = unresolved > 0 ? '' : 'none'; }
 
-  // Pill counts — each pill shows count of its own filter
-  const cAll      = allNotifications.length;
-  const cUnread   = allNotifications.filter(n => n['status'] === 'unread').length;
-  const cAssigned = allNotifications.filter(n => n['status'] === 'assigned').length;
-  const cResolved = allNotifications.filter(n => n['status'] === 'resolved').length;
+  // Pill counts — exclude archived from everything except the Archived pill
+  const nonArchived = allNotifications.filter(n => !isFailed(n));
+  const cAll       = nonArchived.length;
+  const cUnread    = nonArchived.filter(n => n['status'] === 'unread').length;
+  const cAssigned  = nonArchived.filter(n => n['status'] === 'assigned').length;
+  const cResolved  = nonArchived.filter(n => n['status'] === 'resolved').length;
+  const cArchived  = allNotifications.filter(isFailed).length;
   const setPC = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
   setPC('pc-contr-all',      cAll);
   setPC('pc-contr-unread',   cUnread);
   setPC('pc-contr-assigned', cAssigned);
   setPC('pc-contr-resolved', cResolved);
+  setPC('pc-contr-archived', cArchived);
 
   if (!filtered.length) {
     list.innerHTML = '<div class="notif-empty">No notifications' + (notifFilter !== 'all' ? ' in this category' : '') + '.</div>';
@@ -1109,7 +1169,7 @@ function renderNotifications() {
     const collapsed = `
       <div class="notif-row-top">
         ${n['region'] ? `<span class="queue-region">${escapeHtml(regionLabel(n['region']))}</span>` : ''}
-        <span class="queue-reviewer">${escapeHtml(notifLabel(n['type']))} — ${escapeHtml(n['contractor_name'] || '—')}</span>
+        <span class="queue-reviewer">${escapeHtml(n['contractor_name'] || '—')}</span>
         <span class="notif-date-right">${escapeHtml(ts)}</span>
       </div>
       <div class="notif-subtitle">
@@ -1117,14 +1177,7 @@ function renderNotifications() {
       </div>
     `;
 
-    // Expanded detail (dropdowns for assign/status live inside here now)
-    const statusSelect = `
-      <div class="notif-status-wrap">
-        <span class="notif-status-label">Status</span>
-        <select class="notif-status-sel status-${statusToken}" onclick="event.stopPropagation();" onchange="changeNotifStatus('${id}', this.value)">
-          ${NOTIF_STATUSES.map(s => `<option value="${s}" ${s === status || s.toLowerCase() === String(status).toLowerCase() ? 'selected' : ''}>${s}</option>`).join('')}
-        </select>
-      </div>`;
+    // Expanded detail: assign dropdown + workflow buttons + resolved note
     const assignSelect = `
       <select class="notif-assign-sel" onclick="event.stopPropagation();" onchange="assignNotif('${id}',this.value)">
         <option value="">Assign to…</option>
@@ -1134,13 +1187,16 @@ function renderNotifications() {
       ? `<span style="font-size:11px;color:var(--gray-400);">✓ Resolved ${new Date(n['resolved_at']).toLocaleDateString()}</span>`
       : '';
 
+    const workflowButtons = renderWorkflowButtons(id, status);
+
     const detail = isExpanded ? `
       <div class="notif-detail" onclick="event.stopPropagation();">
         <div class="notif-detail-label">Notification Detail</div>
         <div class="notif-detail-text">${escapeHtml(n['detail'] || '(No additional detail)')}</div>
+        <div class="workflow-label">Workflow</div>
+        <div class="workflow-btns">${workflowButtons}</div>
         <div class="notif-detail-actions">
           ${assignSelect}
-          ${statusSelect}
           ${resolvedNote}
         </div>
       </div>
@@ -1151,6 +1207,31 @@ function renderNotifications() {
       ${detail}
     </div>`;
   }).join('');
+}
+
+// Renders the 8 workflow step buttons for a given notification.
+// Rules: Paylocity Final is locked until Paylocity Entered; Failed is pinned right.
+// Current status is highlighted blue; "Failed" is red & archives.
+function renderWorkflowButtons(id, currentStatus) {
+  const steps = NOTIF_STATUSES.filter(s => s !== NOTIF_FAILED_STATUS);
+  const cur   = String(currentStatus || '');
+  // Paylocity Final disabled if Paylocity Entered hasn't been reached
+  const paylocityEnteredDone = cur === 'Paylocity Entered' || cur === 'Paylocity Final' ||
+                               cur === 'Blaze Entered'     || cur === 'Blaze Final' ||
+                               cur === 'Resolved'          || cur === 'Notified Clearance';
+  const parts = [];
+  steps.forEach(step => {
+    const isCurrent = cur === step;
+    const locked    = step === 'Paylocity Final' && !paylocityEnteredDone;
+    const cls       = ['wf-btn', isCurrent ? 'current' : ''].filter(Boolean).join(' ');
+    const icon      = isCurrent ? '●' : '○';
+    parts.push(`<button class="${cls}" ${locked ? 'disabled title="Complete Paylocity Entered first"' : ''} onclick="event.stopPropagation(); changeNotifStatus('${id}', '${step}')">${icon} ${escapeHtml(step)}</button>`);
+  });
+  // Divider pushes Failed to the right
+  parts.push(`<span class="wf-divider"></span>`);
+  const failedCurrent = cur === NOTIF_FAILED_STATUS;
+  parts.push(`<button class="wf-btn failed ${failedCurrent ? 'current' : ''}" onclick="event.stopPropagation(); changeNotifStatus('${id}', '${NOTIF_FAILED_STATUS}')" title="${failedCurrent ? 'Currently failed — click another step to un-archive' : 'Archive as Failed'}">⚠ Failed</button>`);
+  return parts.join('');
 }
 
 function toggleNotifDetail(id) {
