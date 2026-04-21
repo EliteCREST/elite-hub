@@ -1,320 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-// ── AUTH GUARD ───────────────────────────────────────────────
-(function() {
-  function getSession() {
-    try { return JSON.parse(localStorage.getItem('elite_session') || 'null'); } catch { return null; }
-  }
-
-  const REGION_ABBR = {
-    cleveland:'CLE', phoenix:'PHX', chicago:'CHI', stlouis:'STL',
-    minneapolis:'MSP', milwaukee:'MKE', indianapolis:'IND',
-    pittsburgh:'PIT', albuquerque:'ABQ'
-  };
-
-  const HUB_PAGE_REGIONS = {
-    'hub_cleveland':'cleveland','hub_phoenix':'phoenix','hub_chicago':'chicago',
-    'hub_stlouis':'stlouis','hub_minneapolis':'minneapolis','hub_milwaukee':'milwaukee',
-    'hub_indianapolis':'indianapolis','hub_pittsburgh':'pittsburgh','hub_albuquerque':'albuquerque'
-  };
-
-  const session = getSession();
-  const page    = window.location.pathname.split('/').pop().replace('.html','').replace(/[^a-z0-9_]/gi,'_').toLowerCase();
-
-  // Not logged in → go to login
-  if (!session || !session.user) {
-    window.location.href = 'login.html';
-    return;
-  }
-
-  const role     = String(session.user.role || '').toLowerCase();
-  // Only Angel has unrestricted access to everything
-  const username = String(session.user.username || '').toLowerCase();
-  if (username === 'angel') return;
-
-  // Normalize region — handles both 'cleveland' and 'CLE'
-  const NAME_TO_ABBR = {
-    cleveland:'CLE', phoenix:'PHX', chicago:'CHI', stlouis:'STL',
-    minneapolis:'MSP', milwaukee:'MKE', indianapolis:'IND',
-    pittsburgh:'PIT', albuquerque:'ABQ'
-  };
-  const rawRegion  = String(session.user.region || session.user.regions || '');
-  const parts      = rawRegion.split(/[,\s]+/).filter(Boolean);
-  // Convert each part to an abbreviation
-  const userAbbrs  = parts.map(p => {
-    const upper = p.trim().toUpperCase();
-    const lower = p.trim().toLowerCase();
-    return NAME_TO_ABBR[lower] || upper; // if it's already an abbr like CLE, keep it
-  });
-  const hasAllRegions = userAbbrs.includes('ALL') || userAbbrs.length === 0;
-
-  // Check explicit page access flag
-  if (session.user[page] === 'false') {
-    window.location.href = 'index.html';
-    return;
-  }
-
-  // Check hub page region access
-  const hubRegion = HUB_PAGE_REGIONS[page];
-  if (hubRegion && !hasAllRegions) {
-    const required = REGION_ABBR[hubRegion];
-    if (!userAbbrs.includes(required)) {
-      window.location.href = 'index.html';
-      return;
-    }
-  }
-
-  // Check region-specific pages (compliance, fleet, etc.) via URL param
-  const urlRegion = new URLSearchParams(window.location.search).get('region');
-  if (urlRegion && !hasAllRegions) {
-    const required = REGION_ABBR[urlRegion.toLowerCase()];
-    if (required && !userAbbrs.includes(required)) {
-      window.location.href = 'index.html';
-      return;
-    }
-  }
-})();
-</script>
-
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Emma — Elite Hub</title>
 <style>
   :root {
-    --navy:#1B2A4A; --blue:#1F5FAD; --blue-pale:#EAF1FB;
-    --gray-100:#F4F6FA; --gray-200:#E2E8F0; --gray-400:#94A3B8;
-    --gray-600:#64748B; --green:#1F5FAD; --red:#DC2626;
-    --orange:#F97316; --shadow-sm:0 1px 3px rgba(0,0,0,.08);
-    --shadow-md:0 4px 12px rgba(0,0,0,.12); --radius:8px; --radius-xl:14px;
-    --accent:#0891B2;
+    --navy:        #1B2A4A;
+    --blue:        #1F5FAD;
+    --blue-pale:   #EAF1FB;
+    --white:       #FFFFFF;
+    --gray-50:     #F8FAFC;
+    --gray-100:    #F4F6FA;
+    --gray-200:    #E2E8F2;
+    --gray-300:    #CBD5E1;
+    --gray-400:    #94A3B8;
+    --gray-600:    #64748B;
+    --gray-800:    #334155;
+    --text:        #1B2A4A;
+    --shadow-sm:   0 1px 3px rgba(27,42,74,.08);
+    --shadow-md:   0 4px 16px rgba(27,42,74,.12);
+    --radius:      8px;
+    --radius-lg:   12px;
   }
-  * { box-sizing:border-box;margin:0;padding:0; }
-  body { font-family:Arial,sans-serif;background:#F4F6FA;color:var(--navy);min-height:100vh; }
-  header {
-    background:var(--navy);padding:16px 28px;display:flex;align-items:center;
-    justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.15);
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    background: var(--gray-100); color: var(--text);
+    min-height: 100vh; display: flex; flex-direction: column;
   }
-  .hdr-left { display:flex;align-items:center;gap:14px; }
-  .hdr-avatar {
-    width:42px;height:42px;border-radius:50%;
-    background:#0891B2;color:white;font-size:16px;font-weight:700;
-    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+
+  /* ─── Header ───────────────────────────────────────── */
+  .hdr {
+    background: var(--navy); color: var(--white);
+    padding: 18px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 14px;
   }
-  .hdr-name  { color:white;font-size:16px;font-weight:700; }
-  .hdr-sub   { color:rgba(255,255,255,.5);font-size:11px;margin-top:2px; }
-  .hdr-right { display:flex;align-items:center;gap:16px; }
-  .hdr-sync  { color:rgba(255,255,255,.5);font-size:11px; }
-  .hdr-badge { background:#0891B2;color:white;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px; }
-  main { max-width:900px;margin:0 auto;padding:28px 20px; }
-  .page-title { font-size:22px;font-weight:700;color:var(--navy);margin-bottom:4px; }
-  .page-sub   { font-size:13px;color:var(--gray-400);margin-bottom:24px; }
-  .filter-row { display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center; }
-  .pill { font-size:11px;font-weight:700;padding:5px 14px;border-radius:20px;border:1.5px solid var(--gray-200);cursor:pointer;background:white;color:var(--gray-500);transition:all .15s; }
-  .pill.active { background:var(--navy);color:white;border-color:var(--navy); }
-  .notif-list { display:flex;flex-direction:column;gap:10px; }
-  .notif-item {
-    background:white;border:1px solid var(--gray-200);border-radius:var(--radius-xl);
-    padding:16px 18px;display:flex;align-items:flex-start;gap:14px;
-    box-shadow:var(--shadow-sm);transition:box-shadow .15s;
+  .hdr-left { display: flex; align-items: center; gap: 14px; }
+  .hdr-logo {
+    background: var(--blue); color: var(--white);
+    width: 46px; height: 46px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 12px; letter-spacing: 1px;
   }
-  .notif-item:hover { box-shadow:var(--shadow-md); }
-  .notif-item.unread  { border-left:4px solid var(--blue);background:#F8FAFF; }
-  .notif-item.assigned { border-left:4px solid #0891B2;background:#CFFAFE; }
-  .notif-item.resolved { opacity:.5; }
-  .n-icon  { font-size:22px;flex-shrink:0;margin-top:2px; }
-  .n-title { font-size:14px;font-weight:700;color:var(--navy); }
-  .n-meta  { font-size:11px;color:var(--gray-400);margin-top:3px;line-height:1.6; }
-  .n-actions { display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center; }
-  .n-btn   { font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;cursor:pointer;border:1.5px solid;transition:all .15s; }
-  .n-btn.resolve { background:#EAF1FB;color:#1F5FAD;border-color:#1F5FAD; }
-  .n-btn.resolve:hover { background:#1F5FAD;color:white; }
-  .n-btn.reassign { background:var(--blue-pale);color:var(--blue);border-color:var(--blue); }
-  .reassign-sel { font-size:11px;padding:5px 8px;border:1.5px solid var(--gray-200);border-radius:6px;color:var(--navy); }
-  .empty { text-align:center;padding:56px 20px;color:var(--gray-400); }
-  .empty-icon { font-size:48px;margin-bottom:12px; }
-  .stats-row { display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px; }
-  .stat-card { background:white;border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:16px;text-align:center;box-shadow:var(--shadow-sm); }
-  .stat-val  { font-size:26px;font-weight:700;color:#0891B2; }
-  .stat-lbl  { font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gray-400);margin-top:4px; }
-  .back-link { color:rgba(255,255,255,.6);font-size:12px;text-decoration:none;display:flex;align-items:center;gap:4px; }
-  .back-link:hover { color:white; }
-  .toast { position:fixed;bottom:24px;right:24px;background:var(--navy);color:white;padding:10px 18px;border-radius:8px;font-size:12px;font-weight:700;z-index:9999;opacity:0;transition:opacity .3s; }
-  .toast.show { opacity:1; }
+  .hdr-title { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+  .hdr-sub   { font-size: 11px; color: #CBD5E1; margin-top: 2px; text-transform: uppercase; letter-spacing: 1.2px; }
+  .hdr-right { display: flex; align-items: center; gap: 10px; }
+  .hdr-user  { font-size: 12px; color: #CBD5E1; }
+  .hdr-link  {
+    color: var(--white); text-decoration: none;
+    font-size: 12px; padding: 6px 12px;
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: 6px;
+  }
+  .hdr-link:hover { background: rgba(255,255,255,.08); }
+
+  /* ─── Main container ──────────────────────────────── */
+  .container { max-width: 1080px; margin: 0 auto; padding: 30px 28px; width: 100%; flex: 1; }
+
+  /* ─── Welcome block ───────────────────────────────── */
+  .welcome {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 22px 26px; margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .welcome-title { font-size: 20px; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
+  .welcome-sub   { font-size: 13px; color: var(--gray-600); }
+
+  /* ─── Tool buttons grid ───────────────────────────── */
+  .tool-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .tool-btn {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 24px 22px;
+    text-decoration: none; color: var(--navy);
+    box-shadow: var(--shadow-sm);
+    display: flex; align-items: flex-start; gap: 16px;
+    transition: transform 0.1s, box-shadow 0.1s, border-color 0.1s;
+  }
+  .tool-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--blue);
+  }
+  .tool-btn-icon {
+    width: 48px; height: 48px; border-radius: 10px;
+    background: var(--blue-pale); color: var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+  }
+  .tool-btn-text { flex: 1; min-width: 0; }
+  .tool-btn-title { font-size: 15px; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
+  .tool-btn-sub   { font-size: 12px; color: var(--gray-600); line-height: 1.45; }
+
+  /* ─── Denied view ─────────────────────────────────── */
+  .denied {
+    max-width: 520px; margin: 80px auto;
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+    padding: 40px 36px; text-align: center;
+  }
+  .denied-icon { font-size: 48px; margin-bottom: 16px; }
+  .denied-title { font-size: 18px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+  .denied-sub { font-size: 13px; color: var(--gray-600); margin-bottom: 20px; }
+  .denied a {
+    display: inline-block;
+    padding: 10px 18px; border-radius: 6px;
+    background: var(--blue); color: var(--white);
+    text-decoration: none; font-weight: 700; font-size: 13px;
+  }
+
+  .loading { padding: 40px 20px; text-align: center; color: var(--gray-400); font-size: 13px; }
+
+  @media (max-width: 720px) {
+    .tool-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
-<header>
-  <div class="hdr-left">
-    <div class="hdr-avatar">E</div>
-    <div>
-      <div class="hdr-name">Emma</div>
-      <div class="hdr-sub">Elite Hub — Personal Dashboard</div>
+
+<div id="app-loading" class="loading" style="margin:80px auto;">Loading…</div>
+
+<div id="app" style="display:none;">
+  <header class="hdr">
+    <div class="hdr-left">
+      <div class="hdr-logo">ECS</div>
+      <div>
+        <div class="hdr-title">Emma's Workspace</div>
+        <div class="hdr-sub">Personal tools &amp; dashboards</div>
+      </div>
     </div>
-  </div>
-  <div class="hdr-right">
-    <span class="hdr-sync" id="hdrSync">—</span>
-    <span class="hdr-badge" id="hdrBadge">0 tasks</span>
-    <a class="back-link" href="admin.html">← Admin</a>
-    <button onclick="localStorage.removeItem('elite_session');window.location.href='login.html'" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">Sign Out</button>
-  </div>
-</header>
+    <div class="hdr-right">
+      <span class="hdr-user" id="hdr-user"></span>
+      <a class="hdr-link" href="https://elitecrest.github.io/elite-hub/compliance_inbox.html">← Back to Inbox</a>
+    </div>
+  </header>
 
-<main>
-  <div class="page-title">My Notifications</div>
-  <div class="page-sub">Tasks and notifications assigned to Emma</div>
+  <main class="container">
+    <div class="welcome">
+      <div class="welcome-title">Welcome, Emma</div>
+      <div class="welcome-sub">Quick access to your tools. More will be added here over time.</div>
+    </div>
 
-  <div class="stats-row">
-    <div class="stat-card"><div class="stat-val" id="statTotal">—</div><div class="stat-lbl">Total Assigned</div></div>
-    <div class="stat-card"><div class="stat-val" id="statUnread">—</div><div class="stat-lbl">Unread</div></div>
-    <div class="stat-card"><div class="stat-val" id="statResolved">—</div><div class="stat-lbl">Resolved</div></div>
-  </div>
+    <div class="tool-grid">
 
-  <div class="filter-row">
-    <button class="pill active" onclick="setFilter('all',this)">All</button>
-    <button class="pill" onclick="setFilter('unread',this)">Unread</button>
-    <button class="pill" onclick="setFilter('assigned',this)">Assigned</button>
-    <button class="pill" onclick="setFilter('resolved',this)">Resolved</button>
-  </div>
+      <a class="tool-btn" href="https://elitecrest.github.io/elite-hub/legal_admin.html">
+        <div class="tool-btn-icon">⚖️</div>
+        <div class="tool-btn-text">
+          <div class="tool-btn-title">Legal Admin</div>
+          <div class="tool-btn-sub">Manage lawsuits, AG/BBB/ROC complaints, and liens across all regions.</div>
+        </div>
+      </a>
 
-  <div class="notif-list" id="notifList">
-    <div class="empty"><div class="empty-icon">⏳</div>Loading…</div>
-  </div>
-</main>
+      <a class="tool-btn" href="https://script.google.com/macros/s/AKfycbzHN7JQHQwFKWqK-KCxYZ1oIL8jJlSra8YzhbKCyi-2AwTvK-4CIjBFZ_gXdV4KuJtWCw/exec" target="_blank" rel="noopener">
+        <div class="tool-btn-icon">👥</div>
+        <div class="tool-btn-text">
+          <div class="tool-btn-title">PURE Personnel Overview</div>
+          <div class="tool-btn-sub">Workforce management tool. Opens in a new tab.</div>
+        </div>
+      </a>
 
-<div class="toast" id="toast"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Access denied view -->
+<div id="denied" class="denied" style="display:none;">
+  <div class="denied-icon">🔒</div>
+  <div class="denied-title">Access Restricted</div>
+  <div class="denied-sub">This workspace is only available to Emma.</div>
+  <a href="https://elitecrest.github.io/elite-hub/index.html">Return to Hub</a>
+</div>
 
 <script>
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec';
-const ME = 'Emma';
-const ADMINS = ['Angel','Sara','Emma','Carlynn','Jaida'];
-let allNotifs = [];
-let currentFilter = 'all';
-
-async function load() {
-  try {
-    const cached = localStorage.getItem('cache_emma');
-    if (cached) {
-      const { html, rhtml, ts } = JSON.parse(cached);
-      if (Date.now() - ts < 600000 && html) {
-        const nl = document.getElementById('notifList');
-        const rl = document.getElementById('resolvedList');
-        if (nl) nl.innerHTML = html;
-        if (rl) rl.innerHTML = rhtml || '';
-        return;
-      }
-    }
-  } catch(e) {}
-  await _loadFresh();
+/* ══════════════════════════════════════════════════════════════
+   ACCESS CONTROL — Emma only
+══════════════════════════════════════════════════════════════ */
+function getSession() {
+  try { return JSON.parse(localStorage.getItem('elite_session') || 'null'); } catch { return null; }
 }
 
-async function _loadFresh() {
-  try {
-    // Load all assigned + resolved for this person
-    const [r1, r2] = await Promise.all([
-      fetch(`${BACKEND_URL}?action=getNotifications&assignee=${ME}`),
-      fetch(`${BACKEND_URL}?action=getNotifications&assignee=${ME}&status=resolved`),
-    ]);
-    const d1 = await r1.json();
-    const d2 = await r2.json();
-    allNotifs = [...(d1.notifications||[]), ...(d2.notifications||[])];
-    document.getElementById('hdrSync').textContent = new Date().toLocaleTimeString();
-    render();
-  } catch(e) {
-    document.getElementById('notifList').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Could not load notifications.</div>';
-  }
-
-  try {
-    const _html = document.getElementById('notifList') ? document.getElementById('notifList').innerHTML : '';
-    const _rhtml = document.getElementById('resolvedList') ? document.getElementById('resolvedList').innerHTML : '';
-    localStorage.setItem('cache_emma', JSON.stringify({ html: _html, rhtml: _rhtml, ts: Date.now() }));
-  } catch(e) {}
-}
-
-function setFilter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-  render();
-}
-
-function icon(type) {
-  return type==='new_contractor'?'🆕':type==='gl_update'?'🛡️':type==='wc_update'?'🦺':'🔔';
-}
-function label(type) {
-  return type==='new_contractor'?'New Contractor':type==='gl_update'?'GL Insurance Update':type==='wc_update'?'WC Insurance Update':'Notification';
-}
-
-function render() {
-  const list = document.getElementById('notifList');
-  let filtered = allNotifs;
-  if (currentFilter !== 'all') filtered = filtered.filter(n => n['status'] === currentFilter);
-
-  const total    = allNotifs.length;
-  const unread   = allNotifs.filter(n => n['status']==='unread').length;
-  const resolved = allNotifs.filter(n => n['status']==='resolved').length;
-  document.getElementById('statTotal').textContent   = total;
-  document.getElementById('statUnread').textContent  = unread;
-  document.getElementById('statResolved').textContent = resolved;
-  document.getElementById('hdrBadge').textContent    = (total - resolved) + ' task' + (total-resolved!==1?'s':'');
-
-  if (!filtered.length) {
-    list.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><div style="font-weight:700;margin-bottom:6px;">All clear!</div><div style="font-size:12px;">No notifications' + (currentFilter!=='all'?' in this category':'') + '.</div></div>';
+(function init() {
+  const sess = getSession();
+  const username = sess && sess.user ? String(sess.user.username || '').toLowerCase() : '';
+  if (username !== 'emma') {
+    document.getElementById('app-loading').style.display = 'none';
+    document.getElementById('denied').style.display = 'block';
+    setTimeout(() => {
+      window.location.href = 'https://elitecrest.github.io/elite-hub/index.html';
+    }, 1500);
     return;
   }
-
-  list.innerHTML = filtered.map(n => {
-    const ts     = n['timestamp'] ? new Date(n['timestamp']).toLocaleString() : '—';
-    const status = n['status'] || 'unread';
-    const id     = n['id'];
-    const resBtn = status !== 'resolved'
-      ? `<button class="n-btn resolve" onclick="resolve('${id}')">✓ Mark Resolved</button>`
-      : `<span style="font-size:11px;color:#94A3B8;">✓ Resolved</span>`;
-    const reassign = `<select class="reassign-sel" onchange="reassign('${id}',this.value)">
-      <option value="">Reassign…</option>
-      ${ADMINS.filter(a=>a!==ME).map(a=>`<option value="${a}">${a}</option>`).join('')}
-    </select>`;
-    return `<div class="notif-item ${status}" id="notif-${id}">
-      <div class="n-icon">${icon(n['type'])}</div>
-      <div style="flex:1">
-        <div class="n-title">${label(n['type'])} — ${n['contractor_name']||'—'}</div>
-        <div class="n-meta">
-          ${n['region']||'—'} · ${n['detail']||''} · ${ts}
-        </div>
-        <div class="n-actions">
-          ${resBtn}
-          ${status!=='resolved' ? reassign : ''}
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-async function resolve(id) {
-  await fetch(`${BACKEND_URL}?action=resolveNotification&id=${encodeURIComponent(id)}`);
-  const n = allNotifs.find(x=>x['id']===id);
-  if(n) { n['status']='resolved'; n['resolved_at']=new Date().toISOString(); }
-  render(); toast('Marked resolved ✓');
-}
-
-async function reassign(id, assignee) {
-  if (!assignee) return;
-  await fetch(`${BACKEND_URL}?action=assignNotification&id=${encodeURIComponent(id)}&assignee=${encodeURIComponent(assignee)}`);
-  const n = allNotifs.find(x=>x['id']===id);
-  if(n) { n['assigned_to']=assignee; }
-  allNotifs = allNotifs.filter(x=>x['id']!==id);
-  render(); toast(`Reassigned to ${assignee}`);
-}
-
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2500);
-}
-
-load();
-setInterval(load, 60000);
+  document.getElementById('hdr-user').textContent = 'Signed in as ' + (sess.user.name || sess.user.username);
+  document.getElementById('app-loading').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+})();
 </script>
 </body>
 </html>
