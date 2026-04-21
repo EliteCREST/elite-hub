@@ -150,16 +150,13 @@
   .search-wrap input::placeholder { color: var(--gray-400); }
 
   /* ─── Queue list ──────────────────────────────────── */
-  .queue-wrap {
+  .queue-wrap, .notif-list-wrap {
     background: white; border: 1px solid var(--gray-200);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     overflow: hidden;
   }
-  /* When nested in notif-panel, drop the duplicate wrapper styling */
-  .notif-panel .queue-wrap {
-    background: transparent; border: none; box-shadow: none; border-radius: 0;
-  }
+  .notif-list-wrap { padding: 16px; }
   .queue-item {
     padding: 14px 18px;
     border-bottom: 1px solid var(--gray-200);
@@ -408,10 +405,8 @@
             <button class="notif-pill" data-status="all">All</button>
           </div>
         </div>
-        <div class="notif-panel">
-          <div class="queue-wrap" id="queue-wrap">
-            <div class="loading">Loading submissions...</div>
-          </div>
+        <div class="queue-wrap" id="queue-wrap">
+          <div class="loading">Loading submissions...</div>
         </div>
       </div>
 
@@ -427,7 +422,7 @@
               <button class="notif-pill" onclick="setNotifFilter('resolved',this)">Resolved</button>
             </div>
           </div>
-          <div class="notif-panel">
+          <div class="notif-list-wrap">
             <div class="notif-list" id="notifList">
               <div class="notif-empty">Loading notifications…</div>
             </div>
