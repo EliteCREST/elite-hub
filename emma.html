@@ -284,6 +284,12 @@
 function getSession(){try{return JSON.parse(localStorage.getItem('elite_session')||'null');}catch{return null;}}
 const BACKEND_URL='https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec';
 
+/* STATE — declared before init() so they're initialized before any function calls */
+const LS_TASKS='emma_tasks_v2';
+const LS_WS='emma_workspace_v1';
+let tasks=[], activeCategory='To Do', showArchive=false;
+let ws={notes:[],links:[],contacts:[],scratchpad:''};
+
 (function init(){
   const sess=getSession();
   const u=sess&&sess.user?String(sess.user.username||'').toLowerCase():'';
@@ -303,9 +309,6 @@ const BACKEND_URL='https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8
 })();
 
 /* TASKS */
-const LS_TASKS='emma_tasks_v2';
-let tasks=[], activeCategory='To Do', showArchive=false;
-
 function loadTasksFromLocal(){try{const r=localStorage.getItem(LS_TASKS);tasks=r?JSON.parse(r):[];}catch{tasks=[];}}
 function saveTasksToLocal(){try{localStorage.setItem(LS_TASKS,JSON.stringify(tasks));}catch{}}
 
@@ -510,9 +513,6 @@ function reorderTasks(dId,tId){
 }
 
 /* WORKSPACE */
-const LS_WS='emma_workspace_v1';
-let ws={notes:[],links:[],contacts:[],scratchpad:''};
-
 function loadWorkspaceFromLocal(){try{const r=localStorage.getItem(LS_WS); ws=r?JSON.parse(r):ws;}catch{}}
 function saveWorkspaceToLocal(){try{localStorage.setItem(LS_WS,JSON.stringify(ws));}catch{}}
 
