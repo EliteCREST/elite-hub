@@ -156,6 +156,10 @@
     box-shadow: var(--shadow-sm);
     overflow: hidden;
   }
+  /* When nested in notif-panel, drop the duplicate wrapper styling */
+  .notif-panel .queue-wrap {
+    background: transparent; border: none; box-shadow: none; border-radius: 0;
+  }
   .queue-item {
     padding: 14px 18px;
     border-bottom: 1px solid var(--gray-200);
@@ -404,8 +408,10 @@
             <button class="notif-pill" data-status="all">All</button>
           </div>
         </div>
-        <div class="queue-wrap" id="queue-wrap">
-          <div class="loading">Loading submissions...</div>
+        <div class="notif-panel">
+          <div class="queue-wrap" id="queue-wrap">
+            <div class="loading">Loading submissions...</div>
+          </div>
         </div>
       </div>
 
