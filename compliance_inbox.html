@@ -1067,7 +1067,6 @@ function renderNotifications() {
       : '';
 
     return `<div class="notif-item ${status}" id="notif-${id}">
-      <div class="notif-icon">${notifIcon(n['type'])}</div>
       <div class="notif-body">
         <div class="notif-title" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           ${n['region'] ? `<span class="queue-region">${escapeHtml(regionLabel(n['region']))}</span>` : ''}
