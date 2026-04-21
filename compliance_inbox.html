@@ -283,6 +283,24 @@
   .notif-section-header { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:40px;margin-bottom:16px; }
   .notif-section-title { font-size:13px;font-weight:800;color:var(--navy);letter-spacing:1.5px;text-transform:uppercase; }
 
+  /* ─── Header nav ──────────────────────────────────── */
+  .hdr-wrap { background: var(--navy); }
+  .hdr-nav {
+    background: var(--navy);
+    border-top: 1px solid rgba(255,255,255,.08);
+    padding: 10px 28px;
+    display: flex; align-items: center; gap: 6px;
+    flex-wrap: wrap;
+  }
+  .hdr-nav-link {
+    color: #CBD5E1; text-decoration: none;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+    padding: 7px 14px; border-radius: 6px;
+    transition: background 0.1s, color 0.1s;
+  }
+  .hdr-nav-link:hover { background: rgba(255,255,255,.08); color: var(--white); }
+  .hdr-nav-link.active { background: var(--blue); color: var(--white); }
+
   /* ─── Denied ──────────────────────────────────────── */
   .denied {
     max-width: 520px; margin: 80px auto;
@@ -308,19 +326,28 @@
 <div id="app-loading" class="loading" style="margin:80px auto;">Loading…</div>
 
 <div id="app" style="display:none;">
-  <header class="hdr">
-    <div class="hdr-left">
-      <div class="hdr-logo">ECS</div>
-      <div>
-        <div class="hdr-title">Compliance Inbox</div>
-        <div class="hdr-sub">Submissions queue · All regions</div>
+  <div class="hdr-wrap">
+    <header class="hdr">
+      <div class="hdr-left">
+        <div class="hdr-logo">ECS</div>
+        <div>
+          <div class="hdr-title">Compliance Inbox</div>
+          <div class="hdr-sub">Submissions queue · All regions</div>
+        </div>
       </div>
-    </div>
-    <div class="hdr-right">
-      <span class="hdr-user" id="hdr-user"></span>
-      <a class="hdr-link" href="javascript:history.back()">← Back</a>
-    </div>
-  </header>
+      <div class="hdr-right">
+        <span class="hdr-user" id="hdr-user"></span>
+        <a class="hdr-link" href="javascript:history.back()">← Back</a>
+      </div>
+    </header>
+    <nav class="hdr-nav">
+      <a class="hdr-nav-link" href="https://elitecrest.github.io/elite-hub/index.html">Elite Hub</a>
+      <a class="hdr-nav-link" href="https://elitecrest.github.io/elite-hub/compliance.html">Compliance</a>
+      <a class="hdr-nav-link" href="https://elitecrest.github.io/elite-hub/legal.html">Legal</a>
+      <a class="hdr-nav-link" href="https://elitecrest.github.io/elite-hub/fleet.html">Fleet</a>
+      <a class="hdr-nav-link" href="https://elitecrest.github.io/elite-hub/reviews.html">Reviews</a>
+    </nav>
+  </div>
 
   <main class="container">
     <div class="user-switcher" id="user-switcher"></div>
