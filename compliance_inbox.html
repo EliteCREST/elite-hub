@@ -195,6 +195,7 @@
   .status-follow   { background: var(--red-pale); color: var(--red); }
   .status-reviewed { background: var(--blue-pale); color: var(--blue); }
   .status-resolved { background: var(--green-pale); color: var(--green); }
+  .status-archived { background: var(--gray-100); color: var(--gray-600); }
 
   /* ─── Detail panel ────────────────────────────────── */
   .detail {
@@ -280,6 +281,8 @@
   .btn-reviewed { background: var(--blue); color: var(--white); border-color: var(--blue); }
   .btn-follow   { background: var(--red); color: var(--white); border-color: var(--red); }
   .btn-resolved { background: var(--green); color: var(--white); border-color: var(--green); }
+  .btn-archive  { background: var(--gray-100); color: var(--gray-800); border-color: var(--gray-300); }
+  .btn-archive:hover { background: var(--gray-200); }
   .btn-open-review {
     background: white; color: var(--navy); border-color: var(--gray-300);
     text-decoration: none; display: inline-flex; align-items: center;
@@ -573,6 +576,7 @@
             <button class="notif-pill" data-status="Needs Follow-Up">Needs Follow-Up <span class="pill-count" id="pc-review-follow">0</span></button>
             <button class="notif-pill" data-status="Reviewed">Reviewed <span class="pill-count" id="pc-review-reviewed">0</span></button>
             <button class="notif-pill" data-status="Resolved">Resolved <span class="pill-count" id="pc-review-resolved">0</span></button>
+            <button class="notif-pill" data-status="Archived">Archived <span class="pill-count" id="pc-review-archived">0</span></button>
             <button class="notif-pill" data-status="all">All <span class="pill-count" id="pc-review-all">0</span></button>
           </div>
         </div>
@@ -699,10 +703,36 @@ async function loadQueue() {
     Object.keys(historyMap).forEach(k => {
       historyMap[k].sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
     });
-    // allItems (queue list + KPIs) only counts original submissions, not Compliance replies
-    allItems   = rawItems
-      .filter(i => (i.entry_type || 'submission') === 'submission')
-      .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+    // Group all submission rows by reviewId — multiple submissions on the same review
+    // become ONE card. Keep the latest submission row (source of truth for `status`),
+    // and overlay a "latestMessage" + "latestAt" + "latestFromCompliance" preview based on
+    // the newest row in the thread (whether it's a field submission or a compliance reply).
+    const submissionsOnly = rawItems.filter(i => (i.entry_type || 'submission') === 'submission');
+    const latestByReview = {};
+    submissionsOnly.forEach(i => {
+      const rid = i.reviewId;
+      if (!latestByReview[rid] || new Date(i.submittedAt) > new Date(latestByReview[rid].submittedAt)) {
+        latestByReview[rid] = i;
+      }
+    });
+    // Compute overall-latest entry in each thread (any direction) for preview
+    const threadLatest = {};
+    rawItems.forEach(i => {
+      const rid = i.reviewId;
+      if (!threadLatest[rid] || new Date(i.submittedAt) > new Date(threadLatest[rid].submittedAt)) {
+        threadLatest[rid] = i;
+      }
+    });
+    // Build allItems from the grouped set, sorted by latest activity DESC
+    allItems = Object.keys(latestByReview).map(rid => {
+      const base = Object.assign({}, latestByReview[rid]);
+      const latest = threadLatest[rid];
+      base.latestMessage        = latest ? latest.message : base.message;
+      base.latestAt             = latest ? latest.submittedAt : base.submittedAt;
+      base.latestFromCompliance = latest ? latest.direction === 'compliance_to_field' : false;
+      base.latestEntryType      = latest ? (latest.entry_type || '') : '';
+      return base;
+    }).sort((a,b) => new Date(b.latestAt) - new Date(a.latestAt));
     reviewsMap = data.reviewsMap || {};
     updateKPIs();
     renderQueue();
@@ -712,7 +742,7 @@ async function loadQueue() {
 }
 
 function updateKPIs() {
-  const counts = { 'New': 0, 'Needs Follow-Up': 0, 'Reviewed': 0, 'Resolved': 0 };
+  const counts = { 'New': 0, 'Needs Follow-Up': 0, 'Reviewed': 0, 'Resolved': 0, 'Archived': 0 };
   allItems.forEach(i => {
     const s = i.status || 'New';
     if (counts[s] !== undefined) counts[s]++;
@@ -725,7 +755,12 @@ function updateKPIs() {
 
 function getFiltered() {
   let list = allItems.slice();
-  if (activeFilter !== 'all') {
+  if (activeFilter === 'all') {
+    // "All" means all active — exclude Archived
+    list = list.filter(i => (i.status || 'New') !== 'Archived');
+  } else if (activeFilter === 'Archived') {
+    list = list.filter(i => (i.status || 'New') === 'Archived');
+  } else {
     list = list.filter(i => (i.status || 'New') === activeFilter);
   }
   if (searchQuery) {
@@ -734,7 +769,8 @@ function getFiltered() {
       (i.reviewer||'').toLowerCase().includes(q) ||
       (i.region||'').toLowerCase().includes(q) ||
       (i.submittedBy||'').toLowerCase().includes(q) ||
-      (i.message||'').toLowerCase().includes(q)
+      (i.message||'').toLowerCase().includes(q) ||
+      (i.latestMessage||'').toLowerCase().includes(q)
     );
   }
   return list;
@@ -754,8 +790,15 @@ function renderQueue() {
   }
   wrap.innerHTML = list.map(item => {
     const review = reviewsMap[item.reviewId] || {};
-    const stars  = Number(review.stars || item.stars) || 0;
+    const stars  = Number(review.stars || review.rating || item.stars) || 0;
     const isExpanded = String(expandedRowKey) === String(item.rowNum);
+    // Preview = latest message in thread (field or compliance)
+    const previewMsg = item.latestMessage || item.message || '';
+    const previewDate = item.latestAt || item.submittedAt;
+    const fromLbl = item.latestFromCompliance
+      ? '💬 Latest from Compliance'
+      : '📨 Latest from Field';
+    const totalCount = (historyMap[item.reviewId] || []).length;
     return `
       <div class="queue-item ${isExpanded ? 'expanded' : ''}" data-row="${item.rowNum}" onclick="toggleDetail('${item.rowNum}')">
         <div class="queue-row-top">
@@ -763,13 +806,13 @@ function renderQueue() {
           <span class="queue-reviewer">${escapeHtml(item.reviewer || 'Unknown')}</span>
           <span class="queue-stars">${'★'.repeat(stars)}${'☆'.repeat(5-stars)}</span>
           <span class="status-badge ${statusClass(item.status)}">${escapeHtml(item.status || 'New')}</span>
-          <span class="queue-date">${formatDateTime(item.submittedAt)}</span>
+          <span class="queue-date">${formatDateTime(previewDate)}</span>
         </div>
         <div class="queue-meta">
-          <span>📨 Submitted by <strong>${escapeHtml(item.submittedBy || 'unknown')}</strong></span>
-          ${historyMap[item.reviewId] && historyMap[item.reviewId].length > 1 ? `<span style="color:var(--blue);">· ${historyMap[item.reviewId].length} total submissions on this review</span>` : ''}
+          <span>${fromLbl}</span>
+          ${totalCount > 1 ? `<span style="color:var(--blue);">· ${totalCount} total entries in this thread</span>` : ''}
         </div>
-        <div class="queue-msg-preview">${escapeHtml(item.message || '')}</div>
+        <div class="queue-msg-preview">${escapeHtml(previewMsg)}</div>
         ${isExpanded ? renderDetail(item) : ''}
       </div>`;
   }).join('');
@@ -777,17 +820,19 @@ function renderQueue() {
 
 // Each pill shows the count of items matching its own filter (not the active one)
 function updateReviewPillCounts() {
-  const counts = { 'New': 0, 'Needs Follow-Up': 0, 'Reviewed': 0, 'Resolved': 0 };
+  const counts = { 'New': 0, 'Needs Follow-Up': 0, 'Reviewed': 0, 'Resolved': 0, 'Archived': 0 };
   allItems.forEach(i => {
     const s = i.status || 'New';
     if (counts[s] !== undefined) counts[s]++;
   });
+  const activeCount = allItems.filter(i => (i.status || 'New') !== 'Archived').length;
   const set = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
   set('pc-review-new',      counts['New']);
   set('pc-review-follow',   counts['Needs Follow-Up']);
   set('pc-review-reviewed', counts['Reviewed']);
   set('pc-review-resolved', counts['Resolved']);
-  set('pc-review-all',      allItems.length);
+  set('pc-review-archived', counts['Archived']);
+  set('pc-review-all',      activeCount);
 }
 
 function renderDetail(item) {
@@ -837,6 +882,9 @@ function renderDetail(item) {
         <button class="btn btn-reviewed" onclick="setStatus('${item.rowNum}','Reviewed')" ${status === 'Reviewed' ? 'disabled' : ''}>✓ Mark Reviewed</button>
         <button class="btn btn-follow"   onclick="openReplyForm('${item.rowNum}','followup')" ${status === 'Needs Follow-Up' ? 'disabled' : ''}>⚠ Needs Follow-Up</button>
         <button class="btn btn-resolved" onclick="openReplyForm('${item.rowNum}','resolution')" ${status === 'Resolved' ? 'disabled' : ''}>✓ Resolved</button>
+        ${status === 'Archived'
+          ? `<button class="btn btn-archive" onclick="setStatus('${item.rowNum}','New')">↩ Unarchive</button>`
+          : `<button class="btn btn-archive" onclick="setStatus('${item.rowNum}','Archived')">📁 Archive</button>`}
         ${review.url ? `<a class="btn btn-open-review" href="${escapeAttr(review.url)}" target="_blank">🔗 Open Original Review</a>` : ''}
         ${item.region ? `<a class="btn btn-open-review" href="https://elitecrest.github.io/elite-hub/reviews.html?region=${escapeAttr(item.region)}" target="_blank">📄 Go to Region Reviews</a>` : ''}
       </div>
@@ -1092,6 +1140,7 @@ function statusClass(status) {
     case 'Needs Follow-Up': return 'status-follow';
     case 'Reviewed':        return 'status-reviewed';
     case 'Resolved':        return 'status-resolved';
+    case 'Archived':        return 'status-archived';
     default:                return 'status-new';
   }
 }
