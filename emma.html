@@ -55,12 +55,12 @@
   .tasks-sync-state{font-size:11px;color:var(--gray-400);display:flex;align-items:center;gap:8px;}
   .tasks-sync-state.unsynced{color:var(--amber);}
   .retry-btn{padding:4px 10px;border-radius:6px;background:var(--amber);color:white;border:none;font-size:11px;font-weight:700;cursor:pointer;}
-  .cat-tabs{display:flex;gap:4px;border-bottom:1px solid var(--gray-200);margin-bottom:14px;flex-wrap:wrap;}
-  .cat-tab{padding:8px 14px;cursor:pointer;user-select:none;font-size:13px;font-weight:600;color:var(--gray-600);border-bottom:2px solid transparent;margin-bottom:-1px;}
+  .cat-tabs{display:flex;gap:2px;border-bottom:1px solid var(--gray-200);margin-bottom:14px;flex-wrap:wrap;}
+  .cat-tab{padding:10px 14px;cursor:pointer;user-select:none;font-size:13px;font-weight:600;color:var(--gray-500);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s;}
   .cat-tab:hover{color:var(--navy);}
-  .cat-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
-  .cat-tab-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--gray-200);color:var(--gray-600);font-size:10px;font-weight:800;margin-left:6px;}
-  .cat-tab.active .cat-tab-count{background:var(--blue);color:white;}
+  .cat-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+  .cat-tab-count{font-size:11px;font-weight:600;color:var(--gray-400);margin-left:5px;}
+  .cat-tab.active .cat-tab-count{color:var(--gray-500);}
   .task-add-row{display:grid;grid-template-columns:1fr auto auto auto auto;gap:6px;margin-bottom:14px;}
   @media(max-width:720px){.task-add-row{grid-template-columns:1fr 1fr;}}
   .task-add-input,.task-add-cat,.task-add-pri,.task-add-due{padding:9px 10px;border:1px solid var(--gray-300);border-radius:6px;font-family:inherit;font-size:13px;color:var(--text);background:white;outline:none;}
@@ -234,11 +234,6 @@
   </header>
 
   <main class="container">
-    <div class="welcome">
-      <div class="welcome-title">Welcome, Emma</div>
-      <div class="welcome-sub">Everything you need in one place.</div>
-    </div>
-
     <div class="kpi-strip">
       <div class="kpi warn"><div class="kpi-text"><div class="kpi-label">Due Today</div><div class="kpi-sub">Tasks with today's deadline</div></div><div class="kpi-num"><div class="kpi-value" id="kpi-due-today">0</div></div></div>
       <div class="kpi danger"><div class="kpi-text"><div class="kpi-label">Overdue</div><div class="kpi-sub">Past deadline, not done</div></div><div class="kpi-num"><div class="kpi-value" id="kpi-overdue">0</div></div></div>
@@ -261,8 +256,8 @@
       <div>
         <div class="card">
           <div class="section-head">
-            <div class="section-title">📋 My Tasks</div>
-            <div class="tasks-sync-state" id="sync-state">Synced ✓</div>
+            <div class="section-title">My Tasks</div>
+            <div class="tasks-sync-state" id="sync-state">● Synced</div>
           </div>
           <div class="cat-tabs" id="cat-tabs">
             <div class="cat-tab active" data-cat="To Do">To Do <span class="cat-tab-count" id="count-todo">0</span></div>
@@ -293,7 +288,7 @@
         </div>
 
         <div class="card">
-          <div class="section-head"><div class="section-title">📝 Scratchpad</div><div class="section-sub">Auto-saves</div></div>
+          <div class="section-head"><div class="section-title">Scratchpad</div><div class="section-sub">Auto-saves</div></div>
           <textarea class="scratchpad" id="scratchpad" placeholder="Jot anything down here — it saves automatically..."></textarea>
           <div class="scratch-status" id="scratch-status">Saved</div>
         </div>
@@ -303,7 +298,7 @@
         <div class="card collapsible" id="panel-links">
           <button class="panel-header" type="button" onclick="togglePanel('panel-links')">
             <span class="panel-header-left">
-              <span class="panel-header-title">🔗 Quick Links</span>
+              <span class="panel-header-title">Quick Links</span>
               <span class="panel-header-count" id="panel-links-count">0</span>
             </span>
             <span class="panel-chevron">›</span>
@@ -331,7 +326,7 @@
         <div class="card collapsible" id="panel-contacts">
           <button class="panel-header" type="button" onclick="togglePanel('panel-contacts')">
             <span class="panel-header-left">
-              <span class="panel-header-title">👤 Quick Contacts</span>
+              <span class="panel-header-title">Quick Contacts</span>
               <span class="panel-header-count" id="panel-contacts-count">0</span>
             </span>
             <span class="panel-chevron">›</span>
@@ -430,7 +425,7 @@ async function deleteTaskOnBackend(id){try{await fetch(BACKEND_URL,{method:'POST
 function updateSyncState(){
   const el=document.getElementById('sync-state'); if(!el)return;
   const u=tasks.filter(t=>t._unsynced);
-  if(u.length===0){el.classList.remove('unsynced');el.innerHTML='Synced ✓';}
+  if(u.length===0){el.classList.remove('unsynced');el.innerHTML='● Synced';}
   else{el.classList.add('unsynced');el.innerHTML=`⚠ ${u.length} unsynced <button class="retry-btn" onclick="retrySync()">Retry</button>`;}
 }
 async function retrySync(){const u=tasks.filter(t=>t._unsynced); for(const t of u)await pushTaskToBackend(t); renderTasks();}
