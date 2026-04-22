@@ -70,6 +70,276 @@
   }
   .add-container-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-pale);}
 
+  /* ═══ Dynamic Container System ═══ */
+
+  /* Container shell */
+  .ct {
+    background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+    position: relative; overflow: hidden;
+    border-left: 4px solid var(--blue);
+  }
+  .ct.color-navy   { border-left-color: var(--navy); }
+  .ct.color-blue   { border-left-color: var(--blue); }
+  .ct.color-green  { border-left-color: var(--green); }
+  .ct.color-amber  { border-left-color: var(--amber); }
+  .ct.color-red    { border-left-color: var(--red); }
+  .ct.color-purple { border-left-color: #7C3AED; }
+  .ct.color-teal   { border-left-color: #0D9488; }
+  .ct.color-pink   { border-left-color: #DB2777; }
+
+  .ct-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; cursor: pointer; user-select: none;
+    transition: background .1s;
+  }
+  .ct-header:hover { background: var(--gray-50); }
+  .ct.open .ct-header { border-bottom: 1px solid var(--gray-200); }
+  .ct-header-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
+  .ct-type-icon { font-size: 16px; flex-shrink: 0; }
+  .ct-title {
+    font-size: 13px; font-weight: 800; color: var(--navy);
+    letter-spacing: 0.5px; text-transform: uppercase;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .ct-type-label {
+    font-size: 10px; font-weight: 700; color: var(--gray-400);
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .ct-count {
+    font-size: 11px; font-weight: 700; color: var(--gray-500);
+    background: var(--gray-100); padding: 2px 8px; border-radius: 10px;
+  }
+  .ct-header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .ct-menu-btn, .ct-chevron-btn {
+    background: transparent; border: none; cursor: pointer;
+    padding: 4px 8px; border-radius: 4px;
+    font-size: 14px; color: var(--gray-500);
+    font-family: inherit;
+  }
+  .ct-menu-btn:hover, .ct-chevron-btn:hover { background: var(--gray-200); color: var(--navy); }
+  .ct-chevron { transition: transform .15s; display: inline-block; }
+  .ct.open .ct-chevron { transform: rotate(90deg); }
+
+  .ct-body { display: none; padding: 14px 16px 16px; }
+  .ct.open .ct-body { display: block; }
+
+  /* Popover menu (⋮) */
+  .ct-menu-pop {
+    position: absolute; right: 12px; top: 46px;
+    background: white; border: 1px solid var(--gray-200); border-radius: 8px;
+    box-shadow: var(--shadow-md); min-width: 160px;
+    z-index: 50; display: none;
+    overflow: hidden;
+  }
+  .ct-menu-pop.open { display: block; }
+  .ct-menu-item {
+    display: block; width: 100%; padding: 10px 14px;
+    background: transparent; border: none; cursor: pointer;
+    font-family: inherit; font-size: 13px; color: var(--navy);
+    text-align: left;
+  }
+  .ct-menu-item:hover { background: var(--gray-50); }
+  .ct-menu-item.danger { color: var(--red); }
+  .ct-menu-item.danger:hover { background: var(--red-pale); }
+  .ct-menu-divider { height: 1px; background: var(--gray-200); margin: 4px 0; }
+
+  /* Color picker inside menu */
+  .ct-color-row {
+    display: flex; gap: 6px; padding: 10px 14px; flex-wrap: wrap;
+  }
+  .ct-color-swatch {
+    width: 22px; height: 22px; border-radius: 50%;
+    cursor: pointer; border: 2px solid transparent;
+  }
+  .ct-color-swatch:hover { transform: scale(1.1); }
+  .ct-color-swatch.active { border-color: var(--gray-800); }
+
+  /* Type-specific content inside .ct-body */
+  .ct-empty {
+    padding: 20px; text-align: center; color: var(--gray-400);
+    font-size: 12px; font-style: italic;
+  }
+
+  /* Notes */
+  .ct-notes { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+  .ct-note {
+    padding: 10px 12px; border-radius: 6px; border: 1px solid var(--gray-200);
+    min-height: 80px; position: relative;
+    font-size: 13px; line-height: 1.4;
+  }
+  .ct-note.bg-yellow { background: #FFFBEB; border-color: #FDE68A; }
+  .ct-note.bg-pink   { background: #FCE7F3; border-color: #F9A8D4; }
+  .ct-note.bg-blue   { background: #EAF1FB; border-color: #BFDBFE; }
+  .ct-note.bg-green  { background: #D1FAE5; border-color: #6EE7B7; }
+  .ct-note.bg-purple { background: #EDE9FE; border-color: #C4B5FD; }
+  .ct-note textarea {
+    width: 100%; border: none; background: transparent; resize: none;
+    font-family: inherit; font-size: 13px; color: var(--text);
+    outline: none; min-height: 60px; line-height: 1.4;
+  }
+  .ct-note-color-row { display: flex; gap: 3px; margin-top: 6px; }
+  .ct-note-color-dot { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(0,0,0,.1); }
+  .ct-note-delete {
+    position: absolute; top: 4px; right: 4px;
+    background: transparent; border: none; cursor: pointer;
+    font-size: 12px; color: var(--gray-400); padding: 4px;
+  }
+  .ct-note-delete:hover { color: var(--red); }
+  .ct-note-add-btn {
+    padding: 10px; border: 2px dashed var(--gray-300); border-radius: 6px;
+    background: transparent; color: var(--gray-500); cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    min-height: 80px; display: flex; align-items: center; justify-content: center;
+  }
+  .ct-note-add-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+  /* Links / Contacts list items */
+  .ct-list { display: flex; flex-direction: column; gap: 6px; }
+  .ct-item {
+    padding: 10px 12px; background: var(--gray-50); border-radius: 6px;
+    display: flex; align-items: center; gap: 10px; min-width: 0;
+  }
+  .ct-item-main { flex: 1; min-width: 0; }
+  .ct-item-title { font-size: 13px; font-weight: 700; color: var(--navy); }
+  .ct-item-sub { font-size: 11px; color: var(--gray-600); margin-top: 2px; word-break: break-all; }
+  .ct-item-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  .ct-icon-btn {
+    background: transparent; border: none; cursor: pointer;
+    font-size: 12px; color: var(--gray-500); padding: 4px 6px;
+    border-radius: 3px;
+  }
+  .ct-icon-btn:hover { background: var(--gray-200); color: var(--navy); }
+  .ct-icon-btn.danger:hover { color: var(--red); background: var(--red-pale); }
+
+  /* Tasks */
+  .ct-tasks { display: flex; flex-direction: column; gap: 4px; }
+  .ct-task {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 10px; border-radius: 6px;
+    transition: background .1s;
+  }
+  .ct-task:hover { background: var(--gray-50); }
+  .ct-task.done .ct-task-text { text-decoration: line-through; color: var(--gray-400); }
+  .ct-task-check {
+    width: 16px; height: 16px; border: 2px solid var(--gray-300);
+    border-radius: 4px; flex-shrink: 0; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 2px;
+    font-size: 11px; color: white; background: white;
+  }
+  .ct-task.done .ct-task-check { background: var(--green); border-color: var(--green); }
+  .ct-task-body { flex: 1; min-width: 0; }
+  .ct-task-text { font-size: 13px; color: var(--text); }
+  .ct-task-meta { display: flex; gap: 10px; font-size: 11px; color: var(--gray-500); margin-top: 2px; flex-wrap: wrap; }
+  .ct-task-due.overdue { color: var(--red); font-weight: 700; }
+  .ct-task-priority { font-weight: 700; }
+  .ct-task-priority.high { color: var(--red); }
+  .ct-task-priority.med  { color: var(--amber); }
+  .ct-task-priority.low  { color: var(--gray-500); }
+
+  /* Scratchpad */
+  .ct-scratchpad textarea {
+    width: 100%; min-height: 140px; padding: 12px;
+    border: 1px solid var(--gray-200); border-radius: 6px;
+    background: #FFFBEB; font-family: inherit; font-size: 13px;
+    line-height: 1.5; resize: vertical; outline: none;
+    color: var(--text);
+  }
+  .ct-scratchpad textarea:focus { border-color: var(--blue); background: white; }
+
+  /* Generic inline add form inside a container body */
+  .ct-add-form {
+    display: none; padding: 12px; margin-top: 10px;
+    background: var(--gray-50); border: 1px solid var(--gray-200);
+    border-radius: 6px;
+  }
+  .ct-add-form.open { display: block; }
+  .ct-add-form input, .ct-add-form textarea, .ct-add-form select {
+    width: 100%; padding: 8px 10px; margin-bottom: 6px;
+    border: 1px solid var(--gray-300); border-radius: 5px;
+    font-family: inherit; font-size: 12px; background: white; outline: none;
+  }
+  .ct-add-form input:focus, .ct-add-form textarea:focus, .ct-add-form select:focus { border-color: var(--blue); }
+  .ct-add-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .ct-add-form-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 6px; }
+  .ct-add-form-btn {
+    padding: 7px 14px; border-radius: 5px; border: 1px solid transparent;
+    font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+  }
+  .ct-add-form-btn.primary { background: var(--blue); color: white; }
+  .ct-add-form-btn.secondary { background: white; color: var(--gray-600); border-color: var(--gray-300); }
+  .ct-add-toggle {
+    width: 100%; padding: 9px; margin-top: 10px;
+    border: 1px dashed var(--gray-300); border-radius: 6px;
+    background: transparent; color: var(--gray-500);
+    font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+  }
+  .ct-add-toggle:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-pale); }
+
+  /* Modal (Add Container picker + Rename dialog) */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(27, 42, 74, 0.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 900; padding: 20px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto;
+  }
+  .modal-header {
+    padding: 18px 22px; border-bottom: 1px solid var(--gray-200);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-title { font-size: 16px; font-weight: 800; color: var(--navy); }
+  .modal-close {
+    background: transparent; border: none; cursor: pointer;
+    font-size: 20px; color: var(--gray-400); padding: 4px 8px;
+  }
+  .modal-close:hover { color: var(--navy); }
+  .modal-body { padding: 20px 22px; }
+  .modal-footer {
+    padding: 14px 22px; border-top: 1px solid var(--gray-200);
+    display: flex; gap: 10px; justify-content: flex-end;
+  }
+  .modal-label {
+    font-size: 11px; font-weight: 700; color: var(--gray-500);
+    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;
+  }
+  .modal-input {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--gray-300);
+    border-radius: 6px; font-family: inherit; font-size: 14px; outline: none;
+    margin-bottom: 16px;
+  }
+  .modal-input:focus { border-color: var(--blue); }
+  .type-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 18px; }
+  .type-card {
+    padding: 14px; border: 2px solid var(--gray-200); border-radius: 8px;
+    cursor: pointer; text-align: left;
+    background: white; transition: all .1s;
+    font-family: inherit;
+  }
+  .type-card:hover { border-color: var(--blue); background: var(--blue-pale); }
+  .type-card.selected { border-color: var(--blue); background: var(--blue-pale); }
+  .type-card-icon { font-size: 22px; margin-bottom: 6px; }
+  .type-card-title { font-size: 13px; font-weight: 800; color: var(--navy); }
+  .type-card-sub { font-size: 11px; color: var(--gray-500); margin-top: 3px; }
+
+  .btn-sec {
+    padding: 9px 16px; border-radius: 6px;
+    background: white; color: var(--gray-600); border: 1px solid var(--gray-300);
+    font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .btn-sec:hover { background: var(--gray-50); }
+  .btn-pri {
+    padding: 9px 16px; border-radius: 6px;
+    background: var(--blue); color: white; border: 1px solid var(--blue);
+    font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .btn-pri:hover { background: var(--navy); border-color: var(--navy); }
+  .btn-pri:disabled { opacity: .5; cursor: not-allowed; }
+
   /* Denied view */
   .denied{max-width:500px;margin:64px auto;padding:36px;background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);text-align:center;}
   .denied-icon{font-size:48px;margin-bottom:14px;}
@@ -149,6 +419,70 @@
 
 <div id="toast" class="toast"></div>
 
+<!-- Add Container modal -->
+<div id="add-modal" class="modal-backdrop" onclick="if(event.target===this)closeAddModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Container</div>
+      <button class="modal-close" onclick="closeAddModal()" type="button">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-label">Choose Type</div>
+      <div class="type-grid" id="type-grid">
+        <button class="type-card" data-type="notes" onclick="selectType('notes',this)" type="button">
+          <div class="type-card-icon">📝</div>
+          <div class="type-card-title">Notes</div>
+          <div class="type-card-sub">Color-coded sticky notes</div>
+        </button>
+        <button class="type-card" data-type="links" onclick="selectType('links',this)" type="button">
+          <div class="type-card-icon">🔗</div>
+          <div class="type-card-title">Links</div>
+          <div class="type-card-sub">Bookmarked URLs</div>
+        </button>
+        <button class="type-card" data-type="contacts" onclick="selectType('contacts',this)" type="button">
+          <div class="type-card-icon">👤</div>
+          <div class="type-card-title">Contacts</div>
+          <div class="type-card-sub">People and contact info</div>
+        </button>
+        <button class="type-card" data-type="tasks" onclick="selectType('tasks',this)" type="button">
+          <div class="type-card-icon">✓</div>
+          <div class="type-card-title">Tasks</div>
+          <div class="type-card-sub">Checklist with priority</div>
+        </button>
+        <button class="type-card" data-type="scratchpad" onclick="selectType('scratchpad',this)" type="button">
+          <div class="type-card-icon">✏️</div>
+          <div class="type-card-title">Scratchpad</div>
+          <div class="type-card-sub">Single freeform text area</div>
+        </button>
+      </div>
+      <div class="modal-label">Name</div>
+      <input type="text" id="add-name-input" class="modal-input" placeholder="e.g. Project Notes" maxlength="60">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sec" onclick="closeAddModal()" type="button">Cancel</button>
+      <button class="btn-pri" id="add-confirm-btn" onclick="confirmAdd()" type="button" disabled>Add Container</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rename modal -->
+<div id="rename-modal" class="modal-backdrop" onclick="if(event.target===this)closeRenameModal()">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <div class="modal-title">Rename Container</div>
+      <button class="modal-close" onclick="closeRenameModal()" type="button">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-label">Name</div>
+      <input type="text" id="rename-input" class="modal-input" maxlength="60">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sec" onclick="closeRenameModal()" type="button">Cancel</button>
+      <button class="btn-pri" onclick="confirmRename()" type="button">Save</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ══════════════════════════════════════════════════════════════
    CONFIG
@@ -184,11 +518,29 @@ function checkAccess() {
 /* ══════════════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════════════ */
-let ws = { containers: [] };          // Angel's workspace — containers will live here
+let ws = { containers: [] };    // each container: {id, widget_type:'container', subtype, name, color, items, sort_order, created_at, updated_at}
 let kpiStats = { tasksDueToday: 0, tasksOverdue: 0, openComplianceAssigned: 0, openLegalAssigned: 0 };
+const COLLAPSE_LS_KEY = 'angel_container_collapsed_v1';
+const COLORS = [
+  { key: 'navy',   hex: '#1B2A4A' },
+  { key: 'blue',   hex: '#1F5FAD' },
+  { key: 'green',  hex: '#059669' },
+  { key: 'amber',  hex: '#D97706' },
+  { key: 'red',    hex: '#DC2626' },
+  { key: 'purple', hex: '#7C3AED' },
+  { key: 'teal',   hex: '#0D9488' },
+  { key: 'pink',   hex: '#DB2777' },
+];
+const TYPE_META = {
+  notes:      { icon: '📝', label: 'Notes' },
+  links:      { icon: '🔗', label: 'Links' },
+  contacts:   { icon: '👤', label: 'Contacts' },
+  tasks:      { icon: '✓',  label: 'Tasks' },
+  scratchpad: { icon: '✏️', label: 'Scratchpad' },
+};
 
 /* ══════════════════════════════════════════════════════════════
-   TOAST
+   TOAST / UTILS
 ══════════════════════════════════════════════════════════════ */
 let toastTimer = null;
 function showToast(msg, isError) {
@@ -199,11 +551,28 @@ function showToast(msg, isError) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
 }
+function newId(prefix) { return (prefix || 'C') + Date.now() + '-' + Math.random().toString(36).slice(2,7); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ══════════════════════════════════════════════════════════════
-   KPIs — read the same stats Emma's page reads (reuses getEmmaStats logic
-   on backend — we'll just add a getAngelStats wrapper on the backend side).
-   For now, call the endpoint and populate. If no data, defaults to 0.
+   COLLAPSE STATE (localStorage — persistent per container)
+══════════════════════════════════════════════════════════════ */
+function getCollapsedSet() {
+  try { return new Set(JSON.parse(localStorage.getItem(COLLAPSE_LS_KEY) || '[]')); }
+  catch(e) { return new Set(); }
+}
+function saveCollapsedSet(set) {
+  try { localStorage.setItem(COLLAPSE_LS_KEY, JSON.stringify(Array.from(set))); } catch(e){}
+}
+function isCollapsed(id) { return getCollapsedSet().has(id); }
+function setCollapsed(id, collapsed) {
+  const s = getCollapsedSet();
+  if (collapsed) s.add(id); else s.delete(id);
+  saveCollapsedSet(s);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   KPIs
 ══════════════════════════════════════════════════════════════ */
 async function loadKPIs() {
   try {
@@ -216,38 +585,489 @@ async function loadKPIs() {
       document.getElementById('kpi-compliance').textContent = data.openComplianceAssigned || 0;
       document.getElementById('kpi-legal').textContent      = data.openLegalAssigned || 0;
     }
-  } catch(e) {
-    // Silent — KPIs are non-critical
-  }
+  } catch(e) {}
 }
 
 /* ══════════════════════════════════════════════════════════════
-   WORKSPACE — renders containers (placeholder for dynamic system)
+   BACKEND SYNC
+══════════════════════════════════════════════════════════════ */
+async function loadWorkspace() {
+  try {
+    const res = await fetch(`${BACKEND_URL}?action=getAngelWorkspace`);
+    const data = await res.json();
+    ws.containers = (data && data.containers ? data.containers : [])
+      .sort((a,b) => (a.sort_order||0) - (b.sort_order||0));
+  } catch(e) {
+    showToast('Could not load workspace', true);
+    ws.containers = [];
+  }
+}
+
+function saveContainerToBackend(c) {
+  // Fire-and-forget (no-cors) — backend accepts JSON body
+  fetch(BACKEND_URL, {
+    method: 'POST', mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'saveAngelWidget', widget: {
+      id: c.id, widget_type: 'container', sort_order: c.sort_order || 0,
+      created_at: c.created_at, updated_at: new Date().toISOString(),
+      subtype: c.subtype, name: c.name, color: c.color, items: c.items || [], text: c.text || ''
+    }})
+  }).catch(()=>{});
+}
+
+function deleteContainerOnBackend(id) {
+  fetch(BACKEND_URL, {
+    method: 'POST', mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'deleteAngelWidget', id })
+  }).catch(()=>{});
+}
+
+/* ══════════════════════════════════════════════════════════════
+   WORKSPACE RENDERING
 ══════════════════════════════════════════════════════════════ */
 function renderWorkspace() {
   const wrap  = document.getElementById('workspace');
   const empty = document.getElementById('workspace-empty');
   if (!ws.containers || !ws.containers.length) {
     if (empty) empty.style.display = 'block';
+    // Clear any existing containers
+    Array.from(wrap.querySelectorAll('.ct')).forEach(el => el.remove());
     return;
   }
   if (empty) empty.style.display = 'none';
-  // Container rendering will go here once we build the type system
+  // Clear existing and re-render
+  Array.from(wrap.querySelectorAll('.ct')).forEach(el => el.remove());
+  ws.containers.forEach(c => {
+    const el = document.createElement('div');
+    el.innerHTML = renderContainer(c);
+    wrap.appendChild(el.firstElementChild);
+  });
+}
+
+function renderContainer(c) {
+  const meta = TYPE_META[c.subtype] || { icon: '📦', label: 'Container' };
+  const collapsed = isCollapsed(c.id);
+  const openCls = collapsed ? '' : 'open';
+  const colorCls = 'color-' + (c.color || 'blue');
+  const count = countItems(c);
+  return `
+    <div class="ct ${openCls} ${colorCls}" id="ct-${c.id}" data-id="${c.id}">
+      <div class="ct-header" onclick="toggleContainer('${c.id}')">
+        <div class="ct-header-left">
+          <span class="ct-type-icon">${meta.icon}</span>
+          <span class="ct-title">${esc(c.name)}</span>
+          <span class="ct-type-label">${meta.label}</span>
+          ${count !== null ? `<span class="ct-count">${count}</span>` : ''}
+        </div>
+        <div class="ct-header-right">
+          <button class="ct-menu-btn" onclick="event.stopPropagation(); toggleMenu('${c.id}')" title="Menu" type="button">⋮</button>
+          <button class="ct-chevron-btn" onclick="event.stopPropagation(); toggleContainer('${c.id}')" type="button"><span class="ct-chevron">›</span></button>
+        </div>
+      </div>
+      <div class="ct-menu-pop" id="menu-${c.id}" onclick="event.stopPropagation();">
+        <button class="ct-menu-item" onclick="openRenameModal('${c.id}')" type="button">✏️ Rename</button>
+        <div class="ct-menu-divider"></div>
+        <div class="ct-color-row">${COLORS.map(co => `<span class="ct-color-swatch ${c.color===co.key?'active':''}" style="background:${co.hex}" onclick="setColor('${c.id}','${co.key}')"></span>`).join('')}</div>
+        <div class="ct-menu-divider"></div>
+        <button class="ct-menu-item danger" onclick="deleteContainer('${c.id}')" type="button">🗑️ Delete</button>
+      </div>
+      <div class="ct-body">${renderContainerBody(c)}</div>
+    </div>
+  `;
+}
+
+function countItems(c) {
+  if (c.subtype === 'notes' || c.subtype === 'links' || c.subtype === 'contacts' || c.subtype === 'tasks') {
+    return (c.items || []).length;
+  }
+  return null;
+}
+
+function renderContainerBody(c) {
+  if (c.subtype === 'notes')      return renderNotesBody(c);
+  if (c.subtype === 'links')      return renderLinksBody(c);
+  if (c.subtype === 'contacts')   return renderContactsBody(c);
+  if (c.subtype === 'tasks')      return renderTasksBody(c);
+  if (c.subtype === 'scratchpad') return renderScratchpadBody(c);
+  return '<div class="ct-empty">Unknown type.</div>';
+}
+
+/* ── NOTES ────────────────────────────────────────────────────── */
+function renderNotesBody(c) {
+  const notes = c.items || [];
+  const noteColors = ['yellow','pink','blue','green','purple'];
+  return `
+    <div class="ct-notes">
+      ${notes.map(n => `
+        <div class="ct-note bg-${n.color || 'yellow'}" data-id="${n.id}">
+          <button class="ct-note-delete" onclick="deleteNote('${c.id}','${n.id}')" title="Delete" type="button">×</button>
+          <textarea oninput="saveNoteText('${c.id}','${n.id}',this.value)" placeholder="Type a note...">${esc(n.text || '')}</textarea>
+          <div class="ct-note-color-row">
+            ${noteColors.map(col => `<span class="ct-note-color-dot" style="background:${{yellow:'#FEF3C7',pink:'#FCE7F3',blue:'#DBEAFE',green:'#D1FAE5',purple:'#EDE9FE'}[col]};" onclick="setNoteColor('${c.id}','${n.id}','${col}')"></span>`).join('')}
+          </div>
+        </div>
+      `).join('')}
+      <button class="ct-note-add-btn" onclick="addNote('${c.id}')" type="button">+ Add Note</button>
+    </div>
+  `;
+}
+
+function addNote(cid) {
+  const c = ws.containers.find(x => x.id === cid); if (!c) return;
+  c.items = c.items || [];
+  c.items.push({ id: newId('N'), text: '', color: 'yellow', created_at: new Date().toISOString() });
+  saveContainerToBackend(c); renderWorkspace();
+}
+function deleteNote(cid, nid) {
+  const c = ws.containers.find(x => x.id === cid); if (!c) return;
+  c.items = (c.items || []).filter(n => n.id !== nid);
+  saveContainerToBackend(c); renderWorkspace();
+}
+let noteSaveTimer = null;
+function saveNoteText(cid, nid, text) {
+  const c = ws.containers.find(x => x.id === cid); if (!c) return;
+  const n = (c.items || []).find(x => x.id === nid); if (!n) return;
+  n.text = text;
+  clearTimeout(noteSaveTimer);
+  noteSaveTimer = setTimeout(() => saveContainerToBackend(c), 600);
+}
+function setNoteColor(cid, nid, color) {
+  const c = ws.containers.find(x => x.id === cid); if (!c) return;
+  const n = (c.items || []).find(x => x.id === nid); if (!n) return;
+  n.color = color;
+  saveContainerToBackend(c); renderWorkspace();
+}
+
+/* ── LINKS ────────────────────────────────────────────────────── */
+function renderLinksBody(c) {
+  const items = c.items || [];
+  return `
+    <div class="ct-list">
+      ${items.length === 0 ? '<div class="ct-empty">No links yet.</div>' : ''}
+      ${items.map(l => `
+        <div class="ct-item">
+          <div class="ct-item-main">
+            <div class="ct-item-title"><a href="${esc(l.url)}" target="_blank" style="color:var(--navy);text-decoration:none;">${esc(l.label || l.url)}</a></div>
+            <div class="ct-item-sub">${esc(l.url)}</div>
+          </div>
+          <div class="ct-item-actions">
+            <button class="ct-icon-btn danger" onclick="deleteLink('${c.id}','${l.id}')" title="Delete" type="button">×</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <button class="ct-add-toggle" onclick="toggleAddForm('${c.id}')" type="button">+ Add Link</button>
+    <div class="ct-add-form" id="addform-${c.id}">
+      <input type="text" id="link-label-${c.id}" placeholder="Label (optional)">
+      <input type="text" id="link-url-${c.id}" placeholder="https://...">
+      <div class="ct-add-form-actions">
+        <button class="ct-add-form-btn secondary" onclick="toggleAddForm('${c.id}')" type="button">Cancel</button>
+        <button class="ct-add-form-btn primary" onclick="addLink('${c.id}')" type="button">Save</button>
+      </div>
+    </div>
+  `;
+}
+function addLink(cid) {
+  const c = ws.containers.find(x => x.id === cid); if (!c) return;
+  const label = (document.getElementById('link-label-' + cid).value || '').trim();
+  let url     = (document.getElementById('link-url-' + cid).value || '').trim();
+  if (!url) { showToast('URL is required', true); return; }
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  c.items = c.items || [];
+  c.items.push({ id: newId('L'), label: label || url.replace(/^https?:\/\//i,'').split('/')[0], url, created_at: new Date().toISOString() });
+  saveContainerToBackend(c);
+  renderWorkspace();
+}
+function deleteLink(cid, lid) {
+  const c = ws.containers.find(x => x.id === cid); if (!c) return;
+  c.items = (c.items || []).filter(l => l.id !== lid);
+  saveContainerToBackend(c); renderWorkspace();
+}
+
+/* ── CONTACTS ─────────────────────────────────────────────────── */
+function renderContactsBody(c) {
+  const items = c.items || [];
+  return `
+    <div class="ct-list">
+      ${items.length === 0 ? '<div class="ct-empty">No contacts yet.</div>' : ''}
+      ${items.map(p => `
+        <div class="ct-item">
+          <div class="ct-item-main">
+            <div class="ct-item-title">${esc(p.name)}</div>
+            <div class="ct-item-sub">${esc([p.role, p.phone, p.email].filter(Boolean).join(' · '))}</div>
+          </div>
+          <div class="ct-item-actions">
+            ${p.phone ? `<button class="ct-icon-btn" onclick="copyText('${esc(p.phone)}')" title="Copy phone" type="button">📱</button>` : ''}
+            ${p.email ? `<button class="ct-icon-btn" onclick="copyText('${esc(p.email)}')" title="Copy email" type="button">✉️</button>` : ''}
+            <button class="ct-icon-btn danger" onclick="deleteContact('${c.id}','${p.id}')" title="Delete" type="button">×</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <button class="ct-add-toggle" onclick="toggleAddForm('${c.id}')" type="button">+ Add Contact</button>
+    <div class="ct-add-form" id="addform-${c.id}">
+      <input type="text" id="contact-name-${c.id}" placeholder="Name">
+      <input type="text" id="contact-role-${c.id}" placeholder="Role / Company (optional)">
+      <div class="ct-add-form-row">
+        <input type="text" id="contact-phone-${c.id}" placeholder="Phone">
+        <input type="email" id="contact-email-${c.id}" placeholder="Email">
+      </div>
+      <div class="ct-add-form-actions">
+        <button class="ct-add-form-btn secondary" onclick="toggleAddForm('${c.id}')" type="button">Cancel</button>
+        <button class="ct-add-form-btn primary" onclick="addContact('${c.id}')" type="button">Save</button>
+      </div>
+    </div>
+  `;
+}
+function addContact(cid) {
+  const c = ws.containers.find(x => x.id === cid); if (!c) return;
+  const name = (document.getElementById('contact-name-' + cid).value || '').trim();
+  if (!name) { showToast('Name is required', true); return; }
+  c.items = c.items || [];
+  c.items.push({
+    id: newId('P'), name,
+    role:  (document.getElementById('contact-role-' + cid).value || '').trim(),
+    phone: (document.getElementById('contact-phone-' + cid).value || '').trim(),
+    email: (document.getElementById('contact-email-' + cid).value || '').trim(),
+    created_at: new Date().toISOString(),
+  });
+  saveContainerToBackend(c);
+  renderWorkspace();
+}
+function deleteContact(cid, pid) {
+  const c = ws.containers.find(x => x.id === cid); if (!c) return;
+  c.items = (c.items || []).filter(p => p.id !== pid);
+  saveContainerToBackend(c); renderWorkspace();
+}
+function copyText(text) {
+  try { navigator.clipboard.writeText(text); showToast('Copied'); }
+  catch(e) { showToast('Copy failed', true); }
+}
+
+/* ── TASKS ────────────────────────────────────────────────────── */
+function renderTasksBody(c) {
+  const items = c.items || [];
+  const today = new Date(); today.setHours(0,0,0,0);
+  return `
+    <div class="ct-tasks">
+      ${items.length === 0 ? '<div class="ct-empty">No tasks yet.</div>' : ''}
+      ${items.map(t => {
+        const overdue = t.due_date && t.status !== 'done' && new Date(t.due_date) < today;
+        return `
+          <div class="ct-task ${t.status === 'done' ? 'done' : ''}">
+            <div class="ct-task-check" onclick="toggleTask('${c.id}','${t.id}')">${t.status === 'done' ? '✓' : ''}</div>
+            <div class="ct-task-body">
+              <div class="ct-task-text">${esc(t.text)}</div>
+              <div class="ct-task-meta">
+                ${t.priority ? `<span class="ct-task-priority ${t.priority}">${t.priority.toUpperCase()}</span>` : ''}
+                ${t.due_date ? `<span class="ct-task-due ${overdue?'overdue':''}">📅 ${esc(t.due_date)}</span>` : ''}
+              </div>
+            </div>
+            <button class="ct-icon-btn danger" onclick="deleteTask('${c.id}','${t.id}')" title="Delete" type="button">×</button>
+          </div>
+        `;
+      }).join('')}
+    </div>
+    <button class="ct-add-toggle" onclick="toggleAddForm('${c.id}')" type="button">+ Add Task</button>
+    <div class="ct-add-form" id="addform-${c.id}">
+      <input type="text" id="task-text-${c.id}" placeholder="Task description">
+      <div class="ct-add-form-row">
+        <select id="task-priority-${c.id}">
+          <option value="low">Low priority</option>
+          <option value="med" selected>Medium priority</option>
+          <option value="high">High priority</option>
+        </select>
+        <input type="date" id="task-due-${c.id}">
+      </div>
+      <div class="ct-add-form-actions">
+        <button class="ct-add-form-btn secondary" onclick="toggleAddForm('${c.id}')" type="button">Cancel</button>
+        <button class="ct-add-form-btn primary" onclick="addTask('${c.id}')" type="button">Save</button>
+      </div>
+    </div>
+  `;
+}
+function addTask(cid) {
+  const c = ws.containers.find(x => x.id === cid); if (!c) return;
+  const text = (document.getElementById('task-text-' + cid).value || '').trim();
+  if (!text) { showToast('Task text is required', true); return; }
+  c.items = c.items || [];
+  c.items.push({
+    id: newId('T'), text, status: 'pending',
+    priority: document.getElementById('task-priority-' + cid).value,
+    due_date: document.getElementById('task-due-' + cid).value,
+    created_at: new Date().toISOString(),
+  });
+  saveContainerToBackend(c);
+  renderWorkspace();
+}
+function toggleTask(cid, tid) {
+  const c = ws.containers.find(x => x.id === cid); if (!c) return;
+  const t = (c.items || []).find(x => x.id === tid); if (!t) return;
+  t.status = t.status === 'done' ? 'pending' : 'done';
+  t.completed_at = t.status === 'done' ? new Date().toISOString() : '';
+  saveContainerToBackend(c); renderWorkspace();
+}
+function deleteTask(cid, tid) {
+  const c = ws.containers.find(x => x.id === cid); if (!c) return;
+  c.items = (c.items || []).filter(t => t.id !== tid);
+  saveContainerToBackend(c); renderWorkspace();
+}
+
+/* ── SCRATCHPAD ───────────────────────────────────────────────── */
+function renderScratchpadBody(c) {
+  return `
+    <div class="ct-scratchpad">
+      <textarea placeholder="Quick thoughts..." oninput="saveScratchText('${c.id}', this.value)">${esc(c.text || '')}</textarea>
+    </div>
+  `;
+}
+let scratchSaveTimer = null;
+function saveScratchText(cid, text) {
+  const c = ws.containers.find(x => x.id === cid); if (!c) return;
+  c.text = text;
+  clearTimeout(scratchSaveTimer);
+  scratchSaveTimer = setTimeout(() => saveContainerToBackend(c), 600);
 }
 
 /* ══════════════════════════════════════════════════════════════
-   ADD CONTAINER (placeholder — will be expanded in the next step)
+   CONTAINER-LEVEL ACTIONS
 ══════════════════════════════════════════════════════════════ */
-document.getElementById('add-container-btn').addEventListener('click', () => {
-  // This will open the container type picker (next step)
-  showToast('Container picker — coming next');
+function toggleContainer(id) {
+  const el = document.getElementById('ct-' + id);
+  if (!el) return;
+  const nowOpen = !el.classList.contains('open');
+  el.classList.toggle('open', nowOpen);
+  setCollapsed(id, !nowOpen);
+}
+
+function toggleMenu(id) {
+  // Close other menus first
+  document.querySelectorAll('.ct-menu-pop.open').forEach(m => {
+    if (m.id !== 'menu-' + id) m.classList.remove('open');
+  });
+  const pop = document.getElementById('menu-' + id);
+  if (pop) pop.classList.toggle('open');
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.ct-menu-btn') && !e.target.closest('.ct-menu-pop')) {
+    document.querySelectorAll('.ct-menu-pop.open').forEach(m => m.classList.remove('open'));
+  }
 });
+
+function setColor(id, color) {
+  const c = ws.containers.find(x => x.id === id); if (!c) return;
+  c.color = color;
+  saveContainerToBackend(c); renderWorkspace();
+}
+
+function deleteContainer(id) {
+  const c = ws.containers.find(x => x.id === id); if (!c) return;
+  if (!confirm(`Delete "${c.name}" and all its contents? This cannot be undone.`)) return;
+  ws.containers = ws.containers.filter(x => x.id !== id);
+  deleteContainerOnBackend(id);
+  renderWorkspace();
+  showToast('Container deleted');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RENAME MODAL
+══════════════════════════════════════════════════════════════ */
+let renameTargetId = null;
+function openRenameModal(id) {
+  const c = ws.containers.find(x => x.id === id); if (!c) return;
+  renameTargetId = id;
+  document.getElementById('rename-input').value = c.name;
+  document.getElementById('rename-modal').classList.add('open');
+  setTimeout(() => document.getElementById('rename-input').focus(), 50);
+  // Close the ⋮ menu
+  const pop = document.getElementById('menu-' + id);
+  if (pop) pop.classList.remove('open');
+}
+function closeRenameModal() {
+  document.getElementById('rename-modal').classList.remove('open');
+  renameTargetId = null;
+}
+function confirmRename() {
+  if (!renameTargetId) return;
+  const name = (document.getElementById('rename-input').value || '').trim();
+  if (!name) { showToast('Name is required', true); return; }
+  const c = ws.containers.find(x => x.id === renameTargetId); if (!c) return;
+  c.name = name;
+  saveContainerToBackend(c);
+  closeRenameModal();
+  renderWorkspace();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ADD CONTAINER MODAL
+══════════════════════════════════════════════════════════════ */
+let addModalType = null;
+function openAddModal() {
+  addModalType = null;
+  document.getElementById('add-name-input').value = '';
+  document.getElementById('add-confirm-btn').disabled = true;
+  Array.from(document.querySelectorAll('#type-grid .type-card')).forEach(t => t.classList.remove('selected'));
+  document.getElementById('add-modal').classList.add('open');
+  setTimeout(() => document.getElementById('add-name-input').focus(), 50);
+}
+function closeAddModal() {
+  document.getElementById('add-modal').classList.remove('open');
+}
+function selectType(type, btn) {
+  addModalType = type;
+  Array.from(document.querySelectorAll('#type-grid .type-card')).forEach(t => t.classList.remove('selected'));
+  btn.classList.add('selected');
+  updateAddBtn();
+  // Auto-suggest a name if blank
+  const nameIn = document.getElementById('add-name-input');
+  if (!nameIn.value.trim()) nameIn.value = (TYPE_META[type] && TYPE_META[type].label) || 'Container';
+  updateAddBtn();
+}
+function updateAddBtn() {
+  const nameOk = (document.getElementById('add-name-input').value || '').trim().length > 0;
+  document.getElementById('add-confirm-btn').disabled = !(addModalType && nameOk);
+}
+document.getElementById('add-name-input').addEventListener('input', updateAddBtn);
+function confirmAdd() {
+  if (!addModalType) return;
+  const name = (document.getElementById('add-name-input').value || '').trim();
+  if (!name) { showToast('Name is required', true); return; }
+  const now = new Date().toISOString();
+  const sort = ws.containers.length ? Math.max(...ws.containers.map(c => c.sort_order || 0)) + 1 : 1;
+  const c = {
+    id: newId('CT'),
+    widget_type: 'container',
+    subtype: addModalType,
+    name, color: 'blue',
+    items: [], text: '',
+    sort_order: sort,
+    created_at: now, updated_at: now,
+  };
+  ws.containers.push(c);
+  saveContainerToBackend(c);
+  closeAddModal();
+  renderWorkspace();
+  showToast(`${TYPE_META[addModalType].label} container added`);
+}
+
+/* Generic add-form toggle inside a container body */
+function toggleAddForm(cid) {
+  const f = document.getElementById('addform-' + cid);
+  if (!f) return;
+  f.classList.toggle('open');
+}
+
+/* Click handler on the main + Add Container button */
+document.getElementById('add-container-btn').addEventListener('click', openAddModal);
 
 /* ══════════════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════════════ */
 (async function init(){
   if (!checkAccess()) return;
+  await loadWorkspace();
   renderWorkspace();
   loadKPIs();
 })();
