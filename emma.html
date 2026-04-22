@@ -312,14 +312,15 @@
               <input type="text" id="link-search" placeholder="Search links..." oninput="renderLinks()">
             </div>
             <div class="links-list" id="links-list"></div>
-            <!-- Add-link form is shown inline once the panel is open (no nested toggle) -->
-            <div class="add-form open" style="margin-top:12px;">
-              <div class="add-form-title">Add Link</div>
+            <button class="add-toggle" onclick="toggleAddForm('link')">+ Add Link</button>
+            <div class="add-form" id="link-add-form">
+              <div class="add-form-title">New Link</div>
               <div class="add-form-grid cols-2">
                 <input type="text" id="link-label-input" placeholder="Label" class="full">
                 <input type="text" id="link-url-input" placeholder="https://..." class="full">
               </div>
               <div class="add-form-actions">
+                <button class="add-form-btn secondary" onclick="toggleAddForm('link')">Cancel</button>
                 <button class="add-form-btn primary" onclick="addLink()">Save</button>
               </div>
             </div>
@@ -339,9 +340,9 @@
               <input type="text" id="contact-search" placeholder="Search contacts..." oninput="renderContacts()">
             </div>
             <div class="contacts-list" id="contacts-list"></div>
-            <!-- Add-contact form inline when panel is open -->
-            <div class="add-form open" style="margin-top:12px;">
-              <div class="add-form-title">Add Contact</div>
+            <button class="add-toggle" onclick="toggleAddForm('contact')">+ Add Contact</button>
+            <div class="add-form" id="contact-add-form">
+              <div class="add-form-title">New Contact</div>
               <div class="add-form-grid cols-2">
                 <input class="full" type="text" id="contact-name-input" placeholder="Name">
                 <input class="full" type="text" id="contact-role-input" placeholder="Role / Company (optional)">
@@ -349,6 +350,7 @@
                 <input type="email" id="contact-email-input" placeholder="Email">
               </div>
               <div class="add-form-actions">
+                <button class="add-form-btn secondary" onclick="toggleAddForm('contact')">Cancel</button>
                 <button class="add-form-btn primary" onclick="addContact()">Save</button>
               </div>
             </div>
