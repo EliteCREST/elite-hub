@@ -969,8 +969,12 @@ function renderLinks(){
   }).join('');
 
   wrap.innerHTML = pillsHtml;
-  // Hide the wrap entirely when there are no links (keeps dashboard clean)
-  wrap.style.display = recent.length ? 'flex' : 'none';
+  // Always show when we have any links to render (use setProperty to override inline style)
+  if(recent.length > 0){
+    wrap.style.setProperty('display', 'flex', 'important');
+  } else {
+    wrap.style.setProperty('display', 'none', 'important');
+  }
 }
 
 function linkContextMenu(evt, id){
