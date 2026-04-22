@@ -953,10 +953,10 @@ function renderLinks(){
   const wrap = document.getElementById('link-pill-wrap');
   if(!wrap) return;
 
-  // Top 5 most RECENT (by created_at descending)
+  // Top 5 most RECENT (by created_at desc, falling back to sort_order, then index)
   const recent = (ws.links || []).slice().sort((a,b) => {
-    const aD = new Date(a.created_at || 0).getTime();
-    const bD = new Date(b.created_at || 0).getTime();
+    const aD = new Date(a.created_at || 0).getTime() || (a.sort_order || 0);
+    const bD = new Date(b.created_at || 0).getTime() || (b.sort_order || 0);
     return bD - aD;
   }).slice(0, MAX_RECENT_PILLS);
 
