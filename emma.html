@@ -109,16 +109,32 @@
   .add-toggle:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-pale);}
 
   /* Collapsible panel pattern — click the header to expand/collapse */
-  .card.collapsible { padding: 0; overflow: hidden; }
+  .card.collapsible { padding: 0; overflow: hidden; position: relative; }
   .card.collapsible .panel-header {
     display: flex; align-items: center; justify-content: space-between;
-    width: 100%; padding: 14px 18px;
-    background: white; border: none; cursor: pointer;
-    font-family: inherit; text-align: left;
-    transition: background .1s;
+    width: 100%; padding: 0;
+    background: white; transition: background .1s;
   }
   .card.collapsible .panel-header:hover { background: var(--gray-50); }
   .card.collapsible.open .panel-header { border-bottom: 1px solid var(--gray-200); }
+  .panel-header-main {
+    flex: 1; display: flex; align-items: center; gap: 10px;
+    padding: 14px 18px; cursor: pointer; min-width: 0;
+    background: transparent; border: none; text-align: left;
+    font-family: inherit;
+  }
+  .panel-header-actions {
+    display: flex; align-items: center; gap: 2px; padding-right: 8px;
+  }
+  .panel-icon-btn {
+    background: transparent; border: none; cursor: pointer;
+    width: 32px; height: 32px; border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: inherit; font-size: 15px; color: var(--gray-500);
+    transition: all .1s;
+  }
+  .panel-icon-btn:hover { background: var(--gray-100); color: var(--navy); }
+  .panel-icon-btn.active { background: var(--blue-pale); color: var(--blue); }
   .card.collapsible .panel-header-left {
     display: flex; align-items: center; gap: 10px;
   }
@@ -128,15 +144,58 @@
   .card.collapsible .panel-header-count {
     font-size: 11px; font-weight: 600; color: var(--gray-500);
     background: var(--gray-100); padding: 2px 8px; border-radius: 10px;
+    transition: background .25s;
+  }
+  .card.collapsible .panel-header-count.flash {
+    background: var(--green-pale); color: var(--green);
   }
   .card.collapsible .panel-chevron {
-    font-size: 12px; color: var(--gray-400); transition: transform .15s;
+    font-size: 13px; color: var(--gray-400); transition: transform .15s;
   }
   .card.collapsible.open .panel-chevron { transform: rotate(90deg); }
   .card.collapsible .panel-body {
     display: none; padding: 14px 18px 18px 18px;
   }
   .card.collapsible.open .panel-body { display: block; }
+
+  /* Quick-add popover anchored to the + button */
+  .quick-pop {
+    position: absolute; top: 50px; right: 8px;
+    width: 260px; background: white; border: 1px solid var(--gray-200);
+    border-radius: 8px; box-shadow: 0 8px 24px rgba(15,23,42,.12);
+    padding: 12px; z-index: 100; display: none;
+  }
+  .quick-pop.open { display: block; }
+  .quick-pop-title {
+    font-size: 11px; font-weight: 700; letter-spacing: .8px;
+    text-transform: uppercase; color: var(--gray-500); margin-bottom: 8px;
+  }
+  .quick-pop input {
+    width: 100%; padding: 8px 10px; margin-bottom: 6px;
+    border: 1px solid var(--gray-300); border-radius: 6px;
+    font-family: inherit; font-size: 13px; outline: none;
+    background: white;
+  }
+  .quick-pop input:focus { border-color: var(--blue); }
+  .quick-pop-actions {
+    display: flex; gap: 6px; justify-content: flex-end; margin-top: 6px;
+  }
+  .quick-pop-btn {
+    padding: 7px 12px; border-radius: 6px;
+    font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .quick-pop-btn.primary { background: var(--blue); color: white; border-color: var(--blue); }
+  .quick-pop-btn.primary:hover { background: var(--navy); border-color: var(--navy); }
+  .quick-pop-btn.secondary { background: white; color: var(--gray-500); border-color: var(--gray-300); }
+  .quick-pop-btn.secondary:hover { background: var(--gray-50); color: var(--navy); }
+  .quick-pop-hint {
+    font-size: 11px; color: var(--gray-400); margin-top: 6px; text-align: right;
+  }
+  .quick-pop-hint kbd {
+    background: var(--gray-100); padding: 1px 5px; border-radius: 3px;
+    font-family: inherit; font-size: 10px; font-weight: 600;
+  }
   .add-form{display:none;padding:12px;margin-top:10px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:6px;}
   .add-form.open{display:block;}
   .add-form-title{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--gray-600);margin-bottom:8px;}
@@ -296,13 +355,29 @@
 
       <div>
         <div class="card collapsible" id="panel-links">
-          <button class="panel-header" type="button" onclick="togglePanel('panel-links')">
-            <span class="panel-header-left">
-              <span class="panel-header-title">Quick Links</span>
-              <span class="panel-header-count" id="panel-links-count">0</span>
-            </span>
-            <span class="panel-chevron">›</span>
-          </button>
+          <div class="panel-header">
+            <button class="panel-header-main" type="button" onclick="togglePanel('panel-links')">
+              <span class="panel-header-left">
+                <span class="panel-header-title">Quick Links</span>
+                <span class="panel-header-count" id="panel-links-count">0</span>
+              </span>
+            </button>
+            <div class="panel-header-actions">
+              <button class="panel-icon-btn" id="quickadd-link-btn" type="button" onclick="toggleQuickPop('link', event)" title="Quick add link">+</button>
+              <button class="panel-icon-btn" type="button" onclick="togglePanel('panel-links')" title="Show all"><span class="panel-chevron">›</span></button>
+            </div>
+          </div>
+          <!-- Quick-add popover for Links -->
+          <div class="quick-pop" id="quick-pop-link" onclick="event.stopPropagation()">
+            <div class="quick-pop-title">Add Link</div>
+            <input type="text" id="quick-link-url" placeholder="https://..." onkeydown="if(event.key==='Enter')quickAddLink();if(event.key==='Escape')closeQuickPop('link')">
+            <input type="text" id="quick-link-label" placeholder="Label (optional)" onkeydown="if(event.key==='Enter')quickAddLink();if(event.key==='Escape')closeQuickPop('link')">
+            <div class="quick-pop-actions">
+              <button class="quick-pop-btn secondary" type="button" onclick="closeQuickPop('link')">Cancel</button>
+              <button class="quick-pop-btn primary" type="button" onclick="quickAddLink()">Save</button>
+            </div>
+            <div class="quick-pop-hint"><kbd>Enter</kbd> to save · <kbd>Esc</kbd> to close</div>
+          </div>
           <div class="panel-body">
             <div class="widget-search">
               <span class="widget-search-icon">🔍</span>
@@ -324,13 +399,29 @@
           </div>
         </div>
         <div class="card collapsible" id="panel-contacts">
-          <button class="panel-header" type="button" onclick="togglePanel('panel-contacts')">
-            <span class="panel-header-left">
-              <span class="panel-header-title">Quick Contacts</span>
-              <span class="panel-header-count" id="panel-contacts-count">0</span>
-            </span>
-            <span class="panel-chevron">›</span>
-          </button>
+          <div class="panel-header">
+            <button class="panel-header-main" type="button" onclick="togglePanel('panel-contacts')">
+              <span class="panel-header-left">
+                <span class="panel-header-title">Quick Contacts</span>
+                <span class="panel-header-count" id="panel-contacts-count">0</span>
+              </span>
+            </button>
+            <div class="panel-header-actions">
+              <button class="panel-icon-btn" id="quickadd-contact-btn" type="button" onclick="toggleQuickPop('contact', event)" title="Quick add contact">+</button>
+              <button class="panel-icon-btn" type="button" onclick="togglePanel('panel-contacts')" title="Show all"><span class="panel-chevron">›</span></button>
+            </div>
+          </div>
+          <!-- Quick-add popover for Contacts -->
+          <div class="quick-pop" id="quick-pop-contact" onclick="event.stopPropagation()">
+            <div class="quick-pop-title">Add Contact</div>
+            <input type="text" id="quick-contact-name" placeholder="Name" onkeydown="if(event.key==='Enter')quickAddContact();if(event.key==='Escape')closeQuickPop('contact')">
+            <input type="text" id="quick-contact-phone" placeholder="Phone or email" onkeydown="if(event.key==='Enter')quickAddContact();if(event.key==='Escape')closeQuickPop('contact')">
+            <div class="quick-pop-actions">
+              <button class="quick-pop-btn secondary" type="button" onclick="closeQuickPop('contact')">Cancel</button>
+              <button class="quick-pop-btn primary" type="button" onclick="quickAddContact()">Save</button>
+            </div>
+            <div class="quick-pop-hint"><kbd>Enter</kbd> to save · <kbd>Esc</kbd> to close</div>
+          </div>
           <div class="panel-body">
             <div class="widget-search">
               <span class="widget-search-icon">🔍</span>
@@ -627,6 +718,92 @@ function togglePanel(id){
     const search=p.querySelector('.widget-search input');
     if(search) setTimeout(()=>search.focus(),50);
   }
+}
+
+/* ══ Quick-add popovers (Links and Contacts) ══ */
+function toggleQuickPop(kind, evt){
+  if(evt) evt.stopPropagation();
+  // Close any other open popovers first
+  document.querySelectorAll('.quick-pop.open').forEach(p => {
+    if(p.id !== 'quick-pop-' + kind) p.classList.remove('open');
+  });
+  document.querySelectorAll('.panel-icon-btn.active').forEach(b => {
+    if(b.id !== 'quickadd-' + kind + '-btn') b.classList.remove('active');
+  });
+  const pop = document.getElementById('quick-pop-' + kind);
+  const btn = document.getElementById('quickadd-' + kind + '-btn');
+  if(!pop) return;
+  const opening = !pop.classList.contains('open');
+  pop.classList.toggle('open', opening);
+  if(btn) btn.classList.toggle('active', opening);
+  if(opening){
+    // Focus first input
+    const first = pop.querySelector('input');
+    if(first){ first.value = ''; setTimeout(()=>first.focus(), 30); }
+    // Clear other inputs too
+    pop.querySelectorAll('input').forEach(i => i.value = '');
+  }
+}
+function closeQuickPop(kind){
+  const pop = document.getElementById('quick-pop-' + kind);
+  const btn = document.getElementById('quickadd-' + kind + '-btn');
+  if(pop) pop.classList.remove('open');
+  if(btn) btn.classList.remove('active');
+}
+// Click outside closes popovers
+document.addEventListener('click', (e) => {
+  if(e.target.closest('.quick-pop') || e.target.closest('.panel-icon-btn')) return;
+  document.querySelectorAll('.quick-pop.open').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.panel-icon-btn.active').forEach(b => b.classList.remove('active'));
+});
+
+function flashCountBadge(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.add('flash');
+  setTimeout(() => el.classList.remove('flash'), 700);
+}
+
+function quickAddLink(){
+  const U = document.getElementById('quick-link-url');
+  const L = document.getElementById('quick-link-label');
+  let url = (U.value || '').trim();
+  if(!url){ showToast('URL is required'); U.focus(); return; }
+  if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  let label = (L.value || '').trim();
+  if(!label) label = url.replace(/^https?:\/\//i,'').split('/')[0];
+  const now = new Date().toISOString();
+  const lk = { id: newId('L'), label, url, sort_order: Date.now(), created_at: now, updated_at: now };
+  ws.links.push(lk); saveWorkspaceToLocal();
+  closeQuickPop('link');
+  renderLinks();
+  flashCountBadge('panel-links-count');
+  saveWidgetToBackend({ ...lk, widget_type: 'link' });
+  showToast('Link added');
+}
+
+function quickAddContact(){
+  const N = document.getElementById('quick-contact-name');
+  const P = document.getElementById('quick-contact-phone');
+  const name = (N.value || '').trim();
+  if(!name){ showToast('Name is required'); N.focus(); return; }
+  const pe = (P.value || '').trim();
+  // Detect whether the second field is phone or email
+  const isEmail = pe.includes('@');
+  const now = new Date().toISOString();
+  const c = {
+    id: newId('C'), name,
+    role: '',
+    phone: isEmail ? '' : pe,
+    email: isEmail ? pe : '',
+    sort_order: Date.now(), created_at: now, updated_at: now
+  };
+  ws.contacts.push(c); saveWorkspaceToLocal();
+  closeQuickPop('contact');
+  renderContacts();
+  flashCountBadge('panel-contacts-count');
+  saveWidgetToBackend({ ...c, widget_type: 'contact' });
+  showToast('Contact added');
 }
 
 function toggleAddForm(kind){
