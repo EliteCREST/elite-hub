@@ -251,6 +251,7 @@
   }
   .reply-form.kind-followup { background: #FEF3C7; border-color: #FCD34D; }
   .reply-form.kind-resolution { background: #ECFDF5; border-color: #6EE7B7; }
+  .reply-form.kind-reply { background: #EFF6FF; border-color: #BFDBFE; }
   .reply-form-title {
     font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
     color: var(--navy); margin-bottom: 8px;
@@ -275,6 +276,7 @@
     transition: opacity 0.1s;
   }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-reply    { background: var(--navy); color: var(--white); border-color: var(--navy); }
   .btn-reviewed { background: var(--blue); color: var(--white); border-color: var(--blue); }
   .btn-follow   { background: var(--red); color: var(--white); border-color: var(--red); }
   .btn-resolved { background: var(--green); color: var(--white); border-color: var(--green); }
@@ -282,6 +284,16 @@
     background: white; color: var(--navy); border-color: var(--gray-300);
     text-decoration: none; display: inline-flex; align-items: center;
   }
+  .reply-status-row {
+    display: flex; align-items: center; gap: 8px; margin-top: 10px;
+    font-size: 12px; color: var(--gray-600); font-weight: 600;
+  }
+  .reply-status-select {
+    padding: 6px 10px; border: 1px solid var(--gray-300); border-radius: 5px;
+    background: white; font-family: inherit; font-size: 12px;
+    color: var(--navy); outline: none; cursor: pointer;
+  }
+  .reply-status-select:focus { border-color: var(--blue); }
 
   /* ─── States ──────────────────────────────────────── */
   .empty {
@@ -821,12 +833,34 @@ function renderDetail(item) {
       }).join('')}
 
       <div class="detail-actions">
+        <button class="btn btn-reply"    onclick="openReplyForm('${item.rowNum}','reply')">💬 Reply</button>
         <button class="btn btn-reviewed" onclick="setStatus('${item.rowNum}','Reviewed')" ${status === 'Reviewed' ? 'disabled' : ''}>✓ Mark Reviewed</button>
         <button class="btn btn-follow"   onclick="openReplyForm('${item.rowNum}','followup')" ${status === 'Needs Follow-Up' ? 'disabled' : ''}>⚠ Needs Follow-Up</button>
         <button class="btn btn-resolved" onclick="openReplyForm('${item.rowNum}','resolution')" ${status === 'Resolved' ? 'disabled' : ''}>✓ Resolved</button>
         ${review.url ? `<a class="btn btn-open-review" href="${escapeAttr(review.url)}" target="_blank">🔗 Open Original Review</a>` : ''}
         ${item.region ? `<a class="btn btn-open-review" href="https://elitecrest.github.io/elite-hub/reviews.html?region=${escapeAttr(item.region)}" target="_blank">📄 Go to Region Reviews</a>` : ''}
       </div>
+
+      ${replyKind === 'reply' ? `
+        <div class="reply-form kind-reply">
+          <div class="reply-form-title">💬 Compliance Reply</div>
+          <div class="reply-form-sub">Add a note to the thread. Optionally change the status.</div>
+          <textarea id="reply-text-${item.rowNum}" placeholder="Write your reply..." autofocus></textarea>
+          <div class="reply-status-row">
+            <span>Status after reply:</span>
+            <select class="reply-status-select" id="reply-status-${item.rowNum}">
+              <option value="">Keep current status (${escapeHtml(status || 'New')})</option>
+              <option value="Reviewed">Change to: Reviewed</option>
+              <option value="Needs Follow-Up">Change to: Needs Follow-Up</option>
+              <option value="Resolved">Change to: Resolved</option>
+            </select>
+          </div>
+          <div class="reply-form-actions">
+            <button class="btn btn-open-review" onclick="closeReplyForm('${item.rowNum}')">Cancel</button>
+            <button class="btn btn-reply" onclick="submitReply('${item.rowNum}','reply')">Send Reply</button>
+          </div>
+        </div>
+      ` : ''}
 
       ${replyKind === 'followup' ? `
         <div class="reply-form kind-followup">
@@ -876,20 +910,35 @@ async function submitReply(rowNum, kind) {
   const ta = document.getElementById(`reply-text-${rowNum}`);
   const message = (ta && ta.value || '').trim();
 
-  // Required validation for follow-up
-  if (kind === 'followup' && !message) {
-    showToast('Please enter a follow-up message — it is required.', true);
+  // Required validation: follow-up always needs a message; reply always needs a message too
+  if ((kind === 'followup' || kind === 'reply') && !message) {
+    showToast('Please enter a message — it is required.', true);
     if (ta) ta.focus();
     return;
   }
 
   const sess     = getSession();
   const sentBy   = sess && sess.user ? (sess.user.username || 'unknown') : 'unknown';
-  const newStatus = kind === 'followup' ? 'Needs Follow-Up' : 'Resolved';
-  const entryKind = kind === 'followup' ? 'followup_request' : 'resolution';
 
-  // 1) Update the original submission row's status
-  await setStatus(rowNum, newStatus, /*silent*/ true);
+  // Determine status change and entry_type based on kind
+  // - followup: status → Needs Follow-Up, entry_type = followup_request
+  // - resolution: status → Resolved, entry_type = resolution
+  // - reply: status comes from the dropdown (may be empty = keep current), entry_type = reply
+  let newStatus = null;   // null means "don't change status"
+  let entryKind = 'reply';
+  if (kind === 'followup')   { newStatus = 'Needs Follow-Up'; entryKind = 'followup_request'; }
+  else if (kind === 'resolution') { newStatus = 'Resolved';       entryKind = 'resolution'; }
+  else if (kind === 'reply') {
+    const sel = document.getElementById(`reply-status-${rowNum}`);
+    const chosen = (sel && sel.value || '').trim();
+    if (chosen) newStatus = chosen;   // only change status if user picked one
+    entryKind = 'reply';
+  }
+
+  // 1) Update the original submission row's status (only if there's a change to make)
+  if (newStatus) {
+    await setStatus(rowNum, newStatus, /*silent*/ true);
+  }
 
   // 2) Append a Compliance → Field response row to ADDRESSED_ISSUES
   const compliancePayload = {
@@ -913,7 +962,6 @@ async function submitReply(rowNum, kind) {
     });
 
     // 3) Also post to the region's Activity Feed so it's visible there
-    // Author format: "Compliance (Username)" — your approved convention
     const authorName = sess && sess.user ? (sess.user.name || sess.user.username || sentBy) : sentBy;
     const author     = `Compliance (${authorName})`;
     const stars      = Number(item.stars) || 0;
@@ -922,10 +970,15 @@ async function submitReply(rowNum, kind) {
     let feedMessage;
     if (kind === 'followup') {
       feedMessage = `⚠ Compliance Follow-Up — re: ${reviewerName}${starStr}: "${message}"`;
-    } else if (message) {
-      feedMessage = `✓ Resolved — re: ${reviewerName}${starStr}: "${message}"`;
+    } else if (kind === 'resolution') {
+      feedMessage = message
+        ? `✓ Resolved — re: ${reviewerName}${starStr}: "${message}"`
+        : `✓ Resolved — re: ${reviewerName}${starStr}`;
     } else {
-      feedMessage = `✓ Resolved — re: ${reviewerName}${starStr}`;
+      // plain reply — may or may not include a status change
+      feedMessage = newStatus
+        ? `💬 Compliance Reply — re: ${reviewerName}${starStr} [now: ${newStatus}]: "${message}"`
+        : `💬 Compliance Reply — re: ${reviewerName}${starStr}: "${message}"`;
     }
     if (item.region) {
       fetch(BACKEND_URL, {
@@ -949,7 +1002,7 @@ async function submitReply(rowNum, kind) {
       region:      item.region,
       reviewId:    item.reviewId,
       reviewer:    item.reviewer,
-      message:     message || (kind === 'resolution' ? '' : ''),
+      message:     message,
       status:      '',
       direction:   'compliance_to_field',
       entry_type:  entryKind
@@ -957,7 +1010,10 @@ async function submitReply(rowNum, kind) {
     if (!historyMap[item.reviewId]) historyMap[item.reviewId] = [];
     historyMap[item.reviewId].unshift(newEntry);
     delete activeReplyForm[rowNum];
-    showToast(kind === 'followup' ? 'Follow-up sent to region.' : 'Marked Resolved & sent to region.');
+    const msg = kind === 'followup' ? 'Follow-up sent to region.'
+              : kind === 'resolution' ? 'Marked Resolved & sent to region.'
+              : (newStatus ? `Reply sent & status updated to "${newStatus}".` : 'Reply sent to region.');
+    showToast(msg);
     renderQueue();
   } catch(e) {
     showToast('Reply failed to send — please try again.', true);
