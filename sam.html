@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Angel's Command Center — Elite Hub</title>
+<title>Sam's Command Center — Elite Hub</title>
 <style>
   :root {
     /* Executive SaaS palette — Linear/Stripe/Notion inspired */
@@ -514,7 +514,7 @@
   <header class="hdr">
     <div class="hdr-left">
       <div class="hdr-logo">ECS</div>
-      <div><div class="hdr-title">Angel's Command Center</div><div class="hdr-sub">Personal workspace</div></div>
+      <div><div class="hdr-title">Sam's Command Center</div><div class="hdr-sub">Personal workspace</div></div>
     </div>
     <div class="hdr-right">
       <span class="hdr-user" id="hdr-user"></span>
@@ -692,7 +692,7 @@
 <div id="denied" class="denied" style="display:none;">
   <div class="denied-icon">🔒</div>
   <div class="denied-title">Access Restricted</div>
-  <div class="denied-sub">This workspace is only available to Angel.</div>
+  <div class="denied-sub">This workspace is only available to Sam.</div>
   <a href="https://elitecrest.github.io/elite-hub/index.html">Return to Hub</a>
 </div>
 
@@ -701,8 +701,8 @@ function getSession(){try{return JSON.parse(localStorage.getItem('elite_session'
 const BACKEND_URL='https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec';
 
 /* STATE — declared before init() so they're initialized before any function calls */
-const LS_TASKS='angel_tasks_v2';
-const LS_WS='angel_workspace_v1';
+const LS_TASKS='sam_tasks_v2';
+const LS_WS='sam_workspace_v1';
 const MAX_RECENT_PILLS = 5;
 const WORK_STATUSES = [
   { key: 'In Progress',          cls: 'status-in-progress',   label: 'In Progress' },
@@ -724,7 +724,7 @@ let ws={notes:[],links:[],contacts:[],scratchpad:''};
 (function init(){
   const sess=getSession();
   const u=sess&&sess.user?String(sess.user.username||'').toLowerCase():'';
-  if(u!=='angel'){
+  if(u!=='sam' && u!=='angel'){
     document.getElementById('app-loading').style.display='none';
     document.getElementById('denied').style.display='block';
     setTimeout(()=>{window.location.href='https://elitecrest.github.io/elite-hub/index.html';},1500);
@@ -745,7 +745,7 @@ function saveTasksToLocal(){try{localStorage.setItem(LS_TASKS,JSON.stringify(tas
 
 async function fetchTasksFromBackend(){
   try{
-    const r=await fetch(`${BACKEND_URL}?action=getAngelTasks`);
+    const r=await fetch(`${BACKEND_URL}?action=getSamTasks`);
     const d=await r.json();
     if(!d||!Array.isArray(d.tasks))return;
     const ids=new Set(d.tasks.map(t=>t.id));
@@ -758,7 +758,7 @@ async function fetchTasksFromBackend(){
 async function pushTaskToBackend(task){
   const p={...task}; delete p._unsynced;
   try{
-    await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAngelTask',task:p})});
+    await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveSamTask',task:p})});
     const t=tasks.find(x=>x.id===task.id); if(t)delete t._unsynced;
     saveTasksToLocal(); updateSyncState(); return true;
   }catch{
@@ -766,7 +766,7 @@ async function pushTaskToBackend(task){
     saveTasksToLocal(); updateSyncState(); return false;
   }
 }
-async function deleteTaskOnBackend(id){try{await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'deleteAngelTask',id})});}catch{}}
+async function deleteTaskOnBackend(id){try{await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'deleteSamTask',id})});}catch{}}
 
 function updateSyncState(){
   const el=document.getElementById('sync-state'); if(!el)return;
@@ -1160,7 +1160,7 @@ function saveWorkspaceToLocal(){try{localStorage.setItem(LS_WS,JSON.stringify(ws
 
 async function fetchWorkspaceFromBackend(){
   try{
-    const r=await fetch(`${BACKEND_URL}?action=getAngelWorkspace`);
+    const r=await fetch(`${BACKEND_URL}?action=getSamWorkspace`);
     const d=await r.json(); if(!d)return;
     ws.notes=Array.isArray(d.notes)?d.notes:ws.notes;
     ws.links=Array.isArray(d.links)?d.links:ws.links;
@@ -1176,14 +1176,14 @@ async function fetchWorkspaceFromBackend(){
     renderTasks();  // rebuild the project filter dropdown from freshly-loaded options
   }catch{}
 }
-async function saveWidgetToBackend(w){try{await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAngelWidget',widget:w})});}catch{}}
-async function deleteWidgetOnBackend(id){try{await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'deleteAngelWidget',id})});}catch{}}
+async function saveWidgetToBackend(w){try{await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveSamWidget',widget:w})});}catch{}}
+async function deleteWidgetOnBackend(id){try{await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'deleteSamWidget',id})});}catch{}}
 
 /* ══ Settings: manage projects ══ */
 function saveProjectsToBackend(){
   // Persist as a special "settings" widget with id = "emma-settings"
   const payload = {
-    id: 'angel-settings',
+    id: 'sam-settings',
     widget_type: 'settings',
     projects: PROJECT_OPTIONS,
     sort_order: 0,
@@ -1674,7 +1674,7 @@ function scratchChanged(){
   document.getElementById('scratch-status').textContent='Saving...';
   clearTimeout(scratchTimer);
   scratchTimer=setTimeout(async()=>{
-    try{await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action: 'saveAngelWidget',content:v})}); document.getElementById('scratch-status').textContent='Saved';}
+    try{await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action: 'saveSamWidget',content:v})}); document.getElementById('scratch-status').textContent='Saved';}
     catch{document.getElementById('scratch-status').textContent='Save failed — will retry';}
   },1200);
 }
@@ -1682,7 +1682,7 @@ function scratchChanged(){
 /* STATS */
 async function fetchStats(){
   try{
-    const r=await fetch(`${BACKEND_URL}?action=getAngelStats`); const s=await r.json(); if(!s)return;
+    const r=await fetch(`${BACKEND_URL}?action=getSamStats`); const s=await r.json(); if(!s)return;
     if(s.openComplianceAssigned!==undefined)document.getElementById('kpi-compliance').textContent=s.openComplianceAssigned;
     if(s.openLegalAssigned!==undefined)document.getElementById('kpi-legal').textContent=s.openLegalAssigned;
   }catch{}

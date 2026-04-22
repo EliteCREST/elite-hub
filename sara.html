@@ -1,320 +1,1713 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-// ── AUTH GUARD ───────────────────────────────────────────────
-(function() {
-  function getSession() {
-    try { return JSON.parse(localStorage.getItem('elite_session') || 'null'); } catch { return null; }
-  }
-
-  const REGION_ABBR = {
-    cleveland:'CLE', phoenix:'PHX', chicago:'CHI', stlouis:'STL',
-    minneapolis:'MSP', milwaukee:'MKE', indianapolis:'IND',
-    pittsburgh:'PIT', albuquerque:'ABQ'
-  };
-
-  const HUB_PAGE_REGIONS = {
-    'hub_cleveland':'cleveland','hub_phoenix':'phoenix','hub_chicago':'chicago',
-    'hub_stlouis':'stlouis','hub_minneapolis':'minneapolis','hub_milwaukee':'milwaukee',
-    'hub_indianapolis':'indianapolis','hub_pittsburgh':'pittsburgh','hub_albuquerque':'albuquerque'
-  };
-
-  const session = getSession();
-  const page    = window.location.pathname.split('/').pop().replace('.html','').replace(/[^a-z0-9_]/gi,'_').toLowerCase();
-
-  // Not logged in → go to login
-  if (!session || !session.user) {
-    window.location.href = 'login.html';
-    return;
-  }
-
-  const role     = String(session.user.role || '').toLowerCase();
-  // Only Angel has unrestricted access to everything
-  const username = String(session.user.username || '').toLowerCase();
-  if (username === 'angel') return;
-
-  // Normalize region — handles both 'cleveland' and 'CLE'
-  const NAME_TO_ABBR = {
-    cleveland:'CLE', phoenix:'PHX', chicago:'CHI', stlouis:'STL',
-    minneapolis:'MSP', milwaukee:'MKE', indianapolis:'IND',
-    pittsburgh:'PIT', albuquerque:'ABQ'
-  };
-  const rawRegion  = String(session.user.region || session.user.regions || '');
-  const parts      = rawRegion.split(/[,\s]+/).filter(Boolean);
-  // Convert each part to an abbreviation
-  const userAbbrs  = parts.map(p => {
-    const upper = p.trim().toUpperCase();
-    const lower = p.trim().toLowerCase();
-    return NAME_TO_ABBR[lower] || upper; // if it's already an abbr like CLE, keep it
-  });
-  const hasAllRegions = userAbbrs.includes('ALL') || userAbbrs.length === 0;
-
-  // Check explicit page access flag
-  if (session.user[page] === 'false') {
-    window.location.href = 'index.html';
-    return;
-  }
-
-  // Check hub page region access
-  const hubRegion = HUB_PAGE_REGIONS[page];
-  if (hubRegion && !hasAllRegions) {
-    const required = REGION_ABBR[hubRegion];
-    if (!userAbbrs.includes(required)) {
-      window.location.href = 'index.html';
-      return;
-    }
-  }
-
-  // Check region-specific pages (compliance, fleet, etc.) via URL param
-  const urlRegion = new URLSearchParams(window.location.search).get('region');
-  if (urlRegion && !hasAllRegions) {
-    const required = REGION_ABBR[urlRegion.toLowerCase()];
-    if (required && !userAbbrs.includes(required)) {
-      window.location.href = 'index.html';
-      return;
-    }
-  }
-})();
-</script>
-
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sara — Elite Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sara's Command Center — Elite Hub</title>
 <style>
   :root {
-    --navy:#1B2A4A; --blue:#1F5FAD; --blue-pale:#EAF1FB;
-    --gray-100:#F4F6FA; --gray-200:#E2E8F0; --gray-400:#94A3B8;
-    --gray-600:#64748B; --green:#1F5FAD; --red:#DC2626;
-    --orange:#F97316; --shadow-sm:0 1px 3px rgba(0,0,0,.08);
-    --shadow-md:0 4px 12px rgba(0,0,0,.12); --radius:8px; --radius-xl:14px;
-    --accent:#DB2777;
+    /* Executive SaaS palette — Linear/Stripe/Notion inspired */
+    --navy:#0F172A; --blue:#3B82F6; --blue-pale:#EFF6FF; --white:#FFFFFF;
+    --gray-50:#F8FAFC; --gray-100:#F1F5F9; --gray-200:#E2E8F0; --gray-300:#CBD5E1;
+    --gray-400:#94A3B8; --gray-500:#64748B; --gray-600:#475569; --gray-800:#1E293B;
+    --text:#0F172A;
+    --green:#10B981; --green-pale:#D1FAE5; --amber:#F59E0B; --amber-pale:#FEF3C7;
+    --red:#EF4444; --red-pale:#FEE2E2;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.04);
+    --shadow-md:0 4px 12px rgba(15,23,42,.08);
+    --radius:8px; --radius-lg:12px;
   }
-  * { box-sizing:border-box;margin:0;padding:0; }
-  body { font-family:Arial,sans-serif;background:#F4F6FA;color:var(--navy);min-height:100vh; }
-  header {
-    background:var(--navy);padding:16px 28px;display:flex;align-items:center;
-    justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.15);
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;background:var(--gray-100);color:var(--text);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
+  .hdr{background:var(--navy);color:var(--white);padding:18px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
+  .hdr-left{display:flex;align-items:center;gap:14px;}
+  .hdr-logo{background:var(--blue);color:var(--white);width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;letter-spacing:1px;}
+  .hdr-title{font-size:17px;font-weight:700;letter-spacing:-.2px;}
+  .hdr-sub{font-size:11px;color:#94A3B8;margin-top:3px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;}
+  .hdr-right{display:flex;align-items:center;gap:10px;}
+  .hdr-user{font-size:12px;color:#CBD5E1;}
+  .hdr-link{color:var(--white);text-decoration:none;font-size:12px;padding:6px 12px;border:1px solid rgba(255,255,255,.3);border-radius:6px;}
+  .hdr-link:hover{background:rgba(255,255,255,.08);}
+  .hdr-gear{
+    background:transparent;border:1px solid rgba(255,255,255,.3);cursor:pointer;
+    color:var(--white);font-size:16px;line-height:1;
+    width:32px;height:32px;border-radius:6px;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-family:inherit;
   }
-  .hdr-left { display:flex;align-items:center;gap:14px; }
-  .hdr-avatar {
-    width:42px;height:42px;border-radius:50%;
-    background:#DB2777;color:white;font-size:16px;font-weight:700;
-    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  .hdr-gear:hover{background:rgba(255,255,255,.12);}
+  .container{max-width:1280px;margin:0 auto;padding:24px 28px;width:100%;flex:1;}
+  .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+  .section-title{font-size:15px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px;letter-spacing:-.1px;}
+  .section-sub{font-size:11px;color:var(--gray-500);font-weight:600;text-transform:uppercase;letter-spacing:.8px;}
+  .kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px;}
+  .kpi{background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:12px 16px;position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;}
+  .kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--blue);}
+  .kpi.danger::before{background:var(--red);} .kpi.warn::before{background:var(--amber);} .kpi.ok::before{background:var(--green);}
+  .kpi-label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:2px;}
+  .kpi-value{font-size:24px;font-weight:700;color:var(--navy);line-height:1;letter-spacing:-.5px;}
+  .kpi.danger .kpi-value{color:var(--red);} .kpi.warn .kpi-value{color:var(--amber);} .kpi.ok .kpi-value{color:var(--green);}
+  .kpi-sub{font-size:11px;color:var(--gray-500);margin-top:2px;}
+  .kpi-text{flex:1;min-width:0;}
+  .kpi-num{flex-shrink:0;}
+  .tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:28px;}
+  .tool-btn{background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:16px;text-decoration:none;color:var(--navy);display:flex;align-items:center;gap:14px;transition:border-color .15s, background .15s;}
+  .tool-btn:hover{border-color:var(--blue);background:var(--gray-50);}
+  .tool-btn-icon{width:38px;height:38px;border-radius:8px;background:var(--blue-pale);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .tool-btn-text{flex:1;min-width:0;}
+  .tool-btn-title{font-size:14px;font-weight:700;color:var(--navy);}
+  .tool-btn-sub{font-size:11px;color:var(--gray-500);line-height:1.4;margin-top:2px;}
+
+  /* Tools row now holds Legal Admin, PURE, Contacts, + link pills */
+  .tool-grid{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px;align-items:stretch;justify-content:center;}
+  .tool-btn{flex:0 0 auto;min-width:240px;}
+
+  /* Link pills — compact variant in the tools row */
+  .link-pill-wrap{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+  .link-pill{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:6px 12px;background:white;border:1px solid var(--gray-200);
+    border-radius:16px;font-size:12px;font-weight:600;color:var(--navy);
+    text-decoration:none;cursor:pointer;transition:all .15s;
+    max-width:240px;
   }
-  .hdr-name  { color:white;font-size:16px;font-weight:700; }
-  .hdr-sub   { color:rgba(255,255,255,.5);font-size:11px;margin-top:2px; }
-  .hdr-right { display:flex;align-items:center;gap:16px; }
-  .hdr-sync  { color:rgba(255,255,255,.5);font-size:11px; }
-  .hdr-badge { background:#DB2777;color:white;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px; }
-  main { max-width:900px;margin:0 auto;padding:28px 20px; }
-  .page-title { font-size:22px;font-weight:700;color:var(--navy);margin-bottom:4px; }
-  .page-sub   { font-size:13px;color:var(--gray-400);margin-bottom:24px; }
-  .filter-row { display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center; }
-  .pill { font-size:11px;font-weight:700;padding:5px 14px;border-radius:20px;border:1.5px solid var(--gray-200);cursor:pointer;background:white;color:var(--gray-500);transition:all .15s; }
-  .pill.active { background:var(--navy);color:white;border-color:var(--navy); }
-  .notif-list { display:flex;flex-direction:column;gap:10px; }
-  .notif-item {
-    background:white;border:1px solid var(--gray-200);border-radius:var(--radius-xl);
-    padding:16px 18px;display:flex;align-items:flex-start;gap:14px;
-    box-shadow:var(--shadow-sm);transition:box-shadow .15s;
+  .link-pill:hover{border-color:var(--blue);background:var(--blue-pale);color:var(--blue);}
+  .link-pill-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .link-pill-actions{display:none;gap:2px;margin-left:4px;padding-left:6px;border-left:1px solid var(--gray-200);}
+  .link-pill:hover .link-pill-actions{display:inline-flex;}
+  .link-pill-icon-btn{
+    background:transparent;border:none;cursor:pointer;
+    width:18px;height:18px;border-radius:3px;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:11px;color:var(--gray-500);padding:0;
+    font-family:inherit;
   }
-  .notif-item:hover { box-shadow:var(--shadow-md); }
-  .notif-item.unread  { border-left:4px solid var(--blue);background:#F8FAFF; }
-  .notif-item.assigned { border-left:4px solid #DB2777;background:#FCE7F3; }
-  .notif-item.resolved { opacity:.5; }
-  .n-icon  { font-size:22px;flex-shrink:0;margin-top:2px; }
-  .n-title { font-size:14px;font-weight:700;color:var(--navy); }
-  .n-meta  { font-size:11px;color:var(--gray-400);margin-top:3px;line-height:1.6; }
-  .n-actions { display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center; }
-  .n-btn   { font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;cursor:pointer;border:1.5px solid;transition:all .15s; }
-  .n-btn.resolve { background:#EAF1FB;color:#1F5FAD;border-color:#1F5FAD; }
-  .n-btn.resolve:hover { background:#1F5FAD;color:white; }
-  .n-btn.reassign { background:var(--blue-pale);color:var(--blue);border-color:var(--blue); }
-  .reassign-sel { font-size:11px;padding:5px 8px;border:1.5px solid var(--gray-200);border-radius:6px;color:var(--navy); }
-  .empty { text-align:center;padding:56px 20px;color:var(--gray-400); }
-  .empty-icon { font-size:48px;margin-bottom:12px; }
-  .stats-row { display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px; }
-  .stat-card { background:white;border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:16px;text-align:center;box-shadow:var(--shadow-sm); }
-  .stat-val  { font-size:26px;font-weight:700;color:#DB2777; }
-  .stat-lbl  { font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gray-400);margin-top:4px; }
-  .back-link { color:rgba(255,255,255,.6);font-size:12px;text-decoration:none;display:flex;align-items:center;gap:4px; }
-  .back-link:hover { color:white; }
-  .toast { position:fixed;bottom:24px;right:24px;background:var(--navy);color:white;padding:10px 18px;border-radius:8px;font-size:12px;font-weight:700;z-index:9999;opacity:0;transition:opacity .3s; }
-  .toast.show { opacity:1; }
+  .link-pill-icon-btn:hover{background:var(--gray-100);color:var(--navy);}
+  .link-pill-icon-btn.danger:hover{color:var(--red);background:var(--red-pale);}
+  .link-pill-add{
+    background:transparent;border:1.5px dashed var(--gray-300);
+    color:var(--gray-500);font-weight:700;
+    padding:6px 14px;border-radius:16px;cursor:pointer;
+    font-family:inherit;font-size:12px;
+  }
+  .link-pill-add:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-pale);}
+
+  /* Contacts tool button with count badge */
+  .tool-btn-badge{
+    display:inline-flex;align-items:center;justify-content:center;
+    min-width:20px;height:20px;padding:0 7px;
+    background:var(--blue);color:white;
+    border-radius:10px;font-size:11px;font-weight:700;
+    margin-left:auto;
+  }
+
+  /* Modal overlay (Contacts full view + small dialogs) */
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(15,23,42,.5);
+    display:none;align-items:center;justify-content:center;
+    z-index:900;padding:20px;
+  }
+  .modal-backdrop.open{display:flex;}
+  .modal{
+    background:white;border-radius:12px;
+    box-shadow:0 20px 60px rgba(0,0,0,.2);
+    width:100%;max-width:640px;max-height:90vh;
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .modal.sm{max-width:420px;}
+  .modal-header{
+    padding:18px 22px;border-bottom:1px solid var(--gray-200);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .modal-title{font-size:16px;font-weight:700;color:var(--navy);letter-spacing:-.1px;}
+  .modal-close{
+    background:transparent;border:none;cursor:pointer;
+    font-size:22px;color:var(--gray-400);padding:4px 10px;line-height:1;
+    font-family:inherit;
+  }
+  .modal-close:hover{color:var(--navy);}
+  .modal-body{padding:18px 22px;overflow-y:auto;flex:1;}
+  .modal-footer{padding:14px 22px;border-top:1px solid var(--gray-200);display:flex;gap:10px;justify-content:flex-end;}
+
+  /* Contacts list inside modal */
+  .contacts-search{
+    width:100%;padding:10px 12px;border:1px solid var(--gray-300);
+    border-radius:6px;font-family:inherit;font-size:13px;outline:none;
+    margin-bottom:14px;background:var(--gray-50);
+  }
+  .contacts-search:focus{border-color:var(--blue);background:white;}
+  .contact-row{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 12px;border-bottom:1px solid var(--gray-100);
+  }
+  .contact-row:last-child{border-bottom:none;}
+  .contact-row:hover{background:var(--gray-50);}
+  .contact-row.editing{background:var(--blue-pale);}
+  .contact-main{flex:1;min-width:0;}
+  .contact-name{font-size:14px;font-weight:700;color:var(--navy);}
+  .contact-meta{font-size:11px;color:var(--gray-500);margin-top:2px;word-break:break-all;}
+  .contact-actions{display:flex;gap:4px;flex-shrink:0;}
+  .contact-actions .ct-icon-btn, .contact-actions button{
+    background:transparent;border:none;cursor:pointer;
+    padding:6px 8px;border-radius:5px;
+    font-size:12px;color:var(--gray-500);font-family:inherit;
+  }
+  .contact-actions button:hover{background:var(--gray-100);color:var(--navy);}
+  .contact-actions button.danger:hover{color:var(--red);background:var(--red-pale);}
+
+  .contact-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1;}
+  .contact-edit-grid input{
+    padding:7px 9px;border:1px solid var(--gray-300);border-radius:5px;
+    font-family:inherit;font-size:12px;outline:none;background:white;
+  }
+  .contact-edit-grid input:focus{border-color:var(--blue);}
+  .contact-edit-grid input.full{grid-column:1 / -1;}
+
+  .contacts-empty{
+    padding:30px 14px;text-align:center;color:var(--gray-400);font-size:13px;
+  }
+
+  .btn-sec{padding:9px 16px;border-radius:6px;background:white;color:var(--gray-500);border:1px solid var(--gray-300);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+  .btn-sec:hover{background:var(--gray-50);}
+  .btn-pri{padding:9px 16px;border-radius:6px;background:var(--blue);color:white;border:1px solid var(--blue);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+  .btn-pri:hover{background:var(--navy);border-color:var(--navy);}
+
+  /* Small input block used in add link / add contact mini-forms inside contacts modal */
+  .mini-form{
+    background:var(--gray-50);border:1px solid var(--gray-200);border-radius:6px;
+    padding:12px;margin-bottom:14px;
+  }
+  .mini-form-title{font-size:11px;font-weight:700;color:var(--gray-500);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;}
+  .mini-form input{
+    width:100%;padding:8px 10px;margin-bottom:6px;
+    border:1px solid var(--gray-300);border-radius:5px;
+    font-family:inherit;font-size:13px;outline:none;background:white;
+  }
+  .mini-form input:focus{border-color:var(--blue);}
+  .mini-form-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .mini-form-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:6px;}
+  .cols{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start;}
+  @media(max-width:980px){.cols{grid-template-columns:1fr;}}
+  .card{background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:20px 22px;margin-bottom:16px;}
+  .tasks-sync-state{font-size:11px;color:var(--gray-400);display:flex;align-items:center;gap:8px;}
+  .tasks-sync-state.unsynced{color:var(--amber);}
+  .retry-btn{padding:4px 10px;border-radius:6px;background:var(--amber);color:white;border:none;font-size:11px;font-weight:700;cursor:pointer;}
+  .cat-tabs{display:flex;gap:2px;border-bottom:1px solid var(--gray-200);margin-bottom:14px;flex-wrap:wrap;}
+
+  /* Row that groups the tab bar + project filter together */
+  .cat-tabs-row {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; margin-bottom: 14px;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .cat-tabs-row .cat-tabs {
+    border-bottom: none; margin-bottom: 0; flex: 1; min-width: 0;
+  }
+  .project-filter-wrap { padding-bottom: 6px; }
+  .project-filter {
+    padding: 6px 10px; border: 1px solid var(--gray-300); border-radius: 6px;
+    font-family: inherit; font-size: 12px; color: var(--navy);
+    background: white; outline: none; cursor: pointer; font-weight: 600;
+  }
+  .project-filter:focus { border-color: var(--blue); }
+
+  /* Project badge on task rows */
+  .task-project-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: .3px;
+    padding: 2px 7px; border-radius: 3px;
+    background: var(--navy); color: white;
+    flex-shrink: 0;
+  }
+  .cat-tab{padding:10px 14px;cursor:pointer;user-select:none;font-size:13px;font-weight:600;color:var(--gray-500);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s;}
+  .cat-tab:hover{color:var(--navy);}
+  .cat-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+  .cat-tab-count{font-size:11px;font-weight:600;color:var(--gray-400);margin-left:5px;}
+  .cat-tab.active .cat-tab-count{color:var(--gray-500);}
+  .task-add-row{display:grid;grid-template-columns:1fr auto auto auto auto;gap:6px;margin-bottom:14px;}
+  @media(max-width:720px){.task-add-row{grid-template-columns:1fr 1fr;}}
+  .task-add-input,.task-add-cat,.task-add-pri,.task-add-due{padding:9px 10px;border:1px solid var(--gray-300);border-radius:6px;font-family:inherit;font-size:13px;color:var(--text);background:white;outline:none;}
+  .task-add-input:focus,.task-add-cat:focus,.task-add-pri:focus,.task-add-due:focus{border-color:var(--blue);}
+  .task-add-btn{padding:9px 16px;border-radius:6px;border:none;background:var(--blue);color:white;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+  .task-add-btn:hover{opacity:.9;}
+  .task-list{display:flex;flex-direction:column;gap:6px;}
+  .task-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--gray-200);border-radius:6px;background:white;}
+  .task-item[draggable="true"]{cursor:grab;}
+  .task-item.dragging{opacity:.4;cursor:grabbing;}
+  .task-item.drag-over{border-top:2px solid var(--blue);}
+  .task-item:hover{background:var(--gray-50);}
+  .task-item.done{opacity:.6;}
+  .task-item.done .task-text{text-decoration:line-through;color:var(--gray-600);}
+  .task-item.unsynced{border-left:3px solid var(--amber);}
+  .task-item.overdue{border-left:3px solid var(--red);background:#FFF5F5;}
+  .task-item.due-today{border-left:3px solid var(--amber);background:#FFFBEB;}
+  .task-checkbox{width:18px;height:18px;margin-top:2px;accent-color:var(--blue);cursor:pointer;flex-shrink:0;}
+  .task-text{flex:1;font-size:13px;color:var(--text);line-height:1.5;word-break:break-word;cursor:text;}
+  .task-text[contenteditable="true"]{outline:2px solid var(--blue);padding:2px 4px;border-radius:3px;}
+  .task-cat-badge{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 7px;border-radius:3px;background:var(--blue-pale);color:var(--blue);flex-shrink:0;}
+  .pri-flag{font-size:12px;flex-shrink:0;cursor:pointer;user-select:none;}
+  .pri-flag.high{color:var(--red);} .pri-flag.med{color:var(--amber);} .pri-flag.low{color:var(--gray-400);}
+  .task-due{font-size:11px;color:var(--gray-400);flex-shrink:0;}
+  .task-due.overdue{color:var(--red);font-weight:700;}
+  .task-due.due-today{color:var(--amber);font-weight:700;}
+  .task-due-placeholder{
+    color:var(--gray-400); font-weight:600; cursor:pointer;
+    padding:2px 6px; border-radius:4px; border:1px dashed var(--gray-300);
+    font-size:10px;
+  }
+  .task-due-placeholder:hover{ color:var(--blue); border-color:var(--blue); background:var(--blue-pale); }
+
+  /* Work status pill (5-state) */
+  .task-status-pill {
+    flex-shrink: 0; padding: 4px 10px; border-radius: 12px;
+    font-size: 10px; font-weight: 700; letter-spacing: .5px;
+    text-transform: uppercase; cursor: pointer; user-select: none;
+    border: 1px solid transparent; transition: all .15s;
+    font-family: inherit;
+  }
+  .task-status-pill:hover { opacity: .85; }
+  .task-status-pill.status-in-progress      { background: #DBEAFE; color: #1E40AF; border-color: #BFDBFE; }
+  .task-status-pill.status-on-hold          { background: #F1F5F9; color: #475569; border-color: #CBD5E1; }
+  .task-status-pill.status-follow-up        { background: #FEF3C7; color: #92400E; border-color: #FCD34D; }
+  .task-status-pill.status-documentation    { background: #EDE9FE; color: #6D28D9; border-color: #C4B5FD; }
+  .task-status-pill.status-done             { background: #D1FAE5; color: #065F46; border-color: #6EE7B7; }
+
+  /* Work-status dropdown (right-click menu) */
+  .task-status-menu {
+    position: absolute; background: white; border: 1px solid var(--gray-200);
+    border-radius: 8px; box-shadow: 0 8px 24px rgba(15,23,42,.15);
+    padding: 4px; z-index: 900; min-width: 180px;
+  }
+  .task-status-menu-item {
+    display: block; width: 100%; padding: 8px 12px; border: none;
+    background: transparent; cursor: pointer; text-align: left;
+    font-family: inherit; font-size: 12px; color: var(--navy);
+    border-radius: 5px; font-weight: 600;
+  }
+  .task-status-menu-item:hover { background: var(--gray-50); }
+  .task-status-menu-item.active { background: var(--blue-pale); color: var(--blue); }
+
+  /* Expanded inline editor */
+  .task-item.editing { border-color: var(--blue); background: var(--blue-pale); }
+  .task-editor { margin-top: 10px; padding: 12px; background: white; border: 1px solid var(--gray-200); border-radius: 6px; }
+  .task-editor-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;
+  }
+  .task-editor-field {
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .task-editor-label {
+    font-size: 10px; font-weight: 700; color: var(--gray-500);
+    text-transform: uppercase; letter-spacing: .6px;
+  }
+  .task-editor input, .task-editor select, .task-editor textarea {
+    padding: 7px 9px; border: 1px solid var(--gray-300); border-radius: 5px;
+    font-family: inherit; font-size: 12px; color: var(--text); outline: none;
+    background: white;
+  }
+  .task-editor input:focus, .task-editor select:focus, .task-editor textarea:focus { border-color: var(--blue); }
+  .task-editor textarea { resize: vertical; min-height: 60px; }
+  .task-editor-full { grid-column: 1 / -1; }
+  .task-editor-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; }
+  .task-editor-btn {
+    padding: 7px 14px; border-radius: 5px;
+    font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .task-editor-btn.secondary { background: white; color: var(--gray-500); border-color: var(--gray-300); }
+  .task-editor-btn.secondary:hover { background: var(--gray-50); }
+  .task-editor-btn.primary { background: var(--blue); color: white; }
+  .task-editor-btn.primary:hover { background: var(--navy); }
+  .task-actions{display:flex;gap:4px;flex-shrink:0;}
+  .task-btn{width:26px;height:26px;border-radius:4px;border:none;background:transparent;cursor:pointer;font-size:13px;color:var(--gray-400);}
+  .task-btn:hover{background:var(--gray-200);color:var(--navy);}
+  .task-btn.delete:hover{background:var(--red-pale);color:var(--red);}
+  .task-empty{text-align:center;padding:26px 10px;color:var(--gray-400);font-size:13px;}
+  .task-meta{font-size:10px;color:var(--gray-400);margin-top:3px;}
+  .archive-toggle{background:none;border:1px solid var(--gray-200);border-radius:6px;padding:8px 14px;margin-top:18px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;color:var(--gray-600);width:100%;text-align:left;display:flex;align-items:center;justify-content:space-between;}
+  .archive-toggle:hover{border-color:var(--blue);color:var(--blue);}
+  .archive-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;margin-top:14px;}
+  .archive-controls input,.archive-controls select{padding:7px 10px;border:1px solid var(--gray-300);border-radius:6px;font-family:inherit;font-size:12px;color:var(--text);background:white;outline:none;}
+  .archive-controls input{flex:1;min-width:180px;}
+  /* ─── Search bar (shared) ─────────────────────────── */
+  .widget-search{display:flex;align-items:center;gap:8px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:6px;padding:6px 10px;margin-bottom:10px;}
+  .widget-search input{flex:1;border:none;outline:none;background:transparent;font-family:inherit;font-size:12px;color:var(--text);}
+  .widget-search input::placeholder{color:var(--gray-400);}
+  .widget-search-icon{color:var(--gray-400);font-size:12px;}
+
+  /* ─── Add footer button (shared style) ────────────── */
+  .add-toggle{width:100%;padding:9px 12px;margin-top:10px;border:1px dashed var(--gray-300);border-radius:6px;background:transparent;color:var(--gray-600);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .add-toggle:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-pale);}
+
+  /* Collapsible panel pattern — click the header to expand/collapse */
+  .card.collapsible { padding: 0; overflow: hidden; position: relative; }
+  .card.collapsible .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; padding: 0;
+    background: white; transition: background .1s;
+  }
+  .card.collapsible .panel-header:hover { background: var(--gray-50); }
+  .card.collapsible.open .panel-header { border-bottom: 1px solid var(--gray-200); }
+  .panel-header-main {
+    flex: 1; display: flex; align-items: center; gap: 10px;
+    padding: 14px 18px; cursor: pointer; min-width: 0;
+    background: transparent; border: none; text-align: left;
+    font-family: inherit;
+  }
+  .panel-header-actions {
+    display: flex; align-items: center; gap: 2px; padding-right: 8px;
+  }
+  .panel-icon-btn {
+    background: transparent; border: none; cursor: pointer;
+    width: 32px; height: 32px; border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: inherit; font-size: 15px; color: var(--gray-500);
+    transition: all .1s;
+  }
+  .panel-icon-btn:hover { background: var(--gray-100); color: var(--navy); }
+  .panel-icon-btn.active { background: var(--blue-pale); color: var(--blue); }
+  .card.collapsible .panel-header-left {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .card.collapsible .panel-header-title {
+    font-size: 14px; font-weight: 700; color: var(--navy); letter-spacing: -.1px;
+  }
+  .card.collapsible .panel-header-count {
+    font-size: 11px; font-weight: 600; color: var(--gray-500);
+    background: var(--gray-100); padding: 2px 8px; border-radius: 10px;
+    transition: background .25s;
+  }
+  .card.collapsible .panel-header-count.flash {
+    background: var(--green-pale); color: var(--green);
+  }
+  .card.collapsible .panel-chevron {
+    font-size: 13px; color: var(--gray-400); transition: transform .15s;
+  }
+  .card.collapsible.open .panel-chevron { transform: rotate(90deg); }
+  .card.collapsible .panel-body {
+    display: none; padding: 14px 18px 18px 18px;
+  }
+  .card.collapsible.open .panel-body { display: block; }
+
+  /* Quick-add popover anchored to the + button */
+  .quick-pop {
+    position: absolute; top: 50px; right: 8px;
+    width: 260px; background: white; border: 1px solid var(--gray-200);
+    border-radius: 8px; box-shadow: 0 8px 24px rgba(15,23,42,.12);
+    padding: 12px; z-index: 100; display: none;
+  }
+  .quick-pop.open { display: block; }
+  .quick-pop-title {
+    font-size: 11px; font-weight: 700; letter-spacing: .8px;
+    text-transform: uppercase; color: var(--gray-500); margin-bottom: 8px;
+  }
+  .quick-pop input {
+    width: 100%; padding: 8px 10px; margin-bottom: 6px;
+    border: 1px solid var(--gray-300); border-radius: 6px;
+    font-family: inherit; font-size: 13px; outline: none;
+    background: white;
+  }
+  .quick-pop input:focus { border-color: var(--blue); }
+  .quick-pop-actions {
+    display: flex; gap: 6px; justify-content: flex-end; margin-top: 6px;
+  }
+  .quick-pop-btn {
+    padding: 7px 12px; border-radius: 6px;
+    font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .quick-pop-btn.primary { background: var(--blue); color: white; border-color: var(--blue); }
+  .quick-pop-btn.primary:hover { background: var(--navy); border-color: var(--navy); }
+  .quick-pop-btn.secondary { background: white; color: var(--gray-500); border-color: var(--gray-300); }
+  .quick-pop-btn.secondary:hover { background: var(--gray-50); color: var(--navy); }
+  .quick-pop-hint {
+    font-size: 11px; color: var(--gray-400); margin-top: 6px; text-align: right;
+  }
+  .quick-pop-hint kbd {
+    background: var(--gray-100); padding: 1px 5px; border-radius: 3px;
+    font-family: inherit; font-size: 10px; font-weight: 600;
+  }
+  .add-form{display:none;padding:12px;margin-top:10px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:6px;}
+  .add-form.open{display:block;}
+  .add-form-title{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--gray-600);margin-bottom:8px;}
+  .add-form-grid{display:grid;gap:6px;}
+  .add-form-grid.cols-2{grid-template-columns:1fr 1fr;}
+  .add-form-grid input{padding:8px 10px;border:1px solid var(--gray-300);border-radius:5px;font-family:inherit;font-size:12px;outline:none;background:white;}
+  .add-form-grid input:focus{border-color:var(--blue);}
+  .add-form-grid input.full{grid-column:1 / -1;}
+  .add-form-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:8px;}
+  .add-form-btn{padding:7px 14px;border-radius:5px;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+  .add-form-btn.primary{background:var(--blue);color:white;}
+  .add-form-btn.primary:hover{opacity:.9;}
+  .add-form-btn.secondary{background:white;color:var(--gray-600);border:1px solid var(--gray-300);}
+  .add-form-btn.secondary:hover{border-color:var(--gray-400);color:var(--navy);}
+
+  /* ─── Quick Links ─────────────────────────────────── */
+  .links-list{display:flex;flex-direction:column;gap:6px;}
+  .link-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--gray-200);border-radius:6px;background:white;position:relative;}
+  .link-item:hover{border-color:var(--blue);background:var(--blue-pale);}
+  .link-item-main{flex:1;min-width:0;display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;}
+  .link-icon{width:28px;height:28px;border-radius:4px;background:var(--blue-pale);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;font-weight:800;}
+  .link-text-wrap{flex:1;min-width:0;overflow:hidden;}
+  .link-label{font-size:13px;font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .link-url{font-size:10px;color:var(--gray-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+  .link-actions{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:opacity .1s;}
+  .link-item:hover .link-actions{opacity:1;}
+  .link-action-btn{width:26px;height:26px;border-radius:4px;border:none;background:transparent;cursor:pointer;font-size:12px;color:var(--gray-400);display:flex;align-items:center;justify-content:center;}
+  .link-action-btn:hover{background:var(--gray-200);color:var(--navy);}
+  .link-action-btn.delete:hover{background:var(--red-pale);color:var(--red);}
+  .link-item.editing{background:var(--gray-50);border-color:var(--blue);flex-direction:column;align-items:stretch;gap:8px;}
+  .link-item.editing .link-item-main,
+  .link-item.editing .link-actions{display:none;}
+  .link-edit-fields{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .link-edit-fields input{padding:7px 10px;border:1px solid var(--gray-300);border-radius:5px;font-family:inherit;font-size:12px;outline:none;}
+  .link-edit-fields input:focus{border-color:var(--blue);}
+  .link-edit-actions{display:flex;gap:6px;justify-content:flex-end;}
+
+  /* ─── Contacts ────────────────────────────────────── */
+  .contacts-list{display:flex;flex-direction:column;gap:8px;}
+  .contact-item{padding:12px;border:1px solid var(--gray-200);border-radius:6px;background:white;position:relative;}
+  .contact-item:hover{border-color:var(--blue);}
+  .contact-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;}
+  .contact-head-text{flex:1;min-width:0;}
+  .contact-name{font-size:13px;font-weight:800;color:var(--navy);word-break:break-word;}
+  .contact-role{font-size:11px;color:var(--gray-600);margin-top:2px;word-break:break-word;}
+  .contact-actions{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:opacity .1s;}
+  .contact-item:hover .contact-actions{opacity:1;}
+  .contact-action-btn{width:24px;height:24px;border-radius:4px;border:none;background:transparent;cursor:pointer;font-size:11px;color:var(--gray-400);display:flex;align-items:center;justify-content:center;}
+  .contact-action-btn:hover{background:var(--gray-200);color:var(--navy);}
+  .contact-action-btn.delete:hover{background:var(--red-pale);color:var(--red);}
+  .contact-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray-800);margin-top:4px;min-width:0;}
+  .contact-row a{color:inherit;text-decoration:none;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .contact-row a:hover{color:var(--blue);text-decoration:underline;}
+  .contact-copy{background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:11px;padding:2px 6px;border-radius:3px;flex-shrink:0;}
+  .contact-copy:hover{color:var(--blue);background:var(--blue-pale);}
+  .contact-item.editing{background:var(--gray-50);border-color:var(--blue);}
+  .contact-item.editing .contact-head-text,
+  .contact-item.editing .contact-row{display:none;}
+  .contact-item.editing .contact-actions{display:none;}
+  .contact-edit-fields{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .contact-edit-fields input{padding:7px 10px;border:1px solid var(--gray-300);border-radius:5px;font-family:inherit;font-size:12px;outline:none;}
+  .contact-edit-fields input:focus{border-color:var(--blue);}
+  .contact-edit-fields input.full{grid-column:1 / -1;}
+  .contact-edit-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:8px;}
+  .scratchpad{width:100%;min-height:160px;padding:12px 14px;border:1px solid var(--gray-300);border-radius:6px;font-family:inherit;font-size:13px;color:var(--text);resize:vertical;outline:none;background:#FFFEF0;}
+  .scratchpad:focus{border-color:var(--blue);}
+  .scratch-status{font-size:10px;color:var(--gray-400);margin-top:4px;text-align:right;}
+  .welcome{background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:18px 24px;margin-bottom:20px;}
+  .welcome-title{font-size:18px;font-weight:800;color:var(--navy);}
+  .welcome-sub{font-size:12px;color:var(--gray-600);margin-top:3px;}
+  .denied{max-width:520px;margin:80px auto;background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:40px 36px;text-align:center;}
+  .denied-icon{font-size:48px;margin-bottom:16px;}
+  .denied-title{font-size:18px;font-weight:800;color:var(--navy);margin-bottom:8px;}
+  .denied-sub{font-size:13px;color:var(--gray-600);margin-bottom:20px;}
+  .denied a{display:inline-block;padding:10px 18px;border-radius:6px;background:var(--blue);color:white;text-decoration:none;font-weight:700;font-size:13px;}
+  .loading{padding:40px 20px;text-align:center;color:var(--gray-400);font-size:13px;}
+  .toast{position:fixed;bottom:20px;right:20px;background:white;border-radius:6px;padding:12px 18px;box-shadow:var(--shadow-md);font-size:13px;z-index:9999;max-width:340px;border-left:4px solid var(--blue);}
+  @media(max-width:720px){.kpi-strip{grid-template-columns:repeat(2,1fr);}}
 </style>
 </head>
 <body>
-<header>
-  <div class="hdr-left">
-    <div class="hdr-avatar">S</div>
+
+<div id="app-loading" class="loading" style="margin:80px auto;">Loading…</div>
+
+<div id="app" style="display:none;">
+  <header class="hdr">
+    <div class="hdr-left">
+      <div class="hdr-logo">ECS</div>
+      <div><div class="hdr-title">Sara's Command Center</div><div class="hdr-sub">Personal workspace</div></div>
+    </div>
+    <div class="hdr-right">
+      <span class="hdr-user" id="hdr-user"></span>
+      <button class="hdr-gear" onclick="openSettingsModal()" title="Settings" type="button">⚙</button>
+      <a class="hdr-link" href="https://elitecrest.github.io/elite-hub/compliance_inbox.html">← Back to Inbox</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="kpi-strip">
+      <div class="kpi warn"><div class="kpi-text"><div class="kpi-label">Due Today</div><div class="kpi-sub">Tasks with today's deadline</div></div><div class="kpi-num"><div class="kpi-value" id="kpi-due-today">0</div></div></div>
+      <div class="kpi danger"><div class="kpi-text"><div class="kpi-label">Overdue</div><div class="kpi-sub">Past deadline, not done</div></div><div class="kpi-num"><div class="kpi-value" id="kpi-overdue">0</div></div></div>
+      <div class="kpi"><div class="kpi-text"><div class="kpi-label">Compliance Queue</div><div class="kpi-sub">Open submissions (you)</div></div><div class="kpi-num"><div class="kpi-value" id="kpi-compliance">0</div></div></div>
+      <div class="kpi"><div class="kpi-text"><div class="kpi-label">Open Legal Cases</div><div class="kpi-sub">Assigned to you</div></div><div class="kpi-num"><div class="kpi-value" id="kpi-legal">0</div></div></div>
+    </div>
+
+    <div class="tool-grid">
+      <button class="tool-btn" type="button" onclick="openContactsModal()" style="cursor:pointer;font-family:inherit;text-align:left;">
+        <div class="tool-btn-icon">👤</div>
+        <div class="tool-btn-text"><div class="tool-btn-title">Contacts</div><div class="tool-btn-sub">Browse, search, edit</div></div>
+        <span class="tool-btn-badge" id="contacts-btn-count">0</span>
+      </button>
+      <button class="tool-btn" type="button" onclick="openLinksModal()" style="cursor:pointer;font-family:inherit;text-align:left;">
+        <div class="tool-btn-icon">🔗</div>
+        <div class="tool-btn-text"><div class="tool-btn-title">Links</div><div class="tool-btn-sub">Browse, search, edit</div></div>
+        <span class="tool-btn-badge" id="links-btn-count">0</span>
+      </button>
+    </div>
+
+    <!-- Quick Links row: each link is a pill showing most recent; rendered dynamically -->
+    <div class="link-pill-wrap" id="link-pill-wrap" style="margin-bottom:28px;display:none;">
+    </div>
+
     <div>
-      <div class="hdr-name">Sara</div>
-      <div class="hdr-sub">Elite Hub — Personal Dashboard</div>
+      <div class="card">
+        <div class="section-head">
+          <div class="section-title">My Tasks</div>
+          <div class="tasks-sync-state" id="sync-state">● Synced</div>
+        </div>
+        <div class="cat-tabs-row">
+          <div class="cat-tabs" id="cat-tabs">
+            <div class="cat-tab active" data-cat="To Do">To Do <span class="cat-tab-count" id="count-todo">0</span></div>
+            <div class="cat-tab" data-cat="Follow Up">Follow Up <span class="cat-tab-count" id="count-follow">0</span></div>
+            <div class="cat-tab" data-cat="Question">Questions <span class="cat-tab-count" id="count-question">0</span></div>
+            <div class="cat-tab" data-cat="Note">Notes <span class="cat-tab-count" id="count-note">0</span></div>
+          </div>
+          <div class="project-filter-wrap">
+            <select id="project-filter" class="project-filter" onchange="renderTasks()">
+              <option value="">All projects</option>
+            </select>
+          </div>
+        </div>
+        <div class="task-add-row">
+          <input type="text" id="task-add-input" class="task-add-input" placeholder="Add a task and press Enter...">
+          <select id="task-add-cat" class="task-add-cat" title="Category"><option>To Do</option><option>Follow Up</option><option>Question</option><option>Note</option></select>
+          <select id="task-add-pri" class="task-add-pri" title="Priority"><option value="low">Low</option><option value="med" selected>Med</option><option value="high">High</option></select>
+          <input type="date" id="task-add-due" class="task-add-due" title="Due date">
+          <button class="task-add-btn" onclick="addTask()">+ Add</button>
+        </div>
+        <div class="task-list" id="task-list"><div class="task-empty">Loading tasks...</div></div>
+        <button class="archive-toggle" onclick="toggleArchive()">
+          <span>📁 Archive <span id="archive-count" style="color:var(--gray-400);font-weight:600;">(0 completed)</span></span>
+          <span id="archive-arrow">▼</span>
+        </button>
+        <div id="archive-panel" style="display:none;">
+          <div class="archive-controls">
+            <input type="text" id="archive-search" placeholder="Search completed tasks..." oninput="renderArchive()">
+            <select id="archive-filter-cat" onchange="renderArchive()"><option value="all">All categories</option><option>To Do</option><option>Follow Up</option><option>Question</option><option>Note</option></select>
+            <select id="archive-filter-project" onchange="renderArchive()"><option value="">All projects</option></select>
+            <select id="archive-sort" onchange="renderArchive()"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="category">By category</option><option value="text">By text</option></select>
+          </div>
+          <div class="task-list" id="archive-list"><div class="task-empty">No completed tasks yet.</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-head"><div class="section-title">Scratchpad</div><div class="section-sub">Auto-saves</div></div>
+        <textarea class="scratchpad" id="scratchpad" placeholder="Jot anything down here — it saves automatically..."></textarea>
+        <div class="scratch-status" id="scratch-status">Saved</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Contacts modal: browse / add / edit / delete all contacts -->
+<div id="contacts-modal" class="modal-backdrop" onclick="if(event.target===this)closeContactsModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Contacts <span style="color:var(--gray-400);font-weight:600;font-size:13px;margin-left:6px;" id="contacts-modal-count">(0)</span></div>
+      <button class="modal-close" onclick="closeContactsModal()" type="button">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="text" class="contacts-search" id="contacts-modal-search" placeholder="Search contacts..." oninput="renderContactsModal()">
+      <div class="mini-form">
+        <div class="mini-form-title">Add New Contact</div>
+        <input type="text" id="new-contact-name" placeholder="Name">
+        <input type="text" id="new-contact-role" placeholder="Role / Company (optional)">
+        <div class="mini-form-row">
+          <input type="text" id="new-contact-phone" placeholder="Phone">
+          <input type="email" id="new-contact-email" placeholder="Email">
+        </div>
+        <div class="mini-form-actions">
+          <button class="btn-pri" type="button" onclick="addContactFromModal()">+ Add Contact</button>
+        </div>
+      </div>
+      <div id="contacts-modal-list"></div>
     </div>
   </div>
-  <div class="hdr-right">
-    <span class="hdr-sync" id="hdrSync">—</span>
-    <span class="hdr-badge" id="hdrBadge">0 tasks</span>
-    <a class="back-link" href="admin.html">← Admin</a>
-    <button onclick="localStorage.removeItem('elite_session');window.location.href='login.html'" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">Sign Out</button>
+</div>
+
+<!-- Links modal: browse / search / pin / edit / delete all links -->
+<div id="links-modal" class="modal-backdrop" onclick="if(event.target===this)closeLinksModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Links <span style="color:var(--gray-400);font-weight:600;font-size:13px;margin-left:6px;" id="links-modal-count">(0)</span></div>
+      <button class="modal-close" onclick="closeLinksModal()" type="button">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="text" class="contacts-search" id="links-modal-search" placeholder="Search links..." oninput="renderLinksModal()">
+      <div class="mini-form">
+        <div class="mini-form-title">Add New Link</div>
+        <input type="text" id="new-link-label" placeholder="Label (optional)">
+        <input type="text" id="new-link-url" placeholder="https://...">
+        <div class="mini-form-actions">
+          <button class="btn-pri" type="button" onclick="addLinkFromModal()">+ Add Link</button>
+        </div>
+      </div>
+      <div id="links-modal-list"></div>
+    </div>
   </div>
-</header>
+</div>
 
-<main>
-  <div class="page-title">My Notifications</div>
-  <div class="page-sub">Tasks and notifications assigned to Sara</div>
-
-  <div class="stats-row">
-    <div class="stat-card"><div class="stat-val" id="statTotal">—</div><div class="stat-lbl">Total Assigned</div></div>
-    <div class="stat-card"><div class="stat-val" id="statUnread">—</div><div class="stat-lbl">Unread</div></div>
-    <div class="stat-card"><div class="stat-val" id="statResolved">—</div><div class="stat-lbl">Resolved</div></div>
+<!-- Add Link modal (small dialog) -->
+<div id="add-link-modal" class="modal-backdrop" onclick="if(event.target===this)closeAddLinkModal()">
+  <div class="modal sm">
+    <div class="modal-header">
+      <div class="modal-title" id="add-link-title">Add Link</div>
+      <button class="modal-close" onclick="closeAddLinkModal()" type="button">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="text" class="contacts-search" id="add-link-label" placeholder="Label (optional)" style="margin-bottom:8px;">
+      <input type="text" class="contacts-search" id="add-link-url" placeholder="https://..." style="margin-bottom:0;">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sec" type="button" onclick="closeAddLinkModal()">Cancel</button>
+      <button class="btn-pri" type="button" onclick="saveAddLinkModal()">Save</button>
+    </div>
   </div>
+</div>
 
-  <div class="filter-row">
-    <button class="pill active" onclick="setFilter('all',this)">All</button>
-    <button class="pill" onclick="setFilter('unread',this)">Unread</button>
-    <button class="pill" onclick="setFilter('assigned',this)">Assigned</button>
-    <button class="pill" onclick="setFilter('resolved',this)">Resolved</button>
+<!-- Settings modal: manage projects (add / rename) -->
+<div id="settings-modal" class="modal-backdrop" onclick="if(event.target===this)closeSettingsModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Settings</div>
+      <button class="modal-close" onclick="closeSettingsModal()" type="button">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:10px;">Manage Projects</div>
+      <div style="font-size:11px;color:var(--gray-500);margin-bottom:14px;">Add a new project or rename an existing one. Projects are used to tag and filter tasks.</div>
+
+      <div class="mini-form">
+        <div class="mini-form-title">Add New Project</div>
+        <input type="text" id="new-project-name" placeholder="e.g. Marketing" maxlength="40">
+        <div class="mini-form-actions">
+          <button class="btn-pri" type="button" onclick="addProjectFromSettings()">+ Add Project</button>
+        </div>
+      </div>
+
+      <div id="settings-projects-list"></div>
+    </div>
   </div>
+</div>
 
-  <div class="notif-list" id="notifList">
-    <div class="empty"><div class="empty-icon">⏳</div>Loading…</div>
-  </div>
-</main>
-
-<div class="toast" id="toast"></div>
+<div id="denied" class="denied" style="display:none;">
+  <div class="denied-icon">🔒</div>
+  <div class="denied-title">Access Restricted</div>
+  <div class="denied-sub">This workspace is only available to Sara.</div>
+  <a href="https://elitecrest.github.io/elite-hub/index.html">Return to Hub</a>
+</div>
 
 <script>
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec';
-const ME = 'Sara';
-const ADMINS = ['Angel','Sara','Emma','Carlynn','Jaida'];
-let allNotifs = [];
-let currentFilter = 'all';
+function getSession(){try{return JSON.parse(localStorage.getItem('elite_session')||'null');}catch{return null;}}
+const BACKEND_URL='https://script.google.com/macros/s/AKfycbzBfZhP-tyZP2nwUrxkP8WL6qicQVnyXFouMvndM6YDrrsFli2H4Qiu24Do0ukRjFRe8g/exec';
 
-async function load() {
-  try {
-    const cached = localStorage.getItem('cache_sara');
-    if (cached) {
-      const { html, rhtml, ts } = JSON.parse(cached);
-      if (Date.now() - ts < 600000 && html) {
-        const nl = document.getElementById('notifList');
-        const rl = document.getElementById('resolvedList');
-        if (nl) nl.innerHTML = html;
-        if (rl) rl.innerHTML = rhtml || '';
-        return;
-      }
-    }
-  } catch(e) {}
-  await _loadFresh();
-}
+/* STATE — declared before init() so they're initialized before any function calls */
+const LS_TASKS='sara_tasks_v2';
+const LS_WS='sara_workspace_v1';
+const MAX_RECENT_PILLS = 5;
+const WORK_STATUSES = [
+  { key: 'In Progress',          cls: 'status-in-progress',   label: 'In Progress' },
+  { key: 'On Hold',              cls: 'status-on-hold',       label: 'On Hold' },
+  { key: 'Follow Up Needed',     cls: 'status-follow-up',     label: 'Follow Up Needed' },
+  { key: 'Documentation Needed', cls: 'status-documentation', label: 'Documentation Needed' },
+  { key: 'Done',                 cls: 'status-done',          label: 'Done' },
+];
+const DEFAULT_PROJECTS = [
+  'Permit','Registrations','Licenses','PURE','Legal','BBB','Subcontractors',
+  'Insurance','Bonds','Elite','Reimagine','Wildwood','123 Exteriors','Universal','Aspen'
+];
+// PROJECT_OPTIONS is mutable — loaded from backend/localStorage, defaults if none
+let PROJECT_OPTIONS = DEFAULT_PROJECTS.slice().sort((a,b) => a.localeCompare(b));
+let tasks=[], activeCategory='To Do', showArchive=false;
+let expandedTaskId = null;   // which task is currently expanded for inline edit
+let ws={notes:[],links:[],contacts:[],scratchpad:''};
 
-async function _loadFresh() {
-  try {
-    // Load all assigned + resolved for this person
-    const [r1, r2] = await Promise.all([
-      fetch(`${BACKEND_URL}?action=getNotifications&assignee=${ME}`),
-      fetch(`${BACKEND_URL}?action=getNotifications&assignee=${ME}&status=resolved`),
-    ]);
-    const d1 = await r1.json();
-    const d2 = await r2.json();
-    allNotifs = [...(d1.notifications||[]), ...(d2.notifications||[])];
-    document.getElementById('hdrSync').textContent = new Date().toLocaleTimeString();
-    render();
-  } catch(e) {
-    document.getElementById('notifList').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Could not load notifications.</div>';
-  }
-
-  try {
-    const _html = document.getElementById('notifList') ? document.getElementById('notifList').innerHTML : '';
-    const _rhtml = document.getElementById('resolvedList') ? document.getElementById('resolvedList').innerHTML : '';
-    localStorage.setItem('cache_sara', JSON.stringify({ html: _html, rhtml: _rhtml, ts: Date.now() }));
-  } catch(e) {}
-}
-
-function setFilter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-  render();
-}
-
-function icon(type) {
-  return type==='new_contractor'?'🆕':type==='gl_update'?'🛡️':type==='wc_update'?'🦺':'🔔';
-}
-function label(type) {
-  return type==='new_contractor'?'New Contractor':type==='gl_update'?'GL Insurance Update':type==='wc_update'?'WC Insurance Update':'Notification';
-}
-
-function render() {
-  const list = document.getElementById('notifList');
-  let filtered = allNotifs;
-  if (currentFilter !== 'all') filtered = filtered.filter(n => n['status'] === currentFilter);
-
-  const total    = allNotifs.length;
-  const unread   = allNotifs.filter(n => n['status']==='unread').length;
-  const resolved = allNotifs.filter(n => n['status']==='resolved').length;
-  document.getElementById('statTotal').textContent   = total;
-  document.getElementById('statUnread').textContent  = unread;
-  document.getElementById('statResolved').textContent = resolved;
-  document.getElementById('hdrBadge').textContent    = (total - resolved) + ' task' + (total-resolved!==1?'s':'');
-
-  if (!filtered.length) {
-    list.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><div style="font-weight:700;margin-bottom:6px;">All clear!</div><div style="font-size:12px;">No notifications' + (currentFilter!=='all'?' in this category':'') + '.</div></div>';
+(function init(){
+  const sess=getSession();
+  const u=sess&&sess.user?String(sess.user.username||'').toLowerCase():'';
+  if(u!=='sara' && u!=='angel'){
+    document.getElementById('app-loading').style.display='none';
+    document.getElementById('denied').style.display='block';
+    setTimeout(()=>{window.location.href='https://elitecrest.github.io/elite-hub/index.html';},1500);
     return;
   }
+  document.getElementById('hdr-user').textContent='Signed in as '+(sess.user.name||sess.user.username);
+  document.getElementById('app-loading').style.display='none';
+  document.getElementById('app').style.display='block';
+  loadTasksFromLocal(); loadWorkspaceFromLocal();
+  renderTasks(); renderLinks(); renderContacts(); renderScratchpad();
+  fetchTasksFromBackend(); fetchWorkspaceFromBackend(); fetchStats();
+  setInterval(fetchStats,120000);
+})();
 
-  list.innerHTML = filtered.map(n => {
-    const ts     = n['timestamp'] ? new Date(n['timestamp']).toLocaleString() : '—';
-    const status = n['status'] || 'unread';
-    const id     = n['id'];
-    const resBtn = status !== 'resolved'
-      ? `<button class="n-btn resolve" onclick="resolve('${id}')">✓ Mark Resolved</button>`
-      : `<span style="font-size:11px;color:#94A3B8;">✓ Resolved</span>`;
-    const reassign = `<select class="reassign-sel" onchange="reassign('${id}',this.value)">
-      <option value="">Reassign…</option>
-      ${ADMINS.filter(a=>a!==ME).map(a=>`<option value="${a}">${a}</option>`).join('')}
-    </select>`;
-    return `<div class="notif-item ${status}" id="notif-${id}">
-      <div class="n-icon">${icon(n['type'])}</div>
-      <div style="flex:1">
-        <div class="n-title">${label(n['type'])} — ${n['contractor_name']||'—'}</div>
-        <div class="n-meta">
-          ${n['region']||'—'} · ${n['detail']||''} · ${ts}
+/* TASKS */
+function loadTasksFromLocal(){try{const r=localStorage.getItem(LS_TASKS);tasks=r?JSON.parse(r):[];}catch{tasks=[];}}
+function saveTasksToLocal(){try{localStorage.setItem(LS_TASKS,JSON.stringify(tasks));}catch{}}
+
+async function fetchTasksFromBackend(){
+  try{
+    const r=await fetch(`${BACKEND_URL}?action=getSaraTasks`);
+    const d=await r.json();
+    if(!d||!Array.isArray(d.tasks))return;
+    const ids=new Set(d.tasks.map(t=>t.id));
+    const unsynced=tasks.filter(t=>t._unsynced&&!ids.has(t.id));
+    tasks=[...d.tasks.map(t=>({...t})),...unsynced];
+    saveTasksToLocal(); renderTasks();
+  }catch{updateSyncState();}
+}
+
+async function pushTaskToBackend(task){
+  const p={...task}; delete p._unsynced;
+  try{
+    await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveSaraTask',task:p})});
+    const t=tasks.find(x=>x.id===task.id); if(t)delete t._unsynced;
+    saveTasksToLocal(); updateSyncState(); return true;
+  }catch{
+    const t=tasks.find(x=>x.id===task.id); if(t)t._unsynced=true;
+    saveTasksToLocal(); updateSyncState(); return false;
+  }
+}
+async function deleteTaskOnBackend(id){try{await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'deleteSaraTask',id})});}catch{}}
+
+function updateSyncState(){
+  const el=document.getElementById('sync-state'); if(!el)return;
+  const u=tasks.filter(t=>t._unsynced);
+  if(u.length===0){el.classList.remove('unsynced');el.innerHTML='● Synced';}
+  else{el.classList.add('unsynced');el.innerHTML=`⚠ ${u.length} unsynced <button class="retry-btn" onclick="retrySync()">Retry</button>`;}
+}
+async function retrySync(){const u=tasks.filter(t=>t._unsynced); for(const t of u)await pushTaskToBackend(t); renderTasks();}
+function newId(p){return (p||'T')+Date.now()+Math.floor(Math.random()*1000);}
+
+function addTask(){
+  const i=document.getElementById('task-add-input'), c=document.getElementById('task-add-cat'), p=document.getElementById('task-add-pri'), d=document.getElementById('task-add-due');
+  const text=(i.value||'').trim(); if(!text)return;
+  const now=new Date().toISOString();
+  // Default start_date = today (as YYYY-MM-DD); work_status = "In Progress"
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0,10);
+  const t={id:newId('T'),category:c.value,text,status:'open',priority:p.value||'med',start_date:todayStr,due_date:d.value||'',work_status:'In Progress',sort_order:Date.now(),created_at:now,updated_at:now,completed_at:'',_unsynced:true};
+  tasks.unshift(t); saveTasksToLocal();
+  i.value=''; d.value='';
+  activeCategory=t.category;
+  document.querySelectorAll('.cat-tab').forEach(x=>x.classList.toggle('active',x.dataset.cat===t.category));
+  renderTasks(); pushTaskToBackend(t);
+}
+
+function toggleTaskDone(id){
+  const t=tasks.find(x=>x.id===id); if(!t)return;
+  const now=new Date().toISOString();
+  if(t.status==='done'){
+    // Re-opening — restore to In Progress
+    t.status='open';t.completed_at='';
+    if(t.work_status === 'Done') t.work_status = 'In Progress';
+  } else {
+    // Marking done — also set work_status to Done
+    t.status='done';t.completed_at=now;
+    t.work_status = 'Done';
+  }
+  t.updated_at=now; t._unsynced=true;
+  saveTasksToLocal(); renderTasks(); pushTaskToBackend(t);
+}
+
+/* ══ Work Status (5-state) ══ */
+function cycleWorkStatus(id){
+  const t=tasks.find(x=>x.id===id); if(!t)return;
+  const current = t.work_status || 'In Progress';
+  const idx = WORK_STATUSES.findIndex(s => s.key === current);
+  const nextIdx = (idx + 1) % WORK_STATUSES.length;
+  const next = WORK_STATUSES[nextIdx].key;
+  setWorkStatus(id, next);
+}
+
+function setWorkStatus(id, newStatus){
+  const t=tasks.find(x=>x.id===id); if(!t)return;
+  const now = new Date().toISOString();
+  t.work_status = newStatus;
+  // Auto-sync the checkbox: "Done" → checked/archived; anything else → open
+  if(newStatus === 'Done' && t.status !== 'done'){
+    t.status = 'done'; t.completed_at = now;
+  } else if(newStatus !== 'Done' && t.status === 'done'){
+    t.status = 'open'; t.completed_at = '';
+  }
+  t.updated_at = now; t._unsynced = true;
+  saveTasksToLocal(); renderTasks(); pushTaskToBackend(t);
+  closeStatusMenu();
+}
+
+/* Right-click dropdown menu for picking any status */
+function openStatusMenu(evt, id){
+  closeStatusMenu();
+  const t=tasks.find(x=>x.id===id); if(!t)return;
+  const current = t.work_status || 'In Progress';
+  const menu = document.createElement('div');
+  menu.className = 'task-status-menu';
+  menu.id = 'task-status-menu';
+  menu.innerHTML = WORK_STATUSES.map(s => {
+    const active = s.key === current ? 'active' : '';
+    return `<button type="button" class="task-status-menu-item ${active}" onclick="setWorkStatus('${id}','${s.key.replace(/'/g,"\\'")}')">${escapeHtml(s.label)}</button>`;
+  }).join('');
+  document.body.appendChild(menu);
+  // Position near the cursor
+  const x = Math.min(evt.clientX, window.innerWidth - 200);
+  const y = Math.min(evt.clientY, window.innerHeight - 220);
+  menu.style.left = x + 'px';
+  menu.style.top  = y + 'px';
+  // Close on next outside click
+  setTimeout(() => {
+    document.addEventListener('click', closeStatusMenuOnce, { once: true });
+  }, 0);
+}
+function closeStatusMenu(){
+  const m = document.getElementById('task-status-menu');
+  if(m) m.remove();
+}
+function closeStatusMenuOnce(e){
+  if(e.target.closest('#task-status-menu')) return;
+  closeStatusMenu();
+}
+
+/* Expanded inline editor */
+function toggleTaskEditor(id){
+  expandedTaskId = (String(expandedTaskId) === String(id)) ? null : id;
+  renderTasks();
+}
+function openEditorAndFocus(id, fieldPrefix){
+  // Force open, then focus a field inside the editor (e.g. 'edit-due' → focuses Due Date)
+  expandedTaskId = id;
+  renderTasks();
+  setTimeout(() => {
+    const el = document.getElementById(`${fieldPrefix}-${id}`);
+    if(el) el.focus();
+  }, 30);
+}
+function closeTaskEditor(){
+  expandedTaskId = null;
+  renderTasks();
+}
+function saveTaskEditor(id){
+  const t = tasks.find(x => x.id === id); if(!t) return;
+  const text = (document.getElementById(`edit-text-${id}`).value || '').trim();
+  if(!text){ showToast('Task text is required'); return; }
+  t.text       = text;
+  t.start_date = document.getElementById(`edit-start-${id}`).value || '';
+  t.due_date   = document.getElementById(`edit-due-${id}`).value   || '';
+  t.category   = document.getElementById(`edit-cat-${id}`).value;
+  t.priority   = document.getElementById(`edit-pri-${id}`).value;
+  t.project    = document.getElementById(`edit-project-${id}`).value || '';
+  t.updated_at = new Date().toISOString();
+  t._unsynced  = true;
+  expandedTaskId = null;
+  saveTasksToLocal(); renderTasks(); pushTaskToBackend(t);
+  showToast('Task updated');
+}
+
+function editTask(id){
+  const el=document.getElementById(`task-text-${id}`); if(!el)return;
+  el.setAttribute('contenteditable','true'); el.focus();
+  const r=document.createRange(); r.selectNodeContents(el); r.collapse(false);
+  const s=window.getSelection(); s.removeAllRanges(); s.addRange(r);
+}
+function commitEdit(id,el){
+  const t=tasks.find(x=>x.id===id); if(!t)return;
+  const nt=(el.textContent||'').trim(); el.removeAttribute('contenteditable');
+  if(!nt){el.textContent=t.text;return;}
+  if(nt===t.text)return;
+  t.text=nt; t.updated_at=new Date().toISOString(); t._unsynced=true;
+  saveTasksToLocal(); updateSyncState(); pushTaskToBackend(t);
+}
+function deleteTask(id){
+  if(!confirm('Delete this task?'))return;
+  tasks=tasks.filter(t=>t.id!==id);
+  saveTasksToLocal(); renderTasks(); deleteTaskOnBackend(id);
+}
+
+function switchCategory(cat){
+  activeCategory=cat;
+  document.querySelectorAll('.cat-tab').forEach(t=>t.classList.toggle('active',t.dataset.cat===cat));
+  renderTasks();
+}
+function toggleArchive(){
+  showArchive=!showArchive;
+  document.getElementById('archive-panel').style.display=showArchive?'block':'none';
+  document.getElementById('archive-arrow').textContent=showArchive?'▲':'▼';
+  if(showArchive)renderArchive();
+}
+
+function escapeHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function formatDate(r){if(!r)return '';try{const d=new Date(r); if(isNaN(d))return ''; return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});}catch{return '';}}
+function dueStatus(s){
+  if(!s)return '';
+  try{const d=new Date(s); if(isNaN(d))return '';
+    const t=new Date(); t.setHours(0,0,0,0); d.setHours(0,0,0,0);
+    if(d.getTime()<t.getTime())return 'overdue';
+    if(d.getTime()===t.getTime())return 'due-today';
+    return '';}catch{return '';}
+}
+function priFlag(p){const pr=p||'med'; const ch=pr==='high'?'⚑':pr==='med'?'⚐':'·'; return `<span class="pri-flag ${pr}" title="Priority: ${pr}">${ch}</span>`;}
+
+function workStatusMeta(key) {
+  return WORK_STATUSES.find(s => s.key === key) || WORK_STATUSES[0];
+}
+function formatDateShort(r){if(!r)return '';try{const d=new Date(r); if(isNaN(d))return ''; return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}catch{return '';}}
+function renderDateRange(start, due){
+  const s = formatDateShort(start);
+  const d = formatDate(due);
+  if(s && due) return `${s} → ${d}`;
+  if(due) return d;
+  if(s) return s;
+  return '';
+}
+
+function renderTaskItem(t,inArchive){
+  const done=t.status==='done';
+  const unsync=t._unsynced?'unsynced':'';
+  const due=t.due_date?dueStatus(t.due_date):'';
+  const editing = String(expandedTaskId) === String(t.id);
+  const rc=[done?'done':'',unsync,!done?due:'',editing?'editing':''].filter(Boolean).join(' ');
+  const cat=inArchive?`<span class="task-cat-badge">${escapeHtml(t.category)}</span>`:'';
+  const projBadge = t.project ? `<span class="task-project-badge">${escapeHtml(t.project)}</span>` : '';
+  const meta=inArchive?`<div class="task-meta">Completed ${formatDate(t.completed_at)}</div>`:'';
+  const dateLabel = renderDateRange(t.start_date, t.due_date);
+  const dueB = dateLabel
+    ? `<span class="task-due ${due}">📅 ${escapeHtml(dateLabel)}</span>`
+    : (!inArchive ? `<span class="task-due task-due-placeholder" onclick="openEditorAndFocus('${t.id}','edit-due')">📅 + Add dates</span>` : '');
+  // Work status pill — default to "In Progress" for new tasks without a work_status
+  const ws = t.work_status || 'In Progress';
+  const wsMeta = workStatusMeta(ws);
+  const statusPill = !inArchive
+    ? `<button class="task-status-pill ${wsMeta.cls}"
+         onclick="event.stopPropagation();cycleWorkStatus('${t.id}')"
+         oncontextmenu="event.preventDefault();openStatusMenu(event,'${t.id}');return false;"
+         title="Click to cycle · right-click for menu"
+         type="button">${escapeHtml(wsMeta.label)}</button>`
+    : '';
+
+  return `<div class="task-item ${rc}" draggable="${!inArchive&&!done}" data-id="${t.id}">
+    <input type="checkbox" class="task-checkbox" ${done?'checked':''} onchange="toggleTaskDone('${t.id}')">
+    <div style="flex:1;min-width:0;">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        ${cat}${projBadge}<span onclick="cyclePriority('${t.id}')">${priFlag(t.priority)}</span>
+        <div class="task-text" id="task-text-${t.id}" onblur="commitEdit('${t.id}',this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${escapeHtml(t.text)}</div>
+        ${dueB}
+        ${statusPill}
+      </div>${meta}
+      ${editing ? renderTaskEditor(t) : ''}
+    </div>
+    <div class="task-actions">
+      <button class="task-btn" title="Edit" onclick="toggleTaskEditor('${t.id}')">✎</button>
+      <button class="task-btn delete" title="Delete" onclick="deleteTask('${t.id}')">🗑</button>
+    </div></div>`;
+}
+
+function renderTaskEditor(t) {
+  return `<div class="task-editor">
+    <div class="task-editor-grid">
+      <div class="task-editor-field task-editor-full">
+        <span class="task-editor-label">Task</span>
+        <textarea id="edit-text-${t.id}" placeholder="Task description">${escapeHtml(t.text || '')}</textarea>
+      </div>
+      <div class="task-editor-field">
+        <span class="task-editor-label">Start Date</span>
+        <input type="date" id="edit-start-${t.id}" value="${escapeAttr(t.start_date || '')}">
+      </div>
+      <div class="task-editor-field">
+        <span class="task-editor-label">Due Date</span>
+        <input type="date" id="edit-due-${t.id}" value="${escapeAttr(t.due_date || '')}">
+      </div>
+      <div class="task-editor-field">
+        <span class="task-editor-label">Category</span>
+        <select id="edit-cat-${t.id}">
+          <option${t.category==='To Do'?' selected':''}>To Do</option>
+          <option${t.category==='Follow Up'?' selected':''}>Follow Up</option>
+          <option${t.category==='Question'?' selected':''}>Question</option>
+          <option${t.category==='Note'?' selected':''}>Note</option>
+        </select>
+      </div>
+      <div class="task-editor-field">
+        <span class="task-editor-label">Priority</span>
+        <select id="edit-pri-${t.id}">
+          <option value="low"${t.priority==='low'?' selected':''}>Low</option>
+          <option value="med"${(!t.priority||t.priority==='med')?' selected':''}>Medium</option>
+          <option value="high"${t.priority==='high'?' selected':''}>High</option>
+        </select>
+      </div>
+      <div class="task-editor-field task-editor-full">
+        <span class="task-editor-label">Project</span>
+        <select id="edit-project-${t.id}">
+          <option value=""${!t.project?' selected':''}>— No project —</option>
+          ${PROJECT_OPTIONS.map(p => `<option value="${escapeAttr(p)}"${t.project===p?' selected':''}>${escapeHtml(p)}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="task-editor-actions">
+      <button class="task-editor-btn secondary" onclick="closeTaskEditor()" type="button">Cancel</button>
+      <button class="task-editor-btn primary" onclick="saveTaskEditor('${t.id}')" type="button">Save</button>
+    </div>
+  </div>`;
+}
+
+function escapeAttr(s){return String(s==null?'':s).replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+
+function renderTasks(){
+  // Populate the project filter dropdown — options include all PROJECT_OPTIONS
+  const pf = document.getElementById('project-filter');
+  if(pf){
+    const current = pf.value || '';
+    const opts = ['<option value="">All projects</option>']
+      .concat(PROJECT_OPTIONS.map(p => `<option value="${escapeAttr(p)}">${escapeHtml(p)}</option>`));
+    pf.innerHTML = opts.join('');
+    pf.value = current;
+  }
+  const projectFilter = (pf && pf.value) || '';
+
+  const c={'To Do':0,'Follow Up':0,'Question':0,'Note':0};
+  // Counts reflect the project filter (so Emma sees how many open tasks in each tab for the chosen project)
+  const openScoped=tasks.filter(t => t.status!=='done' && (!projectFilter || t.project === projectFilter));
+  openScoped.forEach(t=>{if(c[t.category]!==undefined)c[t.category]++;});
+  document.getElementById('count-todo').textContent=c['To Do'];
+  document.getElementById('count-follow').textContent=c['Follow Up'];
+  document.getElementById('count-question').textContent=c['Question'];
+  document.getElementById('count-note').textContent=c['Note'];
+  const a=openScoped.filter(t=>t.category===activeCategory).sort((x,y)=>(x.sort_order||0)-(y.sort_order||0));
+  const list=document.getElementById('task-list');
+  if(!a.length){
+    const projMsg = projectFilter ? ` for project "${projectFilter}"` : '';
+    list.innerHTML=`<div class="task-empty">No ${activeCategory.toLowerCase()} items${projMsg} yet.</div>`;
+  } else{
+    list.innerHTML=a.map(t=>renderTaskItem(t,false)).join(''); wireTaskDrag();
+  }
+  const done=tasks.filter(t=>t.status==='done');
+  document.getElementById('archive-count').textContent=`(${done.length} completed)`;
+  if(showArchive)renderArchive();
+  updateSyncState(); updateLocalKPIs();
+}
+
+function updateLocalKPIs(){
+  const t=new Date(); t.setHours(0,0,0,0);
+  let dt=0, od=0;
+  tasks.forEach(x=>{
+    if(x.status==='done'||!x.due_date)return;
+    const d=new Date(x.due_date); if(isNaN(d))return; d.setHours(0,0,0,0);
+    if(d.getTime()===t.getTime())dt++;
+    if(d.getTime()<t.getTime())od++;
+  });
+  document.getElementById('kpi-due-today').textContent=dt;
+  document.getElementById('kpi-overdue').textContent=od;
+}
+
+function renderArchive(){
+  // Populate archive project filter dropdown
+  const apf = document.getElementById('archive-filter-project');
+  if(apf){
+    const cur = apf.value || '';
+    apf.innerHTML = ['<option value="">All projects</option>']
+      .concat(PROJECT_OPTIONS.map(p => `<option value="${escapeAttr(p)}">${escapeHtml(p)}</option>`))
+      .join('');
+    apf.value = cur;
+  }
+  const q=(document.getElementById('archive-search').value||'').toLowerCase();
+  const cat=document.getElementById('archive-filter-cat').value;
+  const proj=(apf && apf.value) || '';
+  const sort=document.getElementById('archive-sort').value;
+  let l=tasks.filter(t=>t.status==='done');
+  if(cat!=='all')l=l.filter(t=>t.category===cat);
+  if(proj)l=l.filter(t=>t.project===proj);
+  if(q)l=l.filter(t=>(t.text||'').toLowerCase().includes(q));
+  if(sort==='newest')l.sort((a,b)=>new Date(b.completed_at||0)-new Date(a.completed_at||0));
+  else if(sort==='oldest')l.sort((a,b)=>new Date(a.completed_at||0)-new Date(b.completed_at||0));
+  else if(sort==='category')l.sort((a,b)=>(a.category||'').localeCompare(b.category||''));
+  else if(sort==='text')l.sort((a,b)=>(a.text||'').localeCompare(b.text||''));
+  const el=document.getElementById('archive-list');
+  el.innerHTML=l.length?l.map(t=>renderTaskItem(t,true)).join(''):'<div class="task-empty">No completed tasks match.</div>';
+}
+
+function wireTaskDrag(){
+  const items=document.querySelectorAll('#task-list .task-item[draggable="true"]');
+  let dragId=null;
+  items.forEach(el=>{
+    el.addEventListener('dragstart',e=>{dragId=el.dataset.id;el.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+    el.addEventListener('dragend',()=>{el.classList.remove('dragging');items.forEach(i=>i.classList.remove('drag-over'));});
+    el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag-over');});
+    el.addEventListener('dragleave',()=>el.classList.remove('drag-over'));
+    el.addEventListener('drop',e=>{e.preventDefault(); if(!dragId||dragId===el.dataset.id)return; reorderTasks(dragId,el.dataset.id);});
+  });
+}
+
+function reorderTasks(dId,tId){
+  const d=tasks.find(t=>t.id===dId); const tg=tasks.find(t=>t.id===tId);
+  if(!d||!tg)return;
+  const cat=d.category;
+  const list=tasks.filter(t=>t.category===cat&&t.status!=='done').sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+  const f=list.findIndex(t=>t.id===dId); const to=list.findIndex(t=>t.id===tId);
+  if(f<0||to<0)return;
+  list.splice(f,1); list.splice(to,0,d);
+  const now=new Date().toISOString();
+  list.forEach((t,i)=>{t.sort_order=(i+1)*1000;t.updated_at=now;t._unsynced=true;});
+  saveTasksToLocal(); renderTasks();
+  list.forEach(t=>pushTaskToBackend(t));
+}
+
+/* WORKSPACE */
+function loadWorkspaceFromLocal(){
+  try{
+    const r=localStorage.getItem(LS_WS);
+    ws=r?JSON.parse(r):ws;
+    if(ws && ws.settings && Array.isArray(ws.settings.projects)){
+      PROJECT_OPTIONS = ws.settings.projects.slice().sort((a,b) => a.localeCompare(b));
+    }
+  }catch{}
+}
+function saveWorkspaceToLocal(){try{localStorage.setItem(LS_WS,JSON.stringify(ws));}catch{}}
+
+async function fetchWorkspaceFromBackend(){
+  try{
+    const r=await fetch(`${BACKEND_URL}?action=getSaraWorkspace`);
+    const d=await r.json(); if(!d)return;
+    ws.notes=Array.isArray(d.notes)?d.notes:ws.notes;
+    ws.links=Array.isArray(d.links)?d.links:ws.links;
+    ws.contacts=Array.isArray(d.contacts)?d.contacts:ws.contacts;
+    if(typeof d.scratchpad==='string')ws.scratchpad=d.scratchpad;
+    // Settings / projects list — may be returned as d.settings = { projects: [...] }
+    if(d.settings && Array.isArray(d.settings.projects)){
+      PROJECT_OPTIONS = d.settings.projects.slice().sort((a,b) => a.localeCompare(b));
+      ws.settings = d.settings;
+    }
+    saveWorkspaceToLocal();
+    renderLinks(); renderContacts(); renderScratchpad();
+    renderTasks();  // rebuild the project filter dropdown from freshly-loaded options
+  }catch{}
+}
+async function saveWidgetToBackend(w){try{await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveSaraWidget',widget:w})});}catch{}}
+async function deleteWidgetOnBackend(id){try{await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'deleteSaraWidget',id})});}catch{}}
+
+/* ══ Settings: manage projects ══ */
+function saveProjectsToBackend(){
+  // Persist as a special "settings" widget with id = "emma-settings"
+  const payload = {
+    id: 'sara-settings',
+    widget_type: 'settings',
+    projects: PROJECT_OPTIONS,
+    sort_order: 0,
+    created_at: (ws.settings && ws.settings.created_at) || new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+  ws.settings = payload;
+  saveWorkspaceToLocal();
+  saveWidgetToBackend(payload);
+}
+
+function openSettingsModal(){
+  document.getElementById('new-project-name').value = '';
+  renderSettingsProjectsList();
+  document.getElementById('settings-modal').classList.add('open');
+  setTimeout(() => document.getElementById('new-project-name').focus(), 50);
+}
+function closeSettingsModal(){
+  document.getElementById('settings-modal').classList.remove('open');
+}
+function renderSettingsProjectsList(){
+  const list = document.getElementById('settings-projects-list');
+  if(!list) return;
+  const items = PROJECT_OPTIONS.slice().sort((a,b) => a.localeCompare(b));
+  list.innerHTML = items.map((p, i) => `
+    <div class="contact-row" data-project="${escapeAttr(p)}">
+      <div class="contact-main">
+        <div class="contact-name">${escapeHtml(p)}</div>
+      </div>
+      <div class="contact-actions">
+        <button onclick="renameProjectPrompt('${escapeAttr(p).replace(/'/g,"\\'")}')" title="Rename">✎ Rename</button>
+      </div>
+    </div>
+  `).join('') || '<div class="contacts-empty">No projects yet. Add one above.</div>';
+}
+
+function addProjectFromSettings(){
+  const input = document.getElementById('new-project-name');
+  const name = (input.value || '').trim();
+  if(!name){ showToast('Project name is required'); input.focus(); return; }
+  // Case-insensitive duplicate check
+  if(PROJECT_OPTIONS.some(p => p.toLowerCase() === name.toLowerCase())){
+    showToast('Project already exists'); return;
+  }
+  PROJECT_OPTIONS.push(name);
+  PROJECT_OPTIONS.sort((a,b) => a.localeCompare(b));
+  saveProjectsToBackend();
+  input.value = '';
+  renderSettingsProjectsList();
+  renderTasks();   // refresh project filter dropdown
+  showToast('Project added');
+}
+
+function renameProjectPrompt(oldName){
+  const newName = prompt(`Rename "${oldName}" to:`, oldName);
+  if(newName === null) return; // cancelled
+  const trimmed = newName.trim();
+  if(!trimmed){ showToast('Name cannot be blank'); return; }
+  if(trimmed === oldName) return; // no change
+  // Case-insensitive duplicate check (excluding the name being renamed)
+  if(PROJECT_OPTIONS.some(p => p !== oldName && p.toLowerCase() === trimmed.toLowerCase())){
+    showToast('A project with that name already exists'); return;
+  }
+  // Update the options list
+  const idx = PROJECT_OPTIONS.indexOf(oldName);
+  if(idx >= 0){
+    PROJECT_OPTIONS[idx] = trimmed;
+    PROJECT_OPTIONS.sort((a,b) => a.localeCompare(b));
+  }
+  // Propagate rename to all existing tasks that used the old project
+  let updated = 0;
+  tasks.forEach(t => {
+    if(t.project === oldName){
+      t.project = trimmed;
+      t.updated_at = new Date().toISOString();
+      t._unsynced = true;
+      pushTaskToBackend(t);
+      updated++;
+    }
+  });
+  saveProjectsToBackend();
+  saveTasksToLocal();
+  renderSettingsProjectsList();
+  renderTasks();
+  showToast(updated > 0 ? `Renamed ("${updated}" task${updated===1?'':'s'} updated)` : 'Renamed');
+}
+
+/* ADD-FORM TOGGLES (Links + Contacts) */
+// Collapsible panel toggle (Quick Links / Quick Contacts). Both panels open independently.
+function togglePanel(id){
+  const p=document.getElementById(id);
+  if(!p) return;
+  p.classList.toggle('open');
+  // When opening, focus the search input for quick access
+  if(p.classList.contains('open')){
+    const search=p.querySelector('.widget-search input');
+    if(search) setTimeout(()=>search.focus(),50);
+  }
+}
+
+/* ══ Quick-add popovers (Links and Contacts) ══ */
+function toggleQuickPop(kind, evt){
+  if(evt) evt.stopPropagation();
+  // Close any other open popovers first
+  document.querySelectorAll('.quick-pop.open').forEach(p => {
+    if(p.id !== 'quick-pop-' + kind) p.classList.remove('open');
+  });
+  document.querySelectorAll('.panel-icon-btn.active').forEach(b => {
+    if(b.id !== 'quickadd-' + kind + '-btn') b.classList.remove('active');
+  });
+  const pop = document.getElementById('quick-pop-' + kind);
+  const btn = document.getElementById('quickadd-' + kind + '-btn');
+  if(!pop) return;
+  const opening = !pop.classList.contains('open');
+  pop.classList.toggle('open', opening);
+  if(btn) btn.classList.toggle('active', opening);
+  if(opening){
+    // Focus first input
+    const first = pop.querySelector('input');
+    if(first){ first.value = ''; setTimeout(()=>first.focus(), 30); }
+    // Clear other inputs too
+    pop.querySelectorAll('input').forEach(i => i.value = '');
+  }
+}
+function closeQuickPop(kind){
+  const pop = document.getElementById('quick-pop-' + kind);
+  const btn = document.getElementById('quickadd-' + kind + '-btn');
+  if(pop) pop.classList.remove('open');
+  if(btn) btn.classList.remove('active');
+}
+// Click outside closes popovers
+document.addEventListener('click', (e) => {
+  if(e.target.closest('.quick-pop') || e.target.closest('.panel-icon-btn')) return;
+  document.querySelectorAll('.quick-pop.open').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.panel-icon-btn.active').forEach(b => b.classList.remove('active'));
+});
+
+function flashCountBadge(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.add('flash');
+  setTimeout(() => el.classList.remove('flash'), 700);
+}
+
+function quickAddLink(){
+  const U = document.getElementById('quick-link-url');
+  const L = document.getElementById('quick-link-label');
+  let url = (U.value || '').trim();
+  if(!url){ showToast('URL is required'); U.focus(); return; }
+  if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  let label = (L.value || '').trim();
+  if(!label) label = url.replace(/^https?:\/\//i,'').split('/')[0];
+  const now = new Date().toISOString();
+  const lk = { id: newId('L'), label, url, sort_order: Date.now(), created_at: now, updated_at: now };
+  ws.links.push(lk); saveWorkspaceToLocal();
+  closeQuickPop('link');
+  renderLinks();
+  flashCountBadge('panel-links-count');
+  saveWidgetToBackend({ ...lk, widget_type: 'link' });
+  showToast('Link added');
+}
+
+function quickAddContact(){
+  const N = document.getElementById('quick-contact-name');
+  const P = document.getElementById('quick-contact-phone');
+  const name = (N.value || '').trim();
+  if(!name){ showToast('Name is required'); N.focus(); return; }
+  const pe = (P.value || '').trim();
+  // Detect whether the second field is phone or email
+  const isEmail = pe.includes('@');
+  const now = new Date().toISOString();
+  const c = {
+    id: newId('C'), name,
+    role: '',
+    phone: isEmail ? '' : pe,
+    email: isEmail ? pe : '',
+    sort_order: Date.now(), created_at: now, updated_at: now
+  };
+  ws.contacts.push(c); saveWorkspaceToLocal();
+  closeQuickPop('contact');
+  renderContacts();
+  flashCountBadge('panel-contacts-count');
+  saveWidgetToBackend({ ...c, widget_type: 'contact' });
+  showToast('Contact added');
+}
+
+function toggleAddForm(kind){
+  const form=document.getElementById(kind+'-add-form');
+  if(!form)return;
+  form.classList.toggle('open');
+  // Focus first input when opening
+  if(form.classList.contains('open')){
+    const first=form.querySelector('input');
+    if(first)setTimeout(()=>first.focus(),30);
+  }
+}
+function closeAddForm(kind){
+  const form=document.getElementById(kind+'-add-form');
+  if(form)form.classList.remove('open');
+}
+
+/* LINKS — full CRUD + search */
+let editingLinkId=null;
+
+/* ══ LINKS — rendered as pills in the tools row ══ */
+let editLinkId = null;   // null = add mode; set = edit mode
+function renderLinks(){
+  // Update Links tool button count
+  const btnCount = document.getElementById('links-btn-count');
+  if(btnCount) btnCount.textContent = (ws.links || []).length;
+  // Refresh modal if open
+  const modal = document.getElementById('links-modal');
+  if(modal && modal.classList.contains('open')) renderLinksModal();
+
+  const wrap = document.getElementById('link-pill-wrap');
+  if(!wrap) return;
+
+  // Top 5 most RECENT (by created_at desc, falling back to sort_order, then index)
+  const recent = (ws.links || []).slice().sort((a,b) => {
+    const aD = new Date(a.created_at || 0).getTime() || (a.sort_order || 0);
+    const bD = new Date(b.created_at || 0).getTime() || (b.sort_order || 0);
+    return bD - aD;
+  }).slice(0, MAX_RECENT_PILLS);
+
+  const pillsHtml = recent.map(x => {
+    const label = escapeHtml(x.label || x.url || '');
+    const url   = escapeHtml(x.url || '#');
+    return `<a class="link-pill" href="${url}" target="_blank" rel="noopener" title="${escapeHtml(x.url||'')}" oncontextmenu="return linkContextMenu(event,'${x.id}')">
+      <span class="link-pill-label">${label}</span>
+    </a>`;
+  }).join('');
+
+  wrap.innerHTML = pillsHtml;
+  // Always show when we have any links to render (use setProperty to override inline style)
+  if(recent.length > 0){
+    wrap.style.setProperty('display', 'flex', 'important');
+  } else {
+    wrap.style.setProperty('display', 'none', 'important');
+  }
+}
+
+function linkContextMenu(evt, id){
+  // Right-click on pill opens edit modal instead of browser context menu
+  evt.preventDefault();
+  openEditLinkModal(id);
+  return false;
+}
+
+/* ══ Links modal: full browse / search / pin / edit / delete ══ */
+function openLinksModal(){
+  document.getElementById('links-modal-search').value = '';
+  document.getElementById('new-link-label').value = '';
+  document.getElementById('new-link-url').value = '';
+  renderLinksModal();
+  document.getElementById('links-modal').classList.add('open');
+  setTimeout(() => document.getElementById('links-modal-search').focus(), 50);
+}
+function closeLinksModal(){
+  document.getElementById('links-modal').classList.remove('open');
+}
+function renderLinksModal(){
+  const list = document.getElementById('links-modal-list'); if(!list) return;
+  const search = (document.getElementById('links-modal-search')?.value || '').trim().toLowerCase();
+  let items = (ws.links || []).slice().sort((a,b) => {
+    // Most recent first (by created_at desc)
+    const aD = new Date(a.created_at || 0).getTime();
+    const bD = new Date(b.created_at || 0).getTime();
+    return bD - aD;
+  });
+  document.getElementById('links-modal-count').textContent = '(' + items.length + ')';
+  if(search){
+    items = items.filter(x => ((x.label||'') + ' ' + (x.url||'')).toLowerCase().includes(search));
+  }
+  if(!items.length){
+    list.innerHTML = `<div class="contacts-empty">${search ? 'No links match your search.' : 'No links yet. Add one above to get started.'}</div>`;
+    return;
+  }
+  list.innerHTML = items.map(x => {
+    const label = escapeHtml(x.label || x.url || '');
+    const url   = escapeHtml(x.url || '#');
+    return `<div class="contact-row" data-id="${x.id}">
+      <div class="contact-main">
+        <div class="contact-name"><a href="${url}" target="_blank" rel="noopener" style="color:var(--navy);text-decoration:none;">${label}</a></div>
+        <div class="contact-meta">${escapeHtml(x.url || '')}</div>
+      </div>
+      <div class="contact-actions">
+        <button onclick="openEditLinkModal('${x.id}')" title="Edit">✎</button>
+        <button class="danger" onclick="deleteLink('${x.id}')" title="Delete">×</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function addLinkFromModal(){
+  let label = (document.getElementById('new-link-label').value || '').trim();
+  let url   = (document.getElementById('new-link-url').value || '').trim();
+  if(!url){ showToast('URL is required'); document.getElementById('new-link-url').focus(); return; }
+  if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  if(!label) label = url.replace(/^https?:\/\//i,'').split('/')[0];
+  const now = new Date().toISOString();
+  const lk = { id:newId('L'), label, url, sort_order:Date.now(), created_at:now, updated_at:now };
+  ws.links.push(lk); saveWorkspaceToLocal();
+  document.getElementById('new-link-label').value = '';
+  document.getElementById('new-link-url').value = '';
+  renderLinks();
+  saveWidgetToBackend({ ...lk, widget_type: 'link' });
+  showToast('Link added');
+}
+
+function openAddLinkModal(){
+  editLinkId = null;
+  document.getElementById('add-link-title').textContent = 'Add Link';
+  document.getElementById('add-link-label').value = '';
+  document.getElementById('add-link-url').value = '';
+  document.getElementById('add-link-modal').classList.add('open');
+  setTimeout(() => document.getElementById('add-link-url').focus(), 50);
+}
+function openEditLinkModal(id){
+  const lk = ws.links.find(x => x.id === id); if(!lk) return;
+  editLinkId = id;
+  document.getElementById('add-link-title').textContent = 'Edit Link';
+  document.getElementById('add-link-label').value = lk.label || '';
+  document.getElementById('add-link-url').value = lk.url || '';
+  document.getElementById('add-link-modal').classList.add('open');
+  setTimeout(() => document.getElementById('add-link-url').focus(), 50);
+}
+function closeAddLinkModal(){
+  document.getElementById('add-link-modal').classList.remove('open');
+  editLinkId = null;
+}
+function saveAddLinkModal(){
+  let label = (document.getElementById('add-link-label').value || '').trim();
+  let url   = (document.getElementById('add-link-url').value || '').trim();
+  if(!url){ showToast('URL is required'); return; }
+  if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  if(!label) label = url.replace(/^https?:\/\//i,'').split('/')[0];
+  const now = new Date().toISOString();
+  if(editLinkId){
+    const lk = ws.links.find(x => x.id === editLinkId); if(!lk) return;
+    lk.label = label; lk.url = url; lk.updated_at = now;
+    saveWorkspaceToLocal(); renderLinks();
+    saveWidgetToBackend({ id:lk.id, widget_type:'link', sort_order:lk.sort_order||0, label, url, created_at:lk.created_at });
+    showToast('Link updated');
+  } else {
+    const lk = { id:newId('L'), label, url, sort_order:Date.now(), created_at:now, updated_at:now };
+    ws.links.push(lk); saveWorkspaceToLocal(); renderLinks();
+    saveWidgetToBackend({ ...lk, widget_type:'link' });
+    showToast('Link added');
+  }
+  closeAddLinkModal();
+}
+function deleteLink(id){
+  if(!confirm('Delete this link?')) return;
+  ws.links = ws.links.filter(l => l.id !== id);
+  saveWorkspaceToLocal(); renderLinks(); deleteWidgetOnBackend(id);
+}
+
+/* ══ CONTACTS — rendered in a modal when user clicks "Contacts" tool button ══ */
+let editContactId = null;
+
+function openContactsModal(){
+  document.getElementById('contacts-modal-search').value = '';
+  clearAddContactFields();
+  renderContactsModal();
+  document.getElementById('contacts-modal').classList.add('open');
+  setTimeout(() => document.getElementById('contacts-modal-search').focus(), 50);
+}
+function closeContactsModal(){
+  document.getElementById('contacts-modal').classList.remove('open');
+  editContactId = null;
+}
+function clearAddContactFields(){
+  ['new-contact-name','new-contact-role','new-contact-phone','new-contact-email'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+}
+
+function renderContacts(){
+  // Called by existing app flow — refresh tool-button count and modal list if open
+  const countEl = document.getElementById('contacts-btn-count');
+  if(countEl) countEl.textContent = (ws.contacts||[]).length;
+  const modal = document.getElementById('contacts-modal');
+  if(modal && modal.classList.contains('open')) renderContactsModal();
+}
+
+function renderContactsModal(){
+  const list = document.getElementById('contacts-modal-list'); if(!list) return;
+  const search = (document.getElementById('contacts-modal-search')?.value || '').trim().toLowerCase();
+  let items = (ws.contacts || []).slice().sort((a,b) => (a.sort_order||0) - (b.sort_order||0));
+  document.getElementById('contacts-modal-count').textContent = '(' + items.length + ')';
+  if(search){
+    items = items.filter(c => ((c.name||'')+' '+(c.role||'')+' '+(c.phone||'')+' '+(c.email||'')).toLowerCase().includes(search));
+  }
+  if(!items.length){
+    list.innerHTML = `<div class="contacts-empty">${search ? 'No contacts match your search.' : 'No contacts yet. Add one above to get started.'}</div>`;
+    return;
+  }
+  list.innerHTML = items.map(c => {
+    if(String(editContactId) === String(c.id)){
+      return `<div class="contact-row editing" data-id="${c.id}">
+        <div class="contact-edit-grid">
+          <input class="full" type="text" id="edit-contact-name-${c.id}" value="${escapeHtml(c.name||'')}" placeholder="Name">
+          <input class="full" type="text" id="edit-contact-role-${c.id}" value="${escapeHtml(c.role||'')}" placeholder="Role / Company (optional)">
+          <input type="text" id="edit-contact-phone-${c.id}" value="${escapeHtml(c.phone||'')}" placeholder="Phone">
+          <input type="email" id="edit-contact-email-${c.id}" value="${escapeHtml(c.email||'')}" placeholder="Email">
         </div>
-        <div class="n-actions">
-          ${resBtn}
-          ${status!=='resolved' ? reassign : ''}
+        <div class="contact-actions">
+          <button onclick="cancelEditContact()">Cancel</button>
+          <button onclick="saveEditContact('${c.id}')" style="color:var(--blue);">Save</button>
         </div>
+      </div>`;
+    }
+    const meta = [c.role, c.phone, c.email].filter(Boolean).join(' · ');
+    return `<div class="contact-row" data-id="${c.id}">
+      <div class="contact-main">
+        <div class="contact-name">${escapeHtml(c.name||'—')}</div>
+        ${meta ? `<div class="contact-meta">${escapeHtml(meta)}</div>` : ''}
+      </div>
+      <div class="contact-actions">
+        ${c.phone ? `<button onclick="copyText('${escapeHtml(c.phone)}')" title="Copy phone">📱</button>` : ''}
+        ${c.email ? `<button onclick="copyText('${escapeHtml(c.email)}')" title="Copy email">✉️</button>` : ''}
+        <button onclick="startEditContact('${c.id}')" title="Edit">✎</button>
+        <button class="danger" onclick="deleteContact('${c.id}')" title="Delete">×</button>
       </div>
     </div>`;
   }).join('');
 }
 
-async function resolve(id) {
-  await fetch(`${BACKEND_URL}?action=resolveNotification&id=${encodeURIComponent(id)}`);
-  const n = allNotifs.find(x=>x['id']===id);
-  if(n) { n['status']='resolved'; n['resolved_at']=new Date().toISOString(); }
-  render(); toast('Marked resolved ✓');
+function addContactFromModal(){
+  const name = (document.getElementById('new-contact-name').value || '').trim();
+  if(!name){ showToast('Name is required'); document.getElementById('new-contact-name').focus(); return; }
+  const now = new Date().toISOString();
+  const c = {
+    id: newId('C'), name,
+    role:  (document.getElementById('new-contact-role').value  || '').trim(),
+    phone: (document.getElementById('new-contact-phone').value || '').trim(),
+    email: (document.getElementById('new-contact-email').value || '').trim(),
+    sort_order: Date.now(), created_at: now, updated_at: now
+  };
+  ws.contacts.push(c); saveWorkspaceToLocal();
+  clearAddContactFields();
+  renderContacts();
+  saveWidgetToBackend({ ...c, widget_type: 'contact' });
+  showToast('Contact added');
 }
 
-async function reassign(id, assignee) {
-  if (!assignee) return;
-  await fetch(`${BACKEND_URL}?action=assignNotification&id=${encodeURIComponent(id)}&assignee=${encodeURIComponent(assignee)}`);
-  const n = allNotifs.find(x=>x['id']===id);
-  if(n) { n['assigned_to']=assignee; }
-  allNotifs = allNotifs.filter(x=>x['id']!==id);
-  render(); toast(`Reassigned to ${assignee}`);
+function startEditContact(id){ editContactId = id; renderContactsModal(); }
+function cancelEditContact(){ editContactId = null; renderContactsModal(); }
+function saveEditContact(id){
+  const c = ws.contacts.find(x => x.id === id); if(!c) return;
+  const name = (document.getElementById('edit-contact-name-' + id).value || '').trim();
+  if(!name){ showToast('Name is required'); return; }
+  c.name  = name;
+  c.role  = (document.getElementById('edit-contact-role-'  + id).value || '').trim();
+  c.phone = (document.getElementById('edit-contact-phone-' + id).value || '').trim();
+  c.email = (document.getElementById('edit-contact-email-' + id).value || '').trim();
+  c.updated_at = new Date().toISOString();
+  saveWorkspaceToLocal();
+  editContactId = null;
+  renderContacts();
+  saveWidgetToBackend({ id:c.id, widget_type:'contact', sort_order:c.sort_order||0, name:c.name, role:c.role, phone:c.phone, email:c.email, created_at:c.created_at });
+  showToast('Contact updated');
 }
 
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2500);
+function deleteContact(id){
+  if(!confirm('Delete this contact?')) return;
+  ws.contacts = ws.contacts.filter(c => c.id !== id);
+  saveWorkspaceToLocal(); renderContacts(); deleteWidgetOnBackend(id);
 }
 
-load();
-setInterval(load, 60000);
+function copyText(text){
+  try{ navigator.clipboard.writeText(text); showToast('Copied to clipboard'); }
+  catch{ const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); showToast('Copied'); }catch{} document.body.removeChild(ta); }
+}
+
+// Global Escape key closes any open modal
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){
+    document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
+  }
+});
+
+/* SCRATCHPAD */
+let scratchTimer;
+function renderScratchpad(){document.getElementById('scratchpad').value=ws.scratchpad||''; document.getElementById('scratch-status').textContent='Saved';}
+function scratchChanged(){
+  const v=document.getElementById('scratchpad').value;
+  ws.scratchpad=v; saveWorkspaceToLocal();
+  document.getElementById('scratch-status').textContent='Saving...';
+  clearTimeout(scratchTimer);
+  scratchTimer=setTimeout(async()=>{
+    try{await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action: 'saveSaraWidget',content:v})}); document.getElementById('scratch-status').textContent='Saved';}
+    catch{document.getElementById('scratch-status').textContent='Save failed — will retry';}
+  },1200);
+}
+
+/* STATS */
+async function fetchStats(){
+  try{
+    const r=await fetch(`${BACKEND_URL}?action=getSaraStats`); const s=await r.json(); if(!s)return;
+    if(s.openComplianceAssigned!==undefined)document.getElementById('kpi-compliance').textContent=s.openComplianceAssigned;
+    if(s.openLegalAssigned!==undefined)document.getElementById('kpi-legal').textContent=s.openLegalAssigned;
+  }catch{}
+}
+
+function showToast(msg){
+  const el=document.createElement('div'); el.className='toast'; el.textContent=msg;
+  document.body.appendChild(el); setTimeout(()=>el.remove(),2500);
+}
+
+document.addEventListener('click',e=>{
+  const tab=e.target.closest('.cat-tab');
+  if(tab&&tab.dataset.cat)switchCategory(tab.dataset.cat);
+});
+function wireInputs(){
+  const i=document.getElementById('task-add-input');
+  if(i)i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addTask();}});
+  const s=document.getElementById('scratchpad');
+  if(s)s.addEventListener('input',scratchChanged);
+  const ll=document.getElementById('link-label-input'), lu=document.getElementById('link-url-input');
+  if(ll)ll.addEventListener('keydown',e=>{if(e.key==='Enter')addLink();});
+  if(lu)lu.addEventListener('keydown',e=>{if(e.key==='Enter')addLink();});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wireInputs);
+else wireInputs();
 </script>
 </body>
 </html>
