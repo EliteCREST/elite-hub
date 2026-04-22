@@ -222,7 +222,8 @@
   .task-add-btn{padding:9px 16px;border-radius:6px;border:none;background:var(--blue);color:white;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
   .task-add-btn:hover{opacity:.9;}
   .task-list{display:flex;flex-direction:column;gap:6px;}
-  .task-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--gray-200);border-radius:6px;background:white;cursor:grab;}
+  .task-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--gray-200);border-radius:6px;background:white;cursor:pointer;}
+  .task-item[draggable="true"]{cursor:grab;}
   .task-item.dragging{opacity:.4;cursor:grabbing;}
   .task-item.drag-over{border-top:2px solid var(--blue);}
   .task-item:hover{background:var(--gray-50);}
@@ -240,6 +241,12 @@
   .task-due{font-size:11px;color:var(--gray-400);flex-shrink:0;}
   .task-due.overdue{color:var(--red);font-weight:700;}
   .task-due.due-today{color:var(--amber);font-weight:700;}
+  .task-due-placeholder{
+    color:var(--gray-400); font-weight:600; cursor:pointer;
+    padding:2px 6px; border-radius:4px; border:1px dashed var(--gray-300);
+    font-size:10px;
+  }
+  .task-due-placeholder:hover{ color:var(--blue); border-color:var(--blue); background:var(--blue-pale); }
 
   /* Work status pill (5-state) */
   .task-status-pill {
@@ -842,6 +849,15 @@ function toggleTaskEditor(id, evt){
   expandedTaskId = (String(expandedTaskId) === String(id)) ? null : id;
   renderTasks();
 }
+function openEditorAndFocus(id, fieldPrefix){
+  // Force open, then focus a field inside the editor (e.g. 'edit-due' → focuses Due Date)
+  expandedTaskId = id;
+  renderTasks();
+  setTimeout(() => {
+    const el = document.getElementById(`${fieldPrefix}-${id}`);
+    if(el) el.focus();
+  }, 30);
+}
 function closeTaskEditor(){
   expandedTaskId = null;
   renderTasks();
@@ -932,7 +948,7 @@ function renderTaskItem(t,inArchive){
   const dateLabel = renderDateRange(t.start_date, t.due_date);
   const dueB = dateLabel
     ? `<span class="task-due ${due}">📅 ${escapeHtml(dateLabel)}</span>`
-    : '';
+    : (!inArchive ? `<span class="task-due task-due-placeholder" onclick="event.stopPropagation();openEditorAndFocus('${t.id}','edit-due')">📅 + Add dates</span>` : '');
   // Work status pill — default to "In Progress" for new tasks without a work_status
   const ws = t.work_status || 'In Progress';
   const wsMeta = workStatusMeta(ws);
