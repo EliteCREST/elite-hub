@@ -1119,16 +1119,16 @@ function notifLabel(type) {
 // Derive pill state from a notification's status + assignee.
 // Rules:
 //   status === 'Failed'              → 'archived'
-//   status === 'Notified Clearance'  → 'resolved'
+//   status === 'Notified Clearance'  → 'resolved' (ONLY this step moves to Resolved pill)
 //   else if assigned_to is set       → 'assigned'
 //   else                             → 'new'
+// NOTE: The workflow step "Resolved" does NOT move the notification to the Resolved pill.
+// Only clicking "Notified Clearance" (the terminal success step) does that.
 function derivePillState(n) {
   const status   = String(n['status'] || '').toLowerCase();
   const assignee = String(n['assigned_to'] || '').trim();
   if (status === NOTIF_FAILED_STATUS.toLowerCase())    return 'archived';
   if (status === 'notified clearance')                 return 'resolved';
-  // Legacy: treat explicit 'resolved' status as resolved too (backward compat)
-  if (status === 'resolved')                           return 'resolved';
   if (assignee)                                        return 'assigned';
   return 'new';
 }
