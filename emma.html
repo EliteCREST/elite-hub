@@ -28,6 +28,14 @@
   .hdr-user{font-size:12px;color:#CBD5E1;}
   .hdr-link{color:var(--white);text-decoration:none;font-size:12px;padding:6px 12px;border:1px solid rgba(255,255,255,.3);border-radius:6px;}
   .hdr-link:hover{background:rgba(255,255,255,.08);}
+  .hdr-gear{
+    background:transparent;border:1px solid rgba(255,255,255,.3);cursor:pointer;
+    color:var(--white);font-size:16px;line-height:1;
+    width:32px;height:32px;border-radius:6px;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-family:inherit;
+  }
+  .hdr-gear:hover{background:rgba(255,255,255,.12);}
   .container{max-width:1280px;margin:0 auto;padding:24px 28px;width:100%;flex:1;}
   .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
   .section-title{font-size:15px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px;letter-spacing:-.1px;}
@@ -222,7 +230,7 @@
   .task-add-btn{padding:9px 16px;border-radius:6px;border:none;background:var(--blue);color:white;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
   .task-add-btn:hover{opacity:.9;}
   .task-list{display:flex;flex-direction:column;gap:6px;}
-  .task-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--gray-200);border-radius:6px;background:white;cursor:pointer;}
+  .task-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--gray-200);border-radius:6px;background:white;}
   .task-item[draggable="true"]{cursor:grab;}
   .task-item.dragging{opacity:.4;cursor:grabbing;}
   .task-item.drag-over{border-top:2px solid var(--blue);}
@@ -309,8 +317,7 @@
   .task-editor-btn.secondary:hover { background: var(--gray-50); }
   .task-editor-btn.primary { background: var(--blue); color: white; }
   .task-editor-btn.primary:hover { background: var(--navy); }
-  .task-actions{display:flex;gap:4px;flex-shrink:0;opacity:0;}
-  .task-item:hover .task-actions{opacity:1;}
+  .task-actions{display:flex;gap:4px;flex-shrink:0;}
   .task-btn{width:26px;height:26px;border-radius:4px;border:none;background:transparent;cursor:pointer;font-size:13px;color:var(--gray-400);}
   .task-btn:hover{background:var(--gray-200);color:var(--navy);}
   .task-btn.delete:hover{background:var(--red-pale);color:var(--red);}
@@ -511,6 +518,7 @@
     </div>
     <div class="hdr-right">
       <span class="hdr-user" id="hdr-user"></span>
+      <button class="hdr-gear" onclick="openSettingsModal()" title="Settings" type="button">⚙</button>
       <a class="hdr-link" href="https://elitecrest.github.io/elite-hub/compliance_inbox.html">← Back to Inbox</a>
     </div>
   </header>
@@ -665,6 +673,30 @@
   </div>
 </div>
 
+<!-- Settings modal: manage projects (add / rename) -->
+<div id="settings-modal" class="modal-backdrop" onclick="if(event.target===this)closeSettingsModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Settings</div>
+      <button class="modal-close" onclick="closeSettingsModal()" type="button">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:10px;">Manage Projects</div>
+      <div style="font-size:11px;color:var(--gray-500);margin-bottom:14px;">Add a new project or rename an existing one. Projects are used to tag and filter tasks.</div>
+
+      <div class="mini-form">
+        <div class="mini-form-title">Add New Project</div>
+        <input type="text" id="new-project-name" placeholder="e.g. Marketing" maxlength="40">
+        <div class="mini-form-actions">
+          <button class="btn-pri" type="button" onclick="addProjectFromSettings()">+ Add Project</button>
+        </div>
+      </div>
+
+      <div id="settings-projects-list"></div>
+    </div>
+  </div>
+</div>
+
 <div id="denied" class="denied" style="display:none;">
   <div class="denied-icon">🔒</div>
   <div class="denied-title">Access Restricted</div>
@@ -687,10 +719,12 @@ const WORK_STATUSES = [
   { key: 'Documentation Needed', cls: 'status-documentation', label: 'Documentation Needed' },
   { key: 'Done',                 cls: 'status-done',          label: 'Done' },
 ];
-const PROJECT_OPTIONS = [
+const DEFAULT_PROJECTS = [
   'Permit','Registrations','Licenses','PURE','Legal','BBB','Subcontractors',
   'Insurance','Bonds','Elite','Reimagine','Wildwood','123 Exteriors','Universal','Aspen'
 ];
+// PROJECT_OPTIONS is mutable — loaded from backend/localStorage, defaults if none
+let PROJECT_OPTIONS = DEFAULT_PROJECTS.slice().sort((a,b) => a.localeCompare(b));
 let tasks=[], activeCategory='To Do', showArchive=false;
 let expandedTaskId = null;   // which task is currently expanded for inline edit
 let ws={notes:[],links:[],contacts:[],scratchpad:''};
@@ -840,12 +874,7 @@ function closeStatusMenuOnce(e){
 }
 
 /* Expanded inline editor */
-function toggleTaskEditor(id, evt){
-  // Don't trigger if click came from an interactive element inside the task
-  if(evt && evt.target){
-    const t = evt.target;
-    if(t.closest('input,button,select,textarea,.task-text,.task-status-pill,.pri-flag')) return;
-  }
+function toggleTaskEditor(id){
   expandedTaskId = (String(expandedTaskId) === String(id)) ? null : id;
   renderTasks();
 }
@@ -948,7 +977,7 @@ function renderTaskItem(t,inArchive){
   const dateLabel = renderDateRange(t.start_date, t.due_date);
   const dueB = dateLabel
     ? `<span class="task-due ${due}">📅 ${escapeHtml(dateLabel)}</span>`
-    : (!inArchive ? `<span class="task-due task-due-placeholder" onclick="event.stopPropagation();openEditorAndFocus('${t.id}','edit-due')">📅 + Add dates</span>` : '');
+    : (!inArchive ? `<span class="task-due task-due-placeholder" onclick="openEditorAndFocus('${t.id}','edit-due')">📅 + Add dates</span>` : '');
   // Work status pill — default to "In Progress" for new tasks without a work_status
   const ws = t.work_status || 'In Progress';
   const wsMeta = workStatusMeta(ws);
@@ -960,24 +989,25 @@ function renderTaskItem(t,inArchive){
          type="button">${escapeHtml(wsMeta.label)}</button>`
     : '';
 
-  return `<div class="task-item ${rc}" draggable="${!inArchive&&!done}" data-id="${t.id}" onclick="toggleTaskEditor('${t.id}',event)">
-    <input type="checkbox" class="task-checkbox" ${done?'checked':''} onclick="event.stopPropagation()" onchange="toggleTaskDone('${t.id}')">
+  return `<div class="task-item ${rc}" draggable="${!inArchive&&!done}" data-id="${t.id}">
+    <input type="checkbox" class="task-checkbox" ${done?'checked':''} onchange="toggleTaskDone('${t.id}')">
     <div style="flex:1;min-width:0;">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        ${cat}${projBadge}<span onclick="event.stopPropagation();cyclePriority('${t.id}')">${priFlag(t.priority)}</span>
-        <div class="task-text" id="task-text-${t.id}" onclick="event.stopPropagation()" onblur="commitEdit('${t.id}',this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${escapeHtml(t.text)}</div>
+        ${cat}${projBadge}<span onclick="cyclePriority('${t.id}')">${priFlag(t.priority)}</span>
+        <div class="task-text" id="task-text-${t.id}" onblur="commitEdit('${t.id}',this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${escapeHtml(t.text)}</div>
         ${dueB}
         ${statusPill}
       </div>${meta}
       ${editing ? renderTaskEditor(t) : ''}
     </div>
     <div class="task-actions">
-      <button class="task-btn delete" onclick="event.stopPropagation();deleteTask('${t.id}')">🗑</button>
+      <button class="task-btn" title="Edit" onclick="toggleTaskEditor('${t.id}')">✎</button>
+      <button class="task-btn delete" title="Delete" onclick="deleteTask('${t.id}')">🗑</button>
     </div></div>`;
 }
 
 function renderTaskEditor(t) {
-  return `<div class="task-editor" onclick="event.stopPropagation()">
+  return `<div class="task-editor">
     <div class="task-editor-grid">
       <div class="task-editor-field task-editor-full">
         <span class="task-editor-label">Task</span>
@@ -1017,8 +1047,8 @@ function renderTaskEditor(t) {
       </div>
     </div>
     <div class="task-editor-actions">
-      <button class="task-editor-btn secondary" onclick="event.stopPropagation();closeTaskEditor()" type="button">Cancel</button>
-      <button class="task-editor-btn primary" onclick="event.stopPropagation();saveTaskEditor('${t.id}')" type="button">Save</button>
+      <button class="task-editor-btn secondary" onclick="closeTaskEditor()" type="button">Cancel</button>
+      <button class="task-editor-btn primary" onclick="saveTaskEditor('${t.id}')" type="button">Save</button>
     </div>
   </div>`;
 }
@@ -1125,7 +1155,15 @@ function reorderTasks(dId,tId){
 }
 
 /* WORKSPACE */
-function loadWorkspaceFromLocal(){try{const r=localStorage.getItem(LS_WS); ws=r?JSON.parse(r):ws;}catch{}}
+function loadWorkspaceFromLocal(){
+  try{
+    const r=localStorage.getItem(LS_WS);
+    ws=r?JSON.parse(r):ws;
+    if(ws && ws.settings && Array.isArray(ws.settings.projects)){
+      PROJECT_OPTIONS = ws.settings.projects.slice().sort((a,b) => a.localeCompare(b));
+    }
+  }catch{}
+}
 function saveWorkspaceToLocal(){try{localStorage.setItem(LS_WS,JSON.stringify(ws));}catch{}}
 
 async function fetchWorkspaceFromBackend(){
@@ -1136,12 +1174,110 @@ async function fetchWorkspaceFromBackend(){
     ws.links=Array.isArray(d.links)?d.links:ws.links;
     ws.contacts=Array.isArray(d.contacts)?d.contacts:ws.contacts;
     if(typeof d.scratchpad==='string')ws.scratchpad=d.scratchpad;
+    // Settings / projects list — may be returned as d.settings = { projects: [...] }
+    if(d.settings && Array.isArray(d.settings.projects)){
+      PROJECT_OPTIONS = d.settings.projects.slice().sort((a,b) => a.localeCompare(b));
+      ws.settings = d.settings;
+    }
     saveWorkspaceToLocal();
     renderLinks(); renderContacts(); renderScratchpad();
+    renderTasks();  // rebuild the project filter dropdown from freshly-loaded options
   }catch{}
 }
 async function saveWidgetToBackend(w){try{await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveEmmaWidget',widget:w})});}catch{}}
 async function deleteWidgetOnBackend(id){try{await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'deleteEmmaWidget',id})});}catch{}}
+
+/* ══ Settings: manage projects ══ */
+function saveProjectsToBackend(){
+  // Persist as a special "settings" widget with id = "emma-settings"
+  const payload = {
+    id: 'emma-settings',
+    widget_type: 'settings',
+    projects: PROJECT_OPTIONS,
+    sort_order: 0,
+    created_at: (ws.settings && ws.settings.created_at) || new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+  ws.settings = payload;
+  saveWorkspaceToLocal();
+  saveWidgetToBackend(payload);
+}
+
+function openSettingsModal(){
+  document.getElementById('new-project-name').value = '';
+  renderSettingsProjectsList();
+  document.getElementById('settings-modal').classList.add('open');
+  setTimeout(() => document.getElementById('new-project-name').focus(), 50);
+}
+function closeSettingsModal(){
+  document.getElementById('settings-modal').classList.remove('open');
+}
+function renderSettingsProjectsList(){
+  const list = document.getElementById('settings-projects-list');
+  if(!list) return;
+  const items = PROJECT_OPTIONS.slice().sort((a,b) => a.localeCompare(b));
+  list.innerHTML = items.map((p, i) => `
+    <div class="contact-row" data-project="${escapeAttr(p)}">
+      <div class="contact-main">
+        <div class="contact-name">${escapeHtml(p)}</div>
+      </div>
+      <div class="contact-actions">
+        <button onclick="renameProjectPrompt('${escapeAttr(p).replace(/'/g,"\\'")}')" title="Rename">✎ Rename</button>
+      </div>
+    </div>
+  `).join('') || '<div class="contacts-empty">No projects yet. Add one above.</div>';
+}
+
+function addProjectFromSettings(){
+  const input = document.getElementById('new-project-name');
+  const name = (input.value || '').trim();
+  if(!name){ showToast('Project name is required'); input.focus(); return; }
+  // Case-insensitive duplicate check
+  if(PROJECT_OPTIONS.some(p => p.toLowerCase() === name.toLowerCase())){
+    showToast('Project already exists'); return;
+  }
+  PROJECT_OPTIONS.push(name);
+  PROJECT_OPTIONS.sort((a,b) => a.localeCompare(b));
+  saveProjectsToBackend();
+  input.value = '';
+  renderSettingsProjectsList();
+  renderTasks();   // refresh project filter dropdown
+  showToast('Project added');
+}
+
+function renameProjectPrompt(oldName){
+  const newName = prompt(`Rename "${oldName}" to:`, oldName);
+  if(newName === null) return; // cancelled
+  const trimmed = newName.trim();
+  if(!trimmed){ showToast('Name cannot be blank'); return; }
+  if(trimmed === oldName) return; // no change
+  // Case-insensitive duplicate check (excluding the name being renamed)
+  if(PROJECT_OPTIONS.some(p => p !== oldName && p.toLowerCase() === trimmed.toLowerCase())){
+    showToast('A project with that name already exists'); return;
+  }
+  // Update the options list
+  const idx = PROJECT_OPTIONS.indexOf(oldName);
+  if(idx >= 0){
+    PROJECT_OPTIONS[idx] = trimmed;
+    PROJECT_OPTIONS.sort((a,b) => a.localeCompare(b));
+  }
+  // Propagate rename to all existing tasks that used the old project
+  let updated = 0;
+  tasks.forEach(t => {
+    if(t.project === oldName){
+      t.project = trimmed;
+      t.updated_at = new Date().toISOString();
+      t._unsynced = true;
+      pushTaskToBackend(t);
+      updated++;
+    }
+  });
+  saveProjectsToBackend();
+  saveTasksToLocal();
+  renderSettingsProjectsList();
+  renderTasks();
+  showToast(updated > 0 ? `Renamed ("${updated}" task${updated===1?'':'s'} updated)` : 'Renamed');
+}
 
 /* ADD-FORM TOGGLES (Links + Contacts) */
 // Collapsible panel toggle (Quick Links / Quick Contacts). Both panels open independently.
