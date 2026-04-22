@@ -520,6 +520,29 @@
   </div>
 </div>
 
+<!-- Links modal: browse / search / pin / edit / delete all links -->
+<div id="links-modal" class="modal-backdrop" onclick="if(event.target===this)closeLinksModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Links <span style="color:var(--gray-400);font-weight:600;font-size:13px;margin-left:6px;" id="links-modal-count">(0)</span></div>
+      <button class="modal-close" onclick="closeLinksModal()" type="button">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="text" class="contacts-search" id="links-modal-search" placeholder="Search links..." oninput="renderLinksModal()">
+      <div class="mini-form">
+        <div class="mini-form-title">Add New Link</div>
+        <input type="text" id="new-link-label" placeholder="Label (optional)">
+        <input type="text" id="new-link-url" placeholder="https://...">
+        <div class="mini-form-actions">
+          <button class="btn-pri" type="button" onclick="addLinkFromModal()">+ Add Link</button>
+        </div>
+      </div>
+      <div id="links-modal-hint" style="font-size:11px;color:var(--gray-500);margin-bottom:10px;">★ = pinned to dashboard (max 5). Click the star to pin/unpin.</div>
+      <div id="links-modal-list"></div>
+    </div>
+  </div>
+</div>
+
 <!-- Add Link modal (small dialog) -->
 <div id="add-link-modal" class="modal-backdrop" onclick="if(event.target===this)closeAddLinkModal()">
   <div class="modal sm">
@@ -915,23 +938,57 @@ let editingLinkId=null;
 
 /* ══ LINKS — rendered as pills in the tools row ══ */
 let editLinkId = null;   // null = add mode; set = edit mode
+const MAX_PINNED_PILLS = 5;
+
 function renderLinks(){
   const wrap = document.getElementById('link-pill-wrap');
   if(!wrap) return;
-  const items = (ws.links || []).slice().sort((a,b) => (a.sort_order||0) - (b.sort_order||0));
-  // Re-render pills; keep the "+ Add Link" button at the end
-  const pillsHtml = items.map(x => {
+  const all     = (ws.links || []).slice().sort((a,b) => (a.sort_order||0) - (b.sort_order||0));
+  const pinned  = all.filter(x => x.pinned).slice(0, MAX_PINNED_PILLS);
+  const total   = all.length;
+  // Refresh modal list (if it's open) so star/add/delete reflects immediately
+  const modal = document.getElementById('links-modal');
+  if(modal && modal.classList.contains('open')) renderLinksModal();
+
+  // Build pinned pills (max 5)
+  const pillsHtml = pinned.map(x => {
     const label = escapeHtml(x.label || x.url || '');
     const url   = escapeHtml(x.url || '#');
     return `<a class="link-pill" href="${url}" target="_blank" rel="noopener" title="${escapeHtml(x.url||'')}" oncontextmenu="return linkContextMenu(event,'${x.id}')">
       <span class="link-pill-label">${label}</span>
       <span class="link-pill-actions">
+        <button class="link-pill-icon-btn" onclick="event.preventDefault();event.stopPropagation();togglePinLink('${x.id}')" title="Unpin" type="button">★</button>
         <button class="link-pill-icon-btn" onclick="event.preventDefault();event.stopPropagation();openEditLinkModal('${x.id}')" title="Edit" type="button">✎</button>
-        <button class="link-pill-icon-btn danger" onclick="event.preventDefault();event.stopPropagation();deleteLink('${x.id}')" title="Delete" type="button">×</button>
       </span>
     </a>`;
   }).join('');
-  wrap.innerHTML = pillsHtml + '<button class="link-pill-add" type="button" onclick="openAddLinkModal()">+ Add Link</button>';
+
+  // "See all" button — always visible when there are any links at all
+  const seeAllBtn = total > 0
+    ? `<button class="link-pill-add" type="button" onclick="openLinksModal()" style="border-style:solid;background:var(--gray-50);">See all (${total})</button>`
+    : '';
+  // + Add Link — always visible, but on empty state shows as primary guidance
+  const addBtn = `<button class="link-pill-add" type="button" onclick="openAddLinkModal()">+ Add Link</button>`;
+
+  wrap.innerHTML = pillsHtml + seeAllBtn + addBtn;
+}
+
+function togglePinLink(id){
+  const lk = ws.links.find(x => x.id === id); if(!lk) return;
+  const currentlyPinned = !!lk.pinned;
+  // If trying to pin a 6th link, block and notify
+  if(!currentlyPinned){
+    const pinnedCount = (ws.links || []).filter(x => x.pinned).length;
+    if(pinnedCount >= MAX_PINNED_PILLS){
+      showToast(`Only ${MAX_PINNED_PILLS} links can be pinned. Unpin one first.`);
+      return;
+    }
+  }
+  lk.pinned = !currentlyPinned;
+  lk.updated_at = new Date().toISOString();
+  saveWorkspaceToLocal();
+  renderLinks();
+  saveWidgetToBackend({ id:lk.id, widget_type:'link', sort_order:lk.sort_order||0, label:lk.label, url:lk.url, pinned:lk.pinned, created_at:lk.created_at });
 }
 
 function linkContextMenu(evt, id){
@@ -939,6 +996,66 @@ function linkContextMenu(evt, id){
   evt.preventDefault();
   openEditLinkModal(id);
   return false;
+}
+
+/* ══ Links modal: full browse / search / pin / edit / delete ══ */
+function openLinksModal(){
+  document.getElementById('links-modal-search').value = '';
+  document.getElementById('new-link-label').value = '';
+  document.getElementById('new-link-url').value = '';
+  renderLinksModal();
+  document.getElementById('links-modal').classList.add('open');
+  setTimeout(() => document.getElementById('links-modal-search').focus(), 50);
+}
+function closeLinksModal(){
+  document.getElementById('links-modal').classList.remove('open');
+}
+function renderLinksModal(){
+  const list = document.getElementById('links-modal-list'); if(!list) return;
+  const search = (document.getElementById('links-modal-search')?.value || '').trim().toLowerCase();
+  let items = (ws.links || []).slice().sort((a,b) => {
+    // Pinned first, then by sort_order
+    if(!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+    return (a.sort_order||0) - (b.sort_order||0);
+  });
+  document.getElementById('links-modal-count').textContent = '(' + items.length + ')';
+  if(search){
+    items = items.filter(x => ((x.label||'') + ' ' + (x.url||'')).toLowerCase().includes(search));
+  }
+  if(!items.length){
+    list.innerHTML = `<div class="contacts-empty">${search ? 'No links match your search.' : 'No links yet. Add one above to get started.'}</div>`;
+    return;
+  }
+  list.innerHTML = items.map(x => {
+    const label = escapeHtml(x.label || x.url || '');
+    const url   = escapeHtml(x.url || '#');
+    return `<div class="contact-row" data-id="${x.id}">
+      <div class="contact-main">
+        <div class="contact-name"><a href="${url}" target="_blank" rel="noopener" style="color:var(--navy);text-decoration:none;">${label}</a></div>
+        <div class="contact-meta">${escapeHtml(x.url || '')}</div>
+      </div>
+      <div class="contact-actions">
+        <button onclick="togglePinLink('${x.id}')" title="${x.pinned ? 'Unpin from dashboard' : 'Pin to dashboard'}" style="${x.pinned ? 'color:var(--amber);' : ''}">${x.pinned ? '★' : '☆'}</button>
+        <button onclick="openEditLinkModal('${x.id}')" title="Edit">✎</button>
+        <button class="danger" onclick="deleteLink('${x.id}')" title="Delete">×</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function addLinkFromModal(){
+  let label = (document.getElementById('new-link-label').value || '').trim();
+  let url   = (document.getElementById('new-link-url').value || '').trim();
+  if(!url){ showToast('URL is required'); document.getElementById('new-link-url').focus(); return; }
+  if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  if(!label) label = url.replace(/^https?:\/\//i,'').split('/')[0];
+  const now = new Date().toISOString();
+  const lk = { id:newId('L'), label, url, pinned:false, sort_order:Date.now(), created_at:now, updated_at:now };
+  ws.links.push(lk); saveWorkspaceToLocal();
+  document.getElementById('new-link-label').value = '';
+  document.getElementById('new-link-url').value = '';
+  renderLinks();
+  saveWidgetToBackend({ ...lk, widget_type: 'link' });
+  showToast('Link added');
 }
 
 function openAddLinkModal(){
