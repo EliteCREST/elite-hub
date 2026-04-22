@@ -443,6 +443,11 @@
         <div class="tool-btn-text"><div class="tool-btn-title">Contacts</div><div class="tool-btn-sub">Browse, search, edit</div></div>
         <span class="tool-btn-badge" id="contacts-btn-count">0</span>
       </button>
+      <button class="tool-btn" type="button" onclick="openLinksModal()" style="cursor:pointer;font-family:inherit;text-align:left;">
+        <div class="tool-btn-icon">🔗</div>
+        <div class="tool-btn-text"><div class="tool-btn-title">Links</div><div class="tool-btn-sub">Browse, search, edit</div></div>
+        <span class="tool-btn-badge" id="links-btn-count">0</span>
+      </button>
     </div>
 
     <!-- Quick Links row: each link is a pill; right-click for edit/delete -->
@@ -537,7 +542,6 @@
           <button class="btn-pri" type="button" onclick="addLinkFromModal()">+ Add Link</button>
         </div>
       </div>
-      <div id="links-modal-hint" style="font-size:11px;color:var(--gray-500);margin-bottom:10px;">★ = pinned to dashboard (max 5). Click the star to pin/unpin.</div>
       <div id="links-modal-list"></div>
     </div>
   </div>
@@ -938,57 +942,37 @@ let editingLinkId=null;
 
 /* ══ LINKS — rendered as pills in the tools row ══ */
 let editLinkId = null;   // null = add mode; set = edit mode
-const MAX_PINNED_PILLS = 5;
+const MAX_RECENT_PILLS = 5;
 
 function renderLinks(){
-  const wrap = document.getElementById('link-pill-wrap');
-  if(!wrap) return;
-  const all     = (ws.links || []).slice().sort((a,b) => (a.sort_order||0) - (b.sort_order||0));
-  const pinned  = all.filter(x => x.pinned).slice(0, MAX_PINNED_PILLS);
-  const total   = all.length;
-  // Refresh modal list (if it's open) so star/add/delete reflects immediately
+  // Update Links tool button count
+  const btnCount = document.getElementById('links-btn-count');
+  if(btnCount) btnCount.textContent = (ws.links || []).length;
+  // Refresh modal if open
   const modal = document.getElementById('links-modal');
   if(modal && modal.classList.contains('open')) renderLinksModal();
 
-  // Build pinned pills (max 5)
-  const pillsHtml = pinned.map(x => {
+  const wrap = document.getElementById('link-pill-wrap');
+  if(!wrap) return;
+
+  // Top 5 most RECENT (by created_at descending)
+  const recent = (ws.links || []).slice().sort((a,b) => {
+    const aD = new Date(a.created_at || 0).getTime();
+    const bD = new Date(b.created_at || 0).getTime();
+    return bD - aD;
+  }).slice(0, MAX_RECENT_PILLS);
+
+  const pillsHtml = recent.map(x => {
     const label = escapeHtml(x.label || x.url || '');
     const url   = escapeHtml(x.url || '#');
     return `<a class="link-pill" href="${url}" target="_blank" rel="noopener" title="${escapeHtml(x.url||'')}" oncontextmenu="return linkContextMenu(event,'${x.id}')">
       <span class="link-pill-label">${label}</span>
-      <span class="link-pill-actions">
-        <button class="link-pill-icon-btn" onclick="event.preventDefault();event.stopPropagation();togglePinLink('${x.id}')" title="Unpin" type="button">★</button>
-        <button class="link-pill-icon-btn" onclick="event.preventDefault();event.stopPropagation();openEditLinkModal('${x.id}')" title="Edit" type="button">✎</button>
-      </span>
     </a>`;
   }).join('');
 
-  // "See all" button — always visible when there are any links at all
-  const seeAllBtn = total > 0
-    ? `<button class="link-pill-add" type="button" onclick="openLinksModal()" style="border-style:solid;background:var(--gray-50);">See all (${total})</button>`
-    : '';
-  // + Add Link — always visible, but on empty state shows as primary guidance
-  const addBtn = `<button class="link-pill-add" type="button" onclick="openAddLinkModal()">+ Add Link</button>`;
-
-  wrap.innerHTML = pillsHtml + seeAllBtn + addBtn;
-}
-
-function togglePinLink(id){
-  const lk = ws.links.find(x => x.id === id); if(!lk) return;
-  const currentlyPinned = !!lk.pinned;
-  // If trying to pin a 6th link, block and notify
-  if(!currentlyPinned){
-    const pinnedCount = (ws.links || []).filter(x => x.pinned).length;
-    if(pinnedCount >= MAX_PINNED_PILLS){
-      showToast(`Only ${MAX_PINNED_PILLS} links can be pinned. Unpin one first.`);
-      return;
-    }
-  }
-  lk.pinned = !currentlyPinned;
-  lk.updated_at = new Date().toISOString();
-  saveWorkspaceToLocal();
-  renderLinks();
-  saveWidgetToBackend({ id:lk.id, widget_type:'link', sort_order:lk.sort_order||0, label:lk.label, url:lk.url, pinned:lk.pinned, created_at:lk.created_at });
+  wrap.innerHTML = pillsHtml;
+  // Hide the wrap entirely when there are no links (keeps dashboard clean)
+  wrap.style.display = recent.length ? 'flex' : 'none';
 }
 
 function linkContextMenu(evt, id){
@@ -1014,9 +998,10 @@ function renderLinksModal(){
   const list = document.getElementById('links-modal-list'); if(!list) return;
   const search = (document.getElementById('links-modal-search')?.value || '').trim().toLowerCase();
   let items = (ws.links || []).slice().sort((a,b) => {
-    // Pinned first, then by sort_order
-    if(!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
-    return (a.sort_order||0) - (b.sort_order||0);
+    // Most recent first (by created_at desc)
+    const aD = new Date(a.created_at || 0).getTime();
+    const bD = new Date(b.created_at || 0).getTime();
+    return bD - aD;
   });
   document.getElementById('links-modal-count').textContent = '(' + items.length + ')';
   if(search){
@@ -1035,7 +1020,6 @@ function renderLinksModal(){
         <div class="contact-meta">${escapeHtml(x.url || '')}</div>
       </div>
       <div class="contact-actions">
-        <button onclick="togglePinLink('${x.id}')" title="${x.pinned ? 'Unpin from dashboard' : 'Pin to dashboard'}" style="${x.pinned ? 'color:var(--amber);' : ''}">${x.pinned ? '★' : '☆'}</button>
         <button onclick="openEditLinkModal('${x.id}')" title="Edit">✎</button>
         <button class="danger" onclick="deleteLink('${x.id}')" title="Delete">×</button>
       </div>
@@ -1049,7 +1033,7 @@ function addLinkFromModal(){
   if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
   if(!label) label = url.replace(/^https?:\/\//i,'').split('/')[0];
   const now = new Date().toISOString();
-  const lk = { id:newId('L'), label, url, pinned:false, sort_order:Date.now(), created_at:now, updated_at:now };
+  const lk = { id:newId('L'), label, url, sort_order:Date.now(), created_at:now, updated_at:now };
   ws.links.push(lk); saveWorkspaceToLocal();
   document.getElementById('new-link-label').value = '';
   document.getElementById('new-link-url').value = '';
