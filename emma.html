@@ -49,6 +49,135 @@
   .tool-btn-text{flex:1;min-width:0;}
   .tool-btn-title{font-size:14px;font-weight:700;color:var(--navy);}
   .tool-btn-sub{font-size:11px;color:var(--gray-500);line-height:1.4;margin-top:2px;}
+
+  /* Tools row now holds Legal Admin, PURE, Contacts, + link pills */
+  .tool-grid{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px;align-items:stretch;}
+  .tool-btn{flex:0 0 auto;min-width:240px;}
+
+  /* Link pills — compact variant in the tools row */
+  .link-pill-wrap{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+  .link-pill{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:6px 12px;background:white;border:1px solid var(--gray-200);
+    border-radius:16px;font-size:12px;font-weight:600;color:var(--navy);
+    text-decoration:none;cursor:pointer;transition:all .15s;
+    max-width:240px;
+  }
+  .link-pill:hover{border-color:var(--blue);background:var(--blue-pale);color:var(--blue);}
+  .link-pill-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .link-pill-actions{display:none;gap:2px;margin-left:4px;padding-left:6px;border-left:1px solid var(--gray-200);}
+  .link-pill:hover .link-pill-actions{display:inline-flex;}
+  .link-pill-icon-btn{
+    background:transparent;border:none;cursor:pointer;
+    width:18px;height:18px;border-radius:3px;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:11px;color:var(--gray-500);padding:0;
+    font-family:inherit;
+  }
+  .link-pill-icon-btn:hover{background:var(--gray-100);color:var(--navy);}
+  .link-pill-icon-btn.danger:hover{color:var(--red);background:var(--red-pale);}
+  .link-pill-add{
+    background:transparent;border:1.5px dashed var(--gray-300);
+    color:var(--gray-500);font-weight:700;
+    padding:6px 14px;border-radius:16px;cursor:pointer;
+    font-family:inherit;font-size:12px;
+  }
+  .link-pill-add:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-pale);}
+
+  /* Contacts tool button with count badge */
+  .tool-btn-badge{
+    display:inline-flex;align-items:center;justify-content:center;
+    min-width:20px;height:20px;padding:0 7px;
+    background:var(--blue);color:white;
+    border-radius:10px;font-size:11px;font-weight:700;
+    margin-left:auto;
+  }
+
+  /* Modal overlay (Contacts full view + small dialogs) */
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(15,23,42,.5);
+    display:none;align-items:center;justify-content:center;
+    z-index:900;padding:20px;
+  }
+  .modal-backdrop.open{display:flex;}
+  .modal{
+    background:white;border-radius:12px;
+    box-shadow:0 20px 60px rgba(0,0,0,.2);
+    width:100%;max-width:640px;max-height:90vh;
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .modal.sm{max-width:420px;}
+  .modal-header{
+    padding:18px 22px;border-bottom:1px solid var(--gray-200);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .modal-title{font-size:16px;font-weight:700;color:var(--navy);letter-spacing:-.1px;}
+  .modal-close{
+    background:transparent;border:none;cursor:pointer;
+    font-size:22px;color:var(--gray-400);padding:4px 10px;line-height:1;
+    font-family:inherit;
+  }
+  .modal-close:hover{color:var(--navy);}
+  .modal-body{padding:18px 22px;overflow-y:auto;flex:1;}
+  .modal-footer{padding:14px 22px;border-top:1px solid var(--gray-200);display:flex;gap:10px;justify-content:flex-end;}
+
+  /* Contacts list inside modal */
+  .contacts-search{
+    width:100%;padding:10px 12px;border:1px solid var(--gray-300);
+    border-radius:6px;font-family:inherit;font-size:13px;outline:none;
+    margin-bottom:14px;background:var(--gray-50);
+  }
+  .contacts-search:focus{border-color:var(--blue);background:white;}
+  .contact-row{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 12px;border-bottom:1px solid var(--gray-100);
+  }
+  .contact-row:last-child{border-bottom:none;}
+  .contact-row:hover{background:var(--gray-50);}
+  .contact-row.editing{background:var(--blue-pale);}
+  .contact-main{flex:1;min-width:0;}
+  .contact-name{font-size:14px;font-weight:700;color:var(--navy);}
+  .contact-meta{font-size:11px;color:var(--gray-500);margin-top:2px;word-break:break-all;}
+  .contact-actions{display:flex;gap:4px;flex-shrink:0;}
+  .contact-actions .ct-icon-btn, .contact-actions button{
+    background:transparent;border:none;cursor:pointer;
+    padding:6px 8px;border-radius:5px;
+    font-size:12px;color:var(--gray-500);font-family:inherit;
+  }
+  .contact-actions button:hover{background:var(--gray-100);color:var(--navy);}
+  .contact-actions button.danger:hover{color:var(--red);background:var(--red-pale);}
+
+  .contact-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1;}
+  .contact-edit-grid input{
+    padding:7px 9px;border:1px solid var(--gray-300);border-radius:5px;
+    font-family:inherit;font-size:12px;outline:none;background:white;
+  }
+  .contact-edit-grid input:focus{border-color:var(--blue);}
+  .contact-edit-grid input.full{grid-column:1 / -1;}
+
+  .contacts-empty{
+    padding:30px 14px;text-align:center;color:var(--gray-400);font-size:13px;
+  }
+
+  .btn-sec{padding:9px 16px;border-radius:6px;background:white;color:var(--gray-500);border:1px solid var(--gray-300);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+  .btn-sec:hover{background:var(--gray-50);}
+  .btn-pri{padding:9px 16px;border-radius:6px;background:var(--blue);color:white;border:1px solid var(--blue);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+  .btn-pri:hover{background:var(--navy);border-color:var(--navy);}
+
+  /* Small input block used in add link / add contact mini-forms inside contacts modal */
+  .mini-form{
+    background:var(--gray-50);border:1px solid var(--gray-200);border-radius:6px;
+    padding:12px;margin-bottom:14px;
+  }
+  .mini-form-title{font-size:11px;font-weight:700;color:var(--gray-500);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;}
+  .mini-form input{
+    width:100%;padding:8px 10px;margin-bottom:6px;
+    border:1px solid var(--gray-300);border-radius:5px;
+    font-family:inherit;font-size:13px;outline:none;background:white;
+  }
+  .mini-form input:focus{border-color:var(--blue);}
+  .mini-form-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .mini-form-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:6px;}
   .cols{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start;}
   @media(max-width:980px){.cols{grid-template-columns:1fr;}}
   .card{background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:20px 22px;margin-bottom:16px;}
@@ -309,144 +438,104 @@
         <div class="tool-btn-icon">👥</div>
         <div class="tool-btn-text"><div class="tool-btn-title">PURE Personnel</div><div class="tool-btn-sub">Workforce management</div></div>
       </a>
+      <button class="tool-btn" type="button" onclick="openContactsModal()" style="cursor:pointer;font-family:inherit;text-align:left;">
+        <div class="tool-btn-icon">👤</div>
+        <div class="tool-btn-text"><div class="tool-btn-title">Contacts</div><div class="tool-btn-sub">Browse, search, edit</div></div>
+        <span class="tool-btn-badge" id="contacts-btn-count">0</span>
+      </button>
     </div>
 
-    <div class="cols">
-      <div>
-        <div class="card">
-          <div class="section-head">
-            <div class="section-title">My Tasks</div>
-            <div class="tasks-sync-state" id="sync-state">● Synced</div>
-          </div>
-          <div class="cat-tabs" id="cat-tabs">
-            <div class="cat-tab active" data-cat="To Do">To Do <span class="cat-tab-count" id="count-todo">0</span></div>
-            <div class="cat-tab" data-cat="Follow Up">Follow Up <span class="cat-tab-count" id="count-follow">0</span></div>
-            <div class="cat-tab" data-cat="Question">Questions <span class="cat-tab-count" id="count-question">0</span></div>
-            <div class="cat-tab" data-cat="Note">Notes <span class="cat-tab-count" id="count-note">0</span></div>
-          </div>
-          <div class="task-add-row">
-            <input type="text" id="task-add-input" class="task-add-input" placeholder="Add a task and press Enter...">
-            <select id="task-add-cat" class="task-add-cat" title="Category"><option>To Do</option><option>Follow Up</option><option>Question</option><option>Note</option></select>
-            <select id="task-add-pri" class="task-add-pri" title="Priority"><option value="low">Low</option><option value="med" selected>Med</option><option value="high">High</option></select>
-            <input type="date" id="task-add-due" class="task-add-due" title="Due date">
-            <button class="task-add-btn" onclick="addTask()">+ Add</button>
-          </div>
-          <div class="task-list" id="task-list"><div class="task-empty">Loading tasks...</div></div>
-          <button class="archive-toggle" onclick="toggleArchive()">
-            <span>📁 Archive <span id="archive-count" style="color:var(--gray-400);font-weight:600;">(0 completed)</span></span>
-            <span id="archive-arrow">▼</span>
-          </button>
-          <div id="archive-panel" style="display:none;">
-            <div class="archive-controls">
-              <input type="text" id="archive-search" placeholder="Search completed tasks..." oninput="renderArchive()">
-              <select id="archive-filter-cat" onchange="renderArchive()"><option value="all">All categories</option><option>To Do</option><option>Follow Up</option><option>Question</option><option>Note</option></select>
-              <select id="archive-sort" onchange="renderArchive()"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="category">By category</option><option value="text">By text</option></select>
-            </div>
-            <div class="task-list" id="archive-list"><div class="task-empty">No completed tasks yet.</div></div>
-          </div>
-        </div>
+    <!-- Quick Links row: each link is a pill; right-click for edit/delete -->
+    <div class="link-pill-wrap" id="link-pill-wrap" style="margin-bottom:28px;">
+      <!-- pills rendered dynamically -->
+      <button class="link-pill-add" type="button" onclick="openAddLinkModal()">+ Add Link</button>
+    </div>
 
-        <div class="card">
-          <div class="section-head"><div class="section-title">Scratchpad</div><div class="section-sub">Auto-saves</div></div>
-          <textarea class="scratchpad" id="scratchpad" placeholder="Jot anything down here — it saves automatically..."></textarea>
-          <div class="scratch-status" id="scratch-status">Saved</div>
+    <div>
+      <div class="card">
+        <div class="section-head">
+          <div class="section-title">My Tasks</div>
+          <div class="tasks-sync-state" id="sync-state">● Synced</div>
+        </div>
+        <div class="cat-tabs" id="cat-tabs">
+          <div class="cat-tab active" data-cat="To Do">To Do <span class="cat-tab-count" id="count-todo">0</span></div>
+          <div class="cat-tab" data-cat="Follow Up">Follow Up <span class="cat-tab-count" id="count-follow">0</span></div>
+          <div class="cat-tab" data-cat="Question">Questions <span class="cat-tab-count" id="count-question">0</span></div>
+          <div class="cat-tab" data-cat="Note">Notes <span class="cat-tab-count" id="count-note">0</span></div>
+        </div>
+        <div class="task-add-row">
+          <input type="text" id="task-add-input" class="task-add-input" placeholder="Add a task and press Enter...">
+          <select id="task-add-cat" class="task-add-cat" title="Category"><option>To Do</option><option>Follow Up</option><option>Question</option><option>Note</option></select>
+          <select id="task-add-pri" class="task-add-pri" title="Priority"><option value="low">Low</option><option value="med" selected>Med</option><option value="high">High</option></select>
+          <input type="date" id="task-add-due" class="task-add-due" title="Due date">
+          <button class="task-add-btn" onclick="addTask()">+ Add</button>
+        </div>
+        <div class="task-list" id="task-list"><div class="task-empty">Loading tasks...</div></div>
+        <button class="archive-toggle" onclick="toggleArchive()">
+          <span>📁 Archive <span id="archive-count" style="color:var(--gray-400);font-weight:600;">(0 completed)</span></span>
+          <span id="archive-arrow">▼</span>
+        </button>
+        <div id="archive-panel" style="display:none;">
+          <div class="archive-controls">
+            <input type="text" id="archive-search" placeholder="Search completed tasks..." oninput="renderArchive()">
+            <select id="archive-filter-cat" onchange="renderArchive()"><option value="all">All categories</option><option>To Do</option><option>Follow Up</option><option>Question</option><option>Note</option></select>
+            <select id="archive-sort" onchange="renderArchive()"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="category">By category</option><option value="text">By text</option></select>
+          </div>
+          <div class="task-list" id="archive-list"><div class="task-empty">No completed tasks yet.</div></div>
         </div>
       </div>
 
-      <div>
-        <div class="card collapsible" id="panel-links">
-          <div class="panel-header">
-            <button class="panel-header-main" type="button" onclick="togglePanel('panel-links')">
-              <span class="panel-header-left">
-                <span class="panel-header-title">Quick Links</span>
-                <span class="panel-header-count" id="panel-links-count">0</span>
-              </span>
-            </button>
-            <div class="panel-header-actions">
-              <button class="panel-icon-btn" id="quickadd-link-btn" type="button" onclick="toggleQuickPop('link', event)" title="Quick add link">+</button>
-              <button class="panel-icon-btn" type="button" onclick="togglePanel('panel-links')" title="Show all"><span class="panel-chevron">›</span></button>
-            </div>
-          </div>
-          <!-- Quick-add popover for Links -->
-          <div class="quick-pop" id="quick-pop-link" onclick="event.stopPropagation()">
-            <div class="quick-pop-title">Add Link</div>
-            <input type="text" id="quick-link-url" placeholder="https://..." onkeydown="if(event.key==='Enter')quickAddLink();if(event.key==='Escape')closeQuickPop('link')">
-            <input type="text" id="quick-link-label" placeholder="Label (optional)" onkeydown="if(event.key==='Enter')quickAddLink();if(event.key==='Escape')closeQuickPop('link')">
-            <div class="quick-pop-actions">
-              <button class="quick-pop-btn secondary" type="button" onclick="closeQuickPop('link')">Cancel</button>
-              <button class="quick-pop-btn primary" type="button" onclick="quickAddLink()">Save</button>
-            </div>
-            <div class="quick-pop-hint"><kbd>Enter</kbd> to save · <kbd>Esc</kbd> to close</div>
-          </div>
-          <div class="panel-body">
-            <div class="widget-search">
-              <span class="widget-search-icon">🔍</span>
-              <input type="text" id="link-search" placeholder="Search links..." oninput="renderLinks()">
-            </div>
-            <div class="links-list" id="links-list"></div>
-            <button class="add-toggle" onclick="toggleAddForm('link')">+ Add Link</button>
-            <div class="add-form" id="link-add-form">
-              <div class="add-form-title">New Link</div>
-              <div class="add-form-grid cols-2">
-                <input type="text" id="link-label-input" placeholder="Label" class="full">
-                <input type="text" id="link-url-input" placeholder="https://..." class="full">
-              </div>
-              <div class="add-form-actions">
-                <button class="add-form-btn secondary" onclick="toggleAddForm('link')">Cancel</button>
-                <button class="add-form-btn primary" onclick="addLink()">Save</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="card collapsible" id="panel-contacts">
-          <div class="panel-header">
-            <button class="panel-header-main" type="button" onclick="togglePanel('panel-contacts')">
-              <span class="panel-header-left">
-                <span class="panel-header-title">Quick Contacts</span>
-                <span class="panel-header-count" id="panel-contacts-count">0</span>
-              </span>
-            </button>
-            <div class="panel-header-actions">
-              <button class="panel-icon-btn" id="quickadd-contact-btn" type="button" onclick="toggleQuickPop('contact', event)" title="Quick add contact">+</button>
-              <button class="panel-icon-btn" type="button" onclick="togglePanel('panel-contacts')" title="Show all"><span class="panel-chevron">›</span></button>
-            </div>
-          </div>
-          <!-- Quick-add popover for Contacts -->
-          <div class="quick-pop" id="quick-pop-contact" onclick="event.stopPropagation()">
-            <div class="quick-pop-title">Add Contact</div>
-            <input type="text" id="quick-contact-name" placeholder="Name" onkeydown="if(event.key==='Enter')quickAddContact();if(event.key==='Escape')closeQuickPop('contact')">
-            <input type="text" id="quick-contact-phone" placeholder="Phone or email" onkeydown="if(event.key==='Enter')quickAddContact();if(event.key==='Escape')closeQuickPop('contact')">
-            <div class="quick-pop-actions">
-              <button class="quick-pop-btn secondary" type="button" onclick="closeQuickPop('contact')">Cancel</button>
-              <button class="quick-pop-btn primary" type="button" onclick="quickAddContact()">Save</button>
-            </div>
-            <div class="quick-pop-hint"><kbd>Enter</kbd> to save · <kbd>Esc</kbd> to close</div>
-          </div>
-          <div class="panel-body">
-            <div class="widget-search">
-              <span class="widget-search-icon">🔍</span>
-              <input type="text" id="contact-search" placeholder="Search contacts..." oninput="renderContacts()">
-            </div>
-            <div class="contacts-list" id="contacts-list"></div>
-            <button class="add-toggle" onclick="toggleAddForm('contact')">+ Add Contact</button>
-            <div class="add-form" id="contact-add-form">
-              <div class="add-form-title">New Contact</div>
-              <div class="add-form-grid cols-2">
-                <input class="full" type="text" id="contact-name-input" placeholder="Name">
-                <input class="full" type="text" id="contact-role-input" placeholder="Role / Company (optional)">
-                <input type="text" id="contact-phone-input" placeholder="Phone">
-                <input type="email" id="contact-email-input" placeholder="Email">
-              </div>
-              <div class="add-form-actions">
-                <button class="add-form-btn secondary" onclick="toggleAddForm('contact')">Cancel</button>
-                <button class="add-form-btn primary" onclick="addContact()">Save</button>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div class="card">
+        <div class="section-head"><div class="section-title">Scratchpad</div><div class="section-sub">Auto-saves</div></div>
+        <textarea class="scratchpad" id="scratchpad" placeholder="Jot anything down here — it saves automatically..."></textarea>
+        <div class="scratch-status" id="scratch-status">Saved</div>
       </div>
     </div>
   </main>
+</div>
+
+<!-- Contacts modal: browse / add / edit / delete all contacts -->
+<div id="contacts-modal" class="modal-backdrop" onclick="if(event.target===this)closeContactsModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Contacts <span style="color:var(--gray-400);font-weight:600;font-size:13px;margin-left:6px;" id="contacts-modal-count">(0)</span></div>
+      <button class="modal-close" onclick="closeContactsModal()" type="button">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="text" class="contacts-search" id="contacts-modal-search" placeholder="Search contacts..." oninput="renderContactsModal()">
+      <div class="mini-form">
+        <div class="mini-form-title">Add New Contact</div>
+        <input type="text" id="new-contact-name" placeholder="Name">
+        <input type="text" id="new-contact-role" placeholder="Role / Company (optional)">
+        <div class="mini-form-row">
+          <input type="text" id="new-contact-phone" placeholder="Phone">
+          <input type="email" id="new-contact-email" placeholder="Email">
+        </div>
+        <div class="mini-form-actions">
+          <button class="btn-pri" type="button" onclick="addContactFromModal()">+ Add Contact</button>
+        </div>
+      </div>
+      <div id="contacts-modal-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Link modal (small dialog) -->
+<div id="add-link-modal" class="modal-backdrop" onclick="if(event.target===this)closeAddLinkModal()">
+  <div class="modal sm">
+    <div class="modal-header">
+      <div class="modal-title" id="add-link-title">Add Link</div>
+      <button class="modal-close" onclick="closeAddLinkModal()" type="button">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="text" class="contacts-search" id="add-link-label" placeholder="Label (optional)" style="margin-bottom:8px;">
+      <input type="text" class="contacts-search" id="add-link-url" placeholder="https://..." style="margin-bottom:0;">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sec" type="button" onclick="closeAddLinkModal()">Cancel</button>
+      <button class="btn-pri" type="button" onclick="saveAddLinkModal()">Save</button>
+    </div>
+  </div>
 </div>
 
 <div id="denied" class="denied" style="display:none;">
@@ -824,172 +913,206 @@ function closeAddForm(kind){
 /* LINKS — full CRUD + search */
 let editingLinkId=null;
 
+/* ══ LINKS — rendered as pills in the tools row ══ */
+let editLinkId = null;   // null = add mode; set = edit mode
 function renderLinks(){
-  const l=document.getElementById('links-list');
-  const search=(document.getElementById('link-search')?.value||'').trim().toLowerCase();
-  let items=(ws.links||[]).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
-  // Set count badge on the collapsible panel header (total, not filtered)
-  const cBadge=document.getElementById('panel-links-count');
-  if(cBadge) cBadge.textContent=(ws.links||[]).length;
-  if(search){
-    items=items.filter(x=>((x.label||'')+' '+(x.url||'')).toLowerCase().includes(search));
-  }
-  if(!items.length){
-    l.innerHTML=`<div class="task-empty" style="padding:14px;">${search?'No links match your search.':'No links yet. Click "Add Link" below.'}</div>`;
-    return;
-  }
-  l.innerHTML=items.map(x=>{
-    if(String(editingLinkId)===String(x.id)){
-      return `<div class="link-item editing" data-id="${x.id}">
-        <div class="link-edit-fields">
-          <input type="text" id="edit-link-label-${x.id}" value="${escapeHtml(x.label||'')}" placeholder="Label">
-          <input type="text" id="edit-link-url-${x.id}" value="${escapeHtml(x.url||'')}" placeholder="https://...">
-        </div>
-        <div class="link-edit-actions">
-          <button class="add-form-btn secondary" onclick="cancelEditLink()">Cancel</button>
-          <button class="add-form-btn primary" onclick="saveEditLink('${x.id}')">Save</button>
-        </div>
-      </div>`;
-    }
-    const init=((x.label||x.url||'?')[0]||'?').toUpperCase();
-    const url=escapeHtml(x.url||'#');
-    return `<div class="link-item" data-id="${x.id}">
-      <a class="link-item-main" href="${url}" target="_blank" rel="noopener">
-        <div class="link-icon">${escapeHtml(init)}</div>
-        <div class="link-text-wrap">
-          <div class="link-label">${escapeHtml(x.label||x.url||'')}</div>
-          <div class="link-url">${escapeHtml(x.url||'')}</div>
-        </div>
-      </a>
-      <div class="link-actions">
-        <button class="link-action-btn" title="Edit" onclick="startEditLink('${x.id}')">✎</button>
-        <button class="link-action-btn delete" title="Delete" onclick="deleteLink('${x.id}')">🗑</button>
-      </div>
-    </div>`;
+  const wrap = document.getElementById('link-pill-wrap');
+  if(!wrap) return;
+  const items = (ws.links || []).slice().sort((a,b) => (a.sort_order||0) - (b.sort_order||0));
+  // Re-render pills; keep the "+ Add Link" button at the end
+  const pillsHtml = items.map(x => {
+    const label = escapeHtml(x.label || x.url || '');
+    const url   = escapeHtml(x.url || '#');
+    return `<a class="link-pill" href="${url}" target="_blank" rel="noopener" title="${escapeHtml(x.url||'')}" oncontextmenu="return linkContextMenu(event,'${x.id}')">
+      <span class="link-pill-label">${label}</span>
+      <span class="link-pill-actions">
+        <button class="link-pill-icon-btn" onclick="event.preventDefault();event.stopPropagation();openEditLinkModal('${x.id}')" title="Edit" type="button">✎</button>
+        <button class="link-pill-icon-btn danger" onclick="event.preventDefault();event.stopPropagation();deleteLink('${x.id}')" title="Delete" type="button">×</button>
+      </span>
+    </a>`;
   }).join('');
+  wrap.innerHTML = pillsHtml + '<button class="link-pill-add" type="button" onclick="openAddLinkModal()">+ Add Link</button>';
 }
 
-function addLink(){
-  const L=document.getElementById('link-label-input'), U=document.getElementById('link-url-input');
-  let label=(L.value||'').trim(); let url=(U.value||'').trim();
-  if(!url){showToast('URL is required');return;}
-  if(!/^https?:\/\//i.test(url))url='https://'+url;
-  if(!label)label=url.replace(/^https?:\/\//i,'').split('/')[0];
-  const now=new Date().toISOString();
-  const lk={id:newId('L'),label,url,sort_order:Date.now(),created_at:now,updated_at:now};
-  ws.links.push(lk); saveWorkspaceToLocal();
-  L.value=''; U.value='';
-  closeAddForm('link');
-  renderLinks();
-  saveWidgetToBackend({...lk,widget_type:'link'});
+function linkContextMenu(evt, id){
+  // Right-click on pill opens edit modal instead of browser context menu
+  evt.preventDefault();
+  openEditLinkModal(id);
+  return false;
 }
-function startEditLink(id){editingLinkId=id; renderLinks();}
-function cancelEditLink(){editingLinkId=null; renderLinks();}
-function saveEditLink(id){
-  const lk=ws.links.find(x=>x.id===id); if(!lk)return;
-  let label=(document.getElementById('edit-link-label-'+id).value||'').trim();
-  let url=(document.getElementById('edit-link-url-'+id).value||'').trim();
-  if(!url){showToast('URL is required');return;}
-  if(!/^https?:\/\//i.test(url))url='https://'+url;
-  if(!label)label=url.replace(/^https?:\/\//i,'').split('/')[0];
-  lk.label=label; lk.url=url; lk.updated_at=new Date().toISOString();
-  saveWorkspaceToLocal();
-  editingLinkId=null;
-  renderLinks();
-  saveWidgetToBackend({id:lk.id,widget_type:'link',sort_order:lk.sort_order||0,label,url,created_at:lk.created_at});
+
+function openAddLinkModal(){
+  editLinkId = null;
+  document.getElementById('add-link-title').textContent = 'Add Link';
+  document.getElementById('add-link-label').value = '';
+  document.getElementById('add-link-url').value = '';
+  document.getElementById('add-link-modal').classList.add('open');
+  setTimeout(() => document.getElementById('add-link-url').focus(), 50);
+}
+function openEditLinkModal(id){
+  const lk = ws.links.find(x => x.id === id); if(!lk) return;
+  editLinkId = id;
+  document.getElementById('add-link-title').textContent = 'Edit Link';
+  document.getElementById('add-link-label').value = lk.label || '';
+  document.getElementById('add-link-url').value = lk.url || '';
+  document.getElementById('add-link-modal').classList.add('open');
+  setTimeout(() => document.getElementById('add-link-url').focus(), 50);
+}
+function closeAddLinkModal(){
+  document.getElementById('add-link-modal').classList.remove('open');
+  editLinkId = null;
+}
+function saveAddLinkModal(){
+  let label = (document.getElementById('add-link-label').value || '').trim();
+  let url   = (document.getElementById('add-link-url').value || '').trim();
+  if(!url){ showToast('URL is required'); return; }
+  if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  if(!label) label = url.replace(/^https?:\/\//i,'').split('/')[0];
+  const now = new Date().toISOString();
+  if(editLinkId){
+    const lk = ws.links.find(x => x.id === editLinkId); if(!lk) return;
+    lk.label = label; lk.url = url; lk.updated_at = now;
+    saveWorkspaceToLocal(); renderLinks();
+    saveWidgetToBackend({ id:lk.id, widget_type:'link', sort_order:lk.sort_order||0, label, url, created_at:lk.created_at });
+    showToast('Link updated');
+  } else {
+    const lk = { id:newId('L'), label, url, sort_order:Date.now(), created_at:now, updated_at:now };
+    ws.links.push(lk); saveWorkspaceToLocal(); renderLinks();
+    saveWidgetToBackend({ ...lk, widget_type:'link' });
+    showToast('Link added');
+  }
+  closeAddLinkModal();
 }
 function deleteLink(id){
-  if(!confirm('Delete this link?'))return;
-  ws.links=ws.links.filter(l=>l.id!==id);
+  if(!confirm('Delete this link?')) return;
+  ws.links = ws.links.filter(l => l.id !== id);
   saveWorkspaceToLocal(); renderLinks(); deleteWidgetOnBackend(id);
 }
 
-/* CONTACTS — full CRUD + search */
-let editingContactId=null;
+/* ══ CONTACTS — rendered in a modal when user clicks "Contacts" tool button ══ */
+let editContactId = null;
+
+function openContactsModal(){
+  document.getElementById('contacts-modal-search').value = '';
+  clearAddContactFields();
+  renderContactsModal();
+  document.getElementById('contacts-modal').classList.add('open');
+  setTimeout(() => document.getElementById('contacts-modal-search').focus(), 50);
+}
+function closeContactsModal(){
+  document.getElementById('contacts-modal').classList.remove('open');
+  editContactId = null;
+}
+function clearAddContactFields(){
+  ['new-contact-name','new-contact-role','new-contact-phone','new-contact-email'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+}
 
 function renderContacts(){
-  const l=document.getElementById('contacts-list');
-  const search=(document.getElementById('contact-search')?.value||'').trim().toLowerCase();
-  let items=(ws.contacts||[]).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
-  // Set count badge on the collapsible panel header (total, not filtered)
-  const cBadge=document.getElementById('panel-contacts-count');
-  if(cBadge) cBadge.textContent=(ws.contacts||[]).length;
+  // Called by existing app flow — refresh tool-button count and modal list if open
+  const countEl = document.getElementById('contacts-btn-count');
+  if(countEl) countEl.textContent = (ws.contacts||[]).length;
+  const modal = document.getElementById('contacts-modal');
+  if(modal && modal.classList.contains('open')) renderContactsModal();
+}
+
+function renderContactsModal(){
+  const list = document.getElementById('contacts-modal-list'); if(!list) return;
+  const search = (document.getElementById('contacts-modal-search')?.value || '').trim().toLowerCase();
+  let items = (ws.contacts || []).slice().sort((a,b) => (a.sort_order||0) - (b.sort_order||0));
+  document.getElementById('contacts-modal-count').textContent = '(' + items.length + ')';
   if(search){
-    items=items.filter(c=>((c.name||'')+' '+(c.role||'')+' '+(c.phone||'')+' '+(c.email||'')).toLowerCase().includes(search));
+    items = items.filter(c => ((c.name||'')+' '+(c.role||'')+' '+(c.phone||'')+' '+(c.email||'')).toLowerCase().includes(search));
   }
   if(!items.length){
-    l.innerHTML=`<div class="task-empty" style="padding:14px;">${search?'No contacts match your search.':'No contacts yet. Click "Add Contact" below.'}</div>`;
+    list.innerHTML = `<div class="contacts-empty">${search ? 'No contacts match your search.' : 'No contacts yet. Add one above to get started.'}</div>`;
     return;
   }
-  l.innerHTML=items.map(c=>{
-    if(String(editingContactId)===String(c.id)){
-      return `<div class="contact-item editing" data-id="${c.id}">
-        <div class="contact-edit-fields">
+  list.innerHTML = items.map(c => {
+    if(String(editContactId) === String(c.id)){
+      return `<div class="contact-row editing" data-id="${c.id}">
+        <div class="contact-edit-grid">
           <input class="full" type="text" id="edit-contact-name-${c.id}" value="${escapeHtml(c.name||'')}" placeholder="Name">
           <input class="full" type="text" id="edit-contact-role-${c.id}" value="${escapeHtml(c.role||'')}" placeholder="Role / Company (optional)">
           <input type="text" id="edit-contact-phone-${c.id}" value="${escapeHtml(c.phone||'')}" placeholder="Phone">
           <input type="email" id="edit-contact-email-${c.id}" value="${escapeHtml(c.email||'')}" placeholder="Email">
         </div>
-        <div class="contact-edit-actions">
-          <button class="add-form-btn secondary" onclick="cancelEditContact()">Cancel</button>
-          <button class="add-form-btn primary" onclick="saveEditContact('${c.id}')">Save</button>
+        <div class="contact-actions">
+          <button onclick="cancelEditContact()">Cancel</button>
+          <button onclick="saveEditContact('${c.id}')" style="color:var(--blue);">Save</button>
         </div>
       </div>`;
     }
-    const p=c.phone||'', e=c.email||'';
-    return `<div class="contact-item" data-id="${c.id}">
-      <div class="contact-head">
-        <div class="contact-head-text">
-          <div class="contact-name">${escapeHtml(c.name||'—')}</div>
-          ${c.role?`<div class="contact-role">${escapeHtml(c.role)}</div>`:''}
-        </div>
-        <div class="contact-actions">
-          <button class="contact-action-btn" title="Edit" onclick="startEditContact('${c.id}')">✎</button>
-          <button class="contact-action-btn delete" title="Delete" onclick="deleteContact('${c.id}')">🗑</button>
-        </div>
+    const meta = [c.role, c.phone, c.email].filter(Boolean).join(' · ');
+    return `<div class="contact-row" data-id="${c.id}">
+      <div class="contact-main">
+        <div class="contact-name">${escapeHtml(c.name||'—')}</div>
+        ${meta ? `<div class="contact-meta">${escapeHtml(meta)}</div>` : ''}
       </div>
-      ${p?`<div class="contact-row"><span style="color:var(--gray-400);">📞</span> <a href="tel:${escapeHtml(p)}">${escapeHtml(p)}</a> <button class="contact-copy" onclick="copyText('${escapeHtml(p)}')">copy</button></div>`:''}
-      ${e?`<div class="contact-row"><span style="color:var(--gray-400);">✉️</span> <a href="mailto:${escapeHtml(e)}">${escapeHtml(e)}</a> <button class="contact-copy" onclick="copyText('${escapeHtml(e)}')">copy</button></div>`:''}
+      <div class="contact-actions">
+        ${c.phone ? `<button onclick="copyText('${escapeHtml(c.phone)}')" title="Copy phone">📱</button>` : ''}
+        ${c.email ? `<button onclick="copyText('${escapeHtml(c.email)}')" title="Copy email">✉️</button>` : ''}
+        <button onclick="startEditContact('${c.id}')" title="Edit">✎</button>
+        <button class="danger" onclick="deleteContact('${c.id}')" title="Delete">×</button>
+      </div>
     </div>`;
   }).join('');
 }
 
-function addContact(){
-  const n=document.getElementById('contact-name-input'),r=document.getElementById('contact-role-input'),p=document.getElementById('contact-phone-input'),e=document.getElementById('contact-email-input');
-  const name=(n.value||'').trim(); if(!name){showToast('Name is required');return;}
-  const now=new Date().toISOString();
-  const c={id:newId('C'),name,role:(r.value||'').trim(),phone:(p.value||'').trim(),email:(e.value||'').trim(),sort_order:Date.now(),created_at:now,updated_at:now};
+function addContactFromModal(){
+  const name = (document.getElementById('new-contact-name').value || '').trim();
+  if(!name){ showToast('Name is required'); document.getElementById('new-contact-name').focus(); return; }
+  const now = new Date().toISOString();
+  const c = {
+    id: newId('C'), name,
+    role:  (document.getElementById('new-contact-role').value  || '').trim(),
+    phone: (document.getElementById('new-contact-phone').value || '').trim(),
+    email: (document.getElementById('new-contact-email').value || '').trim(),
+    sort_order: Date.now(), created_at: now, updated_at: now
+  };
   ws.contacts.push(c); saveWorkspaceToLocal();
-  n.value=''; r.value=''; p.value=''; e.value='';
-  closeAddForm('contact');
+  clearAddContactFields();
   renderContacts();
-  saveWidgetToBackend({...c,widget_type:'contact'});
+  saveWidgetToBackend({ ...c, widget_type: 'contact' });
+  showToast('Contact added');
 }
-function startEditContact(id){editingContactId=id; renderContacts();}
-function cancelEditContact(){editingContactId=null; renderContacts();}
+
+function startEditContact(id){ editContactId = id; renderContactsModal(); }
+function cancelEditContact(){ editContactId = null; renderContactsModal(); }
 function saveEditContact(id){
-  const c=ws.contacts.find(x=>x.id===id); if(!c)return;
-  const name=(document.getElementById('edit-contact-name-'+id).value||'').trim();
-  if(!name){showToast('Name is required');return;}
-  c.name=name;
-  c.role =(document.getElementById('edit-contact-role-'+id).value||'').trim();
-  c.phone=(document.getElementById('edit-contact-phone-'+id).value||'').trim();
-  c.email=(document.getElementById('edit-contact-email-'+id).value||'').trim();
-  c.updated_at=new Date().toISOString();
+  const c = ws.contacts.find(x => x.id === id); if(!c) return;
+  const name = (document.getElementById('edit-contact-name-' + id).value || '').trim();
+  if(!name){ showToast('Name is required'); return; }
+  c.name  = name;
+  c.role  = (document.getElementById('edit-contact-role-'  + id).value || '').trim();
+  c.phone = (document.getElementById('edit-contact-phone-' + id).value || '').trim();
+  c.email = (document.getElementById('edit-contact-email-' + id).value || '').trim();
+  c.updated_at = new Date().toISOString();
   saveWorkspaceToLocal();
-  editingContactId=null;
+  editContactId = null;
   renderContacts();
-  saveWidgetToBackend({id:c.id,widget_type:'contact',sort_order:c.sort_order||0,name:c.name,role:c.role,phone:c.phone,email:c.email,created_at:c.created_at});
+  saveWidgetToBackend({ id:c.id, widget_type:'contact', sort_order:c.sort_order||0, name:c.name, role:c.role, phone:c.phone, email:c.email, created_at:c.created_at });
+  showToast('Contact updated');
 }
+
 function deleteContact(id){
-  if(!confirm('Delete this contact?'))return;
-  ws.contacts=ws.contacts.filter(c=>c.id!==id);
+  if(!confirm('Delete this contact?')) return;
+  ws.contacts = ws.contacts.filter(c => c.id !== id);
   saveWorkspaceToLocal(); renderContacts(); deleteWidgetOnBackend(id);
 }
+
 function copyText(text){
-  try{navigator.clipboard.writeText(text); showToast('Copied to clipboard');}
-  catch{const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy'); showToast('Copied');}catch{} document.body.removeChild(ta);}
+  try{ navigator.clipboard.writeText(text); showToast('Copied to clipboard'); }
+  catch{ const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); showToast('Copied'); }catch{} document.body.removeChild(ta); }
 }
+
+// Global Escape key closes any open modal
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){
+    document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
+  }
+});
 
 /* SCRATCHPAD */
 let scratchTimer;
