@@ -105,6 +105,36 @@
   /* ─── Add footer button (shared style) ────────────── */
   .add-toggle{width:100%;padding:9px 12px;margin-top:10px;border:1px dashed var(--gray-300);border-radius:6px;background:transparent;color:var(--gray-600);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
   .add-toggle:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-pale);}
+
+  /* Collapsible panel pattern — click the header to expand/collapse */
+  .card.collapsible { padding: 0; overflow: hidden; }
+  .card.collapsible .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; padding: 14px 18px;
+    background: white; border: none; cursor: pointer;
+    font-family: inherit; text-align: left;
+    transition: background .1s;
+  }
+  .card.collapsible .panel-header:hover { background: var(--gray-50); }
+  .card.collapsible.open .panel-header { border-bottom: 1px solid var(--gray-200); }
+  .card.collapsible .panel-header-left {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .card.collapsible .panel-header-title {
+    font-size: 14px; font-weight: 800; color: var(--navy);
+  }
+  .card.collapsible .panel-header-count {
+    font-size: 11px; font-weight: 700; color: var(--gray-500);
+    background: var(--gray-100); padding: 2px 8px; border-radius: 10px;
+  }
+  .card.collapsible .panel-chevron {
+    font-size: 12px; color: var(--gray-400); transition: transform .15s;
+  }
+  .card.collapsible.open .panel-chevron { transform: rotate(90deg); }
+  .card.collapsible .panel-body {
+    display: none; padding: 14px 18px 18px 18px;
+  }
+  .card.collapsible.open .panel-body { display: block; }
   .add-form{display:none;padding:12px;margin-top:10px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:6px;}
   .add-form.open{display:block;}
   .add-form-title{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--gray-600);margin-bottom:8px;}
@@ -268,45 +298,59 @@
       </div>
 
       <div>
-        <div class="card">
-          <div class="section-head"><div class="section-title">🔗 Quick Links</div><div class="section-sub">Your bookmarks</div></div>
-          <div class="widget-search">
-            <span class="widget-search-icon">🔍</span>
-            <input type="text" id="link-search" placeholder="Search links..." oninput="renderLinks()">
-          </div>
-          <div class="links-list" id="links-list"></div>
-          <button class="add-toggle" onclick="toggleAddForm('link')">+ Add Link</button>
-          <div class="add-form" id="link-add-form">
-            <div class="add-form-title">New Link</div>
-            <div class="add-form-grid cols-2">
-              <input type="text" id="link-label-input" placeholder="Label" class="full">
-              <input type="text" id="link-url-input" placeholder="https://..." class="full">
+        <div class="card collapsible" id="panel-links">
+          <button class="panel-header" type="button" onclick="togglePanel('panel-links')">
+            <span class="panel-header-left">
+              <span class="panel-header-title">🔗 Quick Links</span>
+              <span class="panel-header-count" id="panel-links-count">0</span>
+            </span>
+            <span class="panel-chevron">›</span>
+          </button>
+          <div class="panel-body">
+            <div class="widget-search">
+              <span class="widget-search-icon">🔍</span>
+              <input type="text" id="link-search" placeholder="Search links..." oninput="renderLinks()">
             </div>
-            <div class="add-form-actions">
-              <button class="add-form-btn secondary" onclick="toggleAddForm('link')">Cancel</button>
-              <button class="add-form-btn primary" onclick="addLink()">Save</button>
+            <div class="links-list" id="links-list"></div>
+            <!-- Add-link form is shown inline once the panel is open (no nested toggle) -->
+            <div class="add-form open" style="margin-top:12px;">
+              <div class="add-form-title">Add Link</div>
+              <div class="add-form-grid cols-2">
+                <input type="text" id="link-label-input" placeholder="Label" class="full">
+                <input type="text" id="link-url-input" placeholder="https://..." class="full">
+              </div>
+              <div class="add-form-actions">
+                <button class="add-form-btn primary" onclick="addLink()">Save</button>
+              </div>
             </div>
           </div>
         </div>
-        <div class="card">
-          <div class="section-head"><div class="section-title">👤 Quick Contacts</div><div class="section-sub">Click to copy</div></div>
-          <div class="widget-search">
-            <span class="widget-search-icon">🔍</span>
-            <input type="text" id="contact-search" placeholder="Search contacts..." oninput="renderContacts()">
-          </div>
-          <div class="contacts-list" id="contacts-list"></div>
-          <button class="add-toggle" onclick="toggleAddForm('contact')">+ Add Contact</button>
-          <div class="add-form" id="contact-add-form">
-            <div class="add-form-title">New Contact</div>
-            <div class="add-form-grid cols-2">
-              <input class="full" type="text" id="contact-name-input" placeholder="Name">
-              <input class="full" type="text" id="contact-role-input" placeholder="Role / Company (optional)">
-              <input type="text" id="contact-phone-input" placeholder="Phone">
-              <input type="email" id="contact-email-input" placeholder="Email">
+        <div class="card collapsible" id="panel-contacts">
+          <button class="panel-header" type="button" onclick="togglePanel('panel-contacts')">
+            <span class="panel-header-left">
+              <span class="panel-header-title">👤 Quick Contacts</span>
+              <span class="panel-header-count" id="panel-contacts-count">0</span>
+            </span>
+            <span class="panel-chevron">›</span>
+          </button>
+          <div class="panel-body">
+            <div class="widget-search">
+              <span class="widget-search-icon">🔍</span>
+              <input type="text" id="contact-search" placeholder="Search contacts..." oninput="renderContacts()">
             </div>
-            <div class="add-form-actions">
-              <button class="add-form-btn secondary" onclick="toggleAddForm('contact')">Cancel</button>
-              <button class="add-form-btn primary" onclick="addContact()">Save</button>
+            <div class="contacts-list" id="contacts-list"></div>
+            <!-- Add-contact form inline when panel is open -->
+            <div class="add-form open" style="margin-top:12px;">
+              <div class="add-form-title">Add Contact</div>
+              <div class="add-form-grid cols-2">
+                <input class="full" type="text" id="contact-name-input" placeholder="Name">
+                <input class="full" type="text" id="contact-role-input" placeholder="Role / Company (optional)">
+                <input type="text" id="contact-phone-input" placeholder="Phone">
+                <input type="email" id="contact-email-input" placeholder="Email">
+              </div>
+              <div class="add-form-actions">
+                <button class="add-form-btn primary" onclick="addContact()">Save</button>
+              </div>
             </div>
           </div>
         </div>
@@ -574,6 +618,18 @@ async function saveWidgetToBackend(w){try{await fetch(BACKEND_URL,{method:'POST'
 async function deleteWidgetOnBackend(id){try{await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'deleteEmmaWidget',id})});}catch{}}
 
 /* ADD-FORM TOGGLES (Links + Contacts) */
+// Collapsible panel toggle (Quick Links / Quick Contacts). Both panels open independently.
+function togglePanel(id){
+  const p=document.getElementById(id);
+  if(!p) return;
+  p.classList.toggle('open');
+  // When opening, focus the search input for quick access
+  if(p.classList.contains('open')){
+    const search=p.querySelector('.widget-search input');
+    if(search) setTimeout(()=>search.focus(),50);
+  }
+}
+
 function toggleAddForm(kind){
   const form=document.getElementById(kind+'-add-form');
   if(!form)return;
@@ -596,6 +652,9 @@ function renderLinks(){
   const l=document.getElementById('links-list');
   const search=(document.getElementById('link-search')?.value||'').trim().toLowerCase();
   let items=(ws.links||[]).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+  // Set count badge on the collapsible panel header (total, not filtered)
+  const cBadge=document.getElementById('panel-links-count');
+  if(cBadge) cBadge.textContent=(ws.links||[]).length;
   if(search){
     items=items.filter(x=>((x.label||'')+' '+(x.url||'')).toLowerCase().includes(search));
   }
@@ -676,6 +735,9 @@ function renderContacts(){
   const l=document.getElementById('contacts-list');
   const search=(document.getElementById('contact-search')?.value||'').trim().toLowerCase();
   let items=(ws.contacts||[]).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+  // Set count badge on the collapsible panel header (total, not filtered)
+  const cBadge=document.getElementById('panel-contacts-count');
+  if(cBadge) cBadge.textContent=(ws.contacts||[]).length;
   if(search){
     items=items.filter(c=>((c.name||'')+' '+(c.role||'')+' '+(c.phone||'')+' '+(c.email||'')).toLowerCase().includes(search));
   }
