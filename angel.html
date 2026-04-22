@@ -50,7 +50,20 @@
   .kpi-num{flex-shrink:0;}
 
   /* Workspace (where dynamic containers will live) */
-  .workspace{display:flex;flex-direction:column;gap:16px;}
+  .workspace{
+    column-count: 2;
+    column-gap: 16px;
+    margin-bottom: 16px;
+  }
+  .workspace > * {
+    break-inside: avoid;
+    margin-bottom: 16px;
+    display: inline-block;   /* required for reliable column-count behavior */
+    width: 100%;
+  }
+  @media (max-width: 1100px) {
+    .workspace { column-count: 1; }
+  }
   .workspace-empty{
     background:white;border:2px dashed var(--gray-300);border-radius:var(--radius-lg);
     padding:48px 24px;text-align:center;color:var(--gray-500);
@@ -87,6 +100,13 @@
   .ct.color-purple { border-left-color: #7C3AED; }
   .ct.color-teal   { border-left-color: #0D9488; }
   .ct.color-pink   { border-left-color: #DB2777; }
+
+  /* Drag-and-drop visual states */
+  .ct.dragging { opacity: 0.4; }
+  .ct.drag-over-top { box-shadow: 0 -3px 0 var(--blue), var(--shadow-sm); }
+  .ct.drag-over-bottom { box-shadow: 0 3px 0 var(--blue), var(--shadow-sm); }
+  .ct-header { cursor: grab; }
+  .ct-header:active { cursor: grabbing; }
 
   .ct-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -653,8 +673,15 @@ function renderContainer(c) {
   const colorCls = 'color-' + (c.color || 'blue');
   const count = countItems(c);
   return `
-    <div class="ct ${openCls} ${colorCls}" id="ct-${c.id}" data-id="${c.id}">
-      <div class="ct-header" onclick="toggleContainer('${c.id}')">
+    <div class="ct ${openCls} ${colorCls}" id="ct-${c.id}" data-id="${c.id}"
+         ondragover="onDragOver(event, '${c.id}')"
+         ondragleave="onDragLeave(event, '${c.id}')"
+         ondrop="onDrop(event, '${c.id}')">
+      <div class="ct-header"
+           draggable="true"
+           ondragstart="onDragStart(event, '${c.id}')"
+           ondragend="onDragEnd(event)"
+           onclick="toggleContainer('${c.id}')">
         <div class="ct-header-left">
           <span class="ct-type-icon">${meta.icon}</span>
           <span class="ct-title">${esc(c.name)}</span>
@@ -935,6 +962,7 @@ function saveScratchText(cid, text) {
    CONTAINER-LEVEL ACTIONS
 ══════════════════════════════════════════════════════════════ */
 function toggleContainer(id) {
+  if (dragSuppressClick) return;   // ignore click immediately after a drag
   const el = document.getElementById('ct-' + id);
   if (!el) return;
   const nowOpen = !el.classList.contains('open');
@@ -1061,6 +1089,77 @@ function toggleAddForm(cid) {
 
 /* Click handler on the main + Add Container button */
 document.getElementById('add-container-btn').addEventListener('click', openAddModal);
+
+/* ══════════════════════════════════════════════════════════════
+   DRAG AND DROP — reorder containers
+══════════════════════════════════════════════════════════════ */
+let dragSrcId = null;
+let dragSuppressClick = false;
+
+function onDragStart(e, id) {
+  dragSrcId = id;
+  dragSuppressClick = true;
+  const el = document.getElementById('ct-' + id);
+  if (el) el.classList.add('dragging');
+  // dataTransfer needed for Firefox
+  try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', id); } catch(err){}
+}
+
+function onDragEnd(e) {
+  if (dragSrcId) {
+    const el = document.getElementById('ct-' + dragSrcId);
+    if (el) el.classList.remove('dragging');
+  }
+  document.querySelectorAll('.ct.drag-over-top, .ct.drag-over-bottom').forEach(el => {
+    el.classList.remove('drag-over-top', 'drag-over-bottom');
+  });
+  dragSrcId = null;
+  // Release the click suppression shortly after drag ends
+  setTimeout(() => { dragSuppressClick = false; }, 100);
+}
+
+function onDragOver(e, targetId) {
+  if (!dragSrcId || dragSrcId === targetId) return;
+  e.preventDefault();
+  try { e.dataTransfer.dropEffect = 'move'; } catch(err){}
+  const el = document.getElementById('ct-' + targetId);
+  if (!el) return;
+  // Decide drop-before vs drop-after based on cursor position within target
+  const rect = el.getBoundingClientRect();
+  const midY = rect.top + rect.height / 2;
+  const isAbove = e.clientY < midY;
+  el.classList.toggle('drag-over-top', isAbove);
+  el.classList.toggle('drag-over-bottom', !isAbove);
+}
+
+function onDragLeave(e, targetId) {
+  const el = document.getElementById('ct-' + targetId);
+  if (!el) return;
+  // Only clear when actually leaving the element (not just moving onto a child)
+  if (!el.contains(e.relatedTarget)) {
+    el.classList.remove('drag-over-top', 'drag-over-bottom');
+  }
+}
+
+function onDrop(e, targetId) {
+  e.preventDefault();
+  if (!dragSrcId || dragSrcId === targetId) return;
+  const el = document.getElementById('ct-' + targetId);
+  const isAbove = el && el.classList.contains('drag-over-top');
+  const srcIdx = ws.containers.findIndex(c => c.id === dragSrcId);
+  let tgtIdx  = ws.containers.findIndex(c => c.id === targetId);
+  if (srcIdx < 0 || tgtIdx < 0) return;
+  const [moved] = ws.containers.splice(srcIdx, 1);
+  // Recompute target index since splice may have shifted it
+  tgtIdx = ws.containers.findIndex(c => c.id === targetId);
+  const insertAt = isAbove ? tgtIdx : tgtIdx + 1;
+  ws.containers.splice(insertAt, 0, moved);
+  // Renumber sort_order on all containers + persist
+  ws.containers.forEach((c, i) => { c.sort_order = i + 1; saveContainerToBackend(c); });
+  if (el) el.classList.remove('drag-over-top', 'drag-over-bottom');
+  renderWorkspace();
+  showToast('Container reordered');
+}
 
 /* ══════════════════════════════════════════════════════════════
    INIT
