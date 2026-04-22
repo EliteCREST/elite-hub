@@ -215,6 +215,68 @@
   .task-due{font-size:11px;color:var(--gray-400);flex-shrink:0;}
   .task-due.overdue{color:var(--red);font-weight:700;}
   .task-due.due-today{color:var(--amber);font-weight:700;}
+
+  /* Work status pill (5-state) */
+  .task-status-pill {
+    flex-shrink: 0; padding: 4px 10px; border-radius: 12px;
+    font-size: 10px; font-weight: 700; letter-spacing: .5px;
+    text-transform: uppercase; cursor: pointer; user-select: none;
+    border: 1px solid transparent; transition: all .15s;
+    font-family: inherit;
+  }
+  .task-status-pill:hover { opacity: .85; }
+  .task-status-pill.status-in-progress      { background: #DBEAFE; color: #1E40AF; border-color: #BFDBFE; }
+  .task-status-pill.status-on-hold          { background: #F1F5F9; color: #475569; border-color: #CBD5E1; }
+  .task-status-pill.status-follow-up        { background: #FEF3C7; color: #92400E; border-color: #FCD34D; }
+  .task-status-pill.status-documentation    { background: #EDE9FE; color: #6D28D9; border-color: #C4B5FD; }
+  .task-status-pill.status-done             { background: #D1FAE5; color: #065F46; border-color: #6EE7B7; }
+
+  /* Work-status dropdown (right-click menu) */
+  .task-status-menu {
+    position: absolute; background: white; border: 1px solid var(--gray-200);
+    border-radius: 8px; box-shadow: 0 8px 24px rgba(15,23,42,.15);
+    padding: 4px; z-index: 900; min-width: 180px;
+  }
+  .task-status-menu-item {
+    display: block; width: 100%; padding: 8px 12px; border: none;
+    background: transparent; cursor: pointer; text-align: left;
+    font-family: inherit; font-size: 12px; color: var(--navy);
+    border-radius: 5px; font-weight: 600;
+  }
+  .task-status-menu-item:hover { background: var(--gray-50); }
+  .task-status-menu-item.active { background: var(--blue-pale); color: var(--blue); }
+
+  /* Expanded inline editor */
+  .task-item.editing { border-color: var(--blue); background: var(--blue-pale); }
+  .task-editor { margin-top: 10px; padding: 12px; background: white; border: 1px solid var(--gray-200); border-radius: 6px; }
+  .task-editor-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;
+  }
+  .task-editor-field {
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .task-editor-label {
+    font-size: 10px; font-weight: 700; color: var(--gray-500);
+    text-transform: uppercase; letter-spacing: .6px;
+  }
+  .task-editor input, .task-editor select, .task-editor textarea {
+    padding: 7px 9px; border: 1px solid var(--gray-300); border-radius: 5px;
+    font-family: inherit; font-size: 12px; color: var(--text); outline: none;
+    background: white;
+  }
+  .task-editor input:focus, .task-editor select:focus, .task-editor textarea:focus { border-color: var(--blue); }
+  .task-editor textarea { resize: vertical; min-height: 60px; }
+  .task-editor-full { grid-column: 1 / -1; }
+  .task-editor-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; }
+  .task-editor-btn {
+    padding: 7px 14px; border-radius: 5px;
+    font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .task-editor-btn.secondary { background: white; color: var(--gray-500); border-color: var(--gray-300); }
+  .task-editor-btn.secondary:hover { background: var(--gray-50); }
+  .task-editor-btn.primary { background: var(--blue); color: white; }
+  .task-editor-btn.primary:hover { background: var(--navy); }
   .task-actions{display:flex;gap:4px;flex-shrink:0;opacity:0;}
   .task-item:hover .task-actions{opacity:1;}
   .task-btn{width:26px;height:26px;border-radius:4px;border:none;background:transparent;cursor:pointer;font-size:13px;color:var(--gray-400);}
@@ -579,6 +641,7 @@ const LS_TASKS='emma_tasks_v2';
 const LS_WS='emma_workspace_v1';
 const MAX_RECENT_PILLS = 5;
 let tasks=[], activeCategory='To Do', showArchive=false;
+let expandedTaskId = null;   // which task is currently expanded for inline edit
 let ws={notes:[],links:[],contacts:[],scratchpad:''};
 
 (function init(){
@@ -641,7 +704,10 @@ function addTask(){
   const i=document.getElementById('task-add-input'), c=document.getElementById('task-add-cat'), p=document.getElementById('task-add-pri'), d=document.getElementById('task-add-due');
   const text=(i.value||'').trim(); if(!text)return;
   const now=new Date().toISOString();
-  const t={id:newId('T'),category:c.value,text,status:'open',priority:p.value||'med',due_date:d.value||'',sort_order:Date.now(),created_at:now,updated_at:now,completed_at:'',_unsynced:true};
+  // Default start_date = today (as YYYY-MM-DD); work_status = "In Progress"
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0,10);
+  const t={id:newId('T'),category:c.value,text,status:'open',priority:p.value||'med',start_date:todayStr,due_date:d.value||'',work_status:'In Progress',sort_order:Date.now(),created_at:now,updated_at:now,completed_at:'',_unsynced:true};
   tasks.unshift(t); saveTasksToLocal();
   i.value=''; d.value='';
   activeCategory=t.category;
@@ -652,16 +718,104 @@ function addTask(){
 function toggleTaskDone(id){
   const t=tasks.find(x=>x.id===id); if(!t)return;
   const now=new Date().toISOString();
-  if(t.status==='done'){t.status='open';t.completed_at='';}else{t.status='done';t.completed_at=now;}
+  if(t.status==='done'){
+    // Re-opening — restore to In Progress
+    t.status='open';t.completed_at='';
+    if(t.work_status === 'Done') t.work_status = 'In Progress';
+  } else {
+    // Marking done — also set work_status to Done
+    t.status='done';t.completed_at=now;
+    t.work_status = 'Done';
+  }
   t.updated_at=now; t._unsynced=true;
   saveTasksToLocal(); renderTasks(); pushTaskToBackend(t);
 }
 
-function cyclePriority(id){
+/* ══ Work Status (5-state) ══ */
+function cycleWorkStatus(id){
   const t=tasks.find(x=>x.id===id); if(!t)return;
-  const o=['low','med','high']; const i=o.indexOf(t.priority||'med');
-  t.priority=o[(i+1)%o.length]; t.updated_at=new Date().toISOString(); t._unsynced=true;
+  const current = t.work_status || 'In Progress';
+  const idx = WORK_STATUSES.findIndex(s => s.key === current);
+  const nextIdx = (idx + 1) % WORK_STATUSES.length;
+  const next = WORK_STATUSES[nextIdx].key;
+  setWorkStatus(id, next);
+}
+
+function setWorkStatus(id, newStatus){
+  const t=tasks.find(x=>x.id===id); if(!t)return;
+  const now = new Date().toISOString();
+  t.work_status = newStatus;
+  // Auto-sync the checkbox: "Done" → checked/archived; anything else → open
+  if(newStatus === 'Done' && t.status !== 'done'){
+    t.status = 'done'; t.completed_at = now;
+  } else if(newStatus !== 'Done' && t.status === 'done'){
+    t.status = 'open'; t.completed_at = '';
+  }
+  t.updated_at = now; t._unsynced = true;
   saveTasksToLocal(); renderTasks(); pushTaskToBackend(t);
+  closeStatusMenu();
+}
+
+/* Right-click dropdown menu for picking any status */
+function openStatusMenu(evt, id){
+  closeStatusMenu();
+  const t=tasks.find(x=>x.id===id); if(!t)return;
+  const current = t.work_status || 'In Progress';
+  const menu = document.createElement('div');
+  menu.className = 'task-status-menu';
+  menu.id = 'task-status-menu';
+  menu.innerHTML = WORK_STATUSES.map(s => {
+    const active = s.key === current ? 'active' : '';
+    return `<button type="button" class="task-status-menu-item ${active}" onclick="setWorkStatus('${id}','${s.key.replace(/'/g,"\\'")}')">${escapeHtml(s.label)}</button>`;
+  }).join('');
+  document.body.appendChild(menu);
+  // Position near the cursor
+  const x = Math.min(evt.clientX, window.innerWidth - 200);
+  const y = Math.min(evt.clientY, window.innerHeight - 220);
+  menu.style.left = x + 'px';
+  menu.style.top  = y + 'px';
+  // Close on next outside click
+  setTimeout(() => {
+    document.addEventListener('click', closeStatusMenuOnce, { once: true });
+  }, 0);
+}
+function closeStatusMenu(){
+  const m = document.getElementById('task-status-menu');
+  if(m) m.remove();
+}
+function closeStatusMenuOnce(e){
+  if(e.target.closest('#task-status-menu')) return;
+  closeStatusMenu();
+}
+
+/* Expanded inline editor */
+function toggleTaskEditor(id, evt){
+  // Don't trigger if click came from an interactive element inside the task
+  if(evt && evt.target){
+    const t = evt.target;
+    if(t.closest('input,button,select,textarea,.task-text,.task-status-pill,.pri-flag')) return;
+  }
+  expandedTaskId = (String(expandedTaskId) === String(id)) ? null : id;
+  renderTasks();
+}
+function closeTaskEditor(){
+  expandedTaskId = null;
+  renderTasks();
+}
+function saveTaskEditor(id){
+  const t = tasks.find(x => x.id === id); if(!t) return;
+  const text = (document.getElementById(`edit-text-${id}`).value || '').trim();
+  if(!text){ showToast('Task text is required'); return; }
+  t.text       = text;
+  t.start_date = document.getElementById(`edit-start-${id}`).value || '';
+  t.due_date   = document.getElementById(`edit-due-${id}`).value   || '';
+  t.category   = document.getElementById(`edit-cat-${id}`).value;
+  t.priority   = document.getElementById(`edit-pri-${id}`).value;
+  t.updated_at = new Date().toISOString();
+  t._unsynced  = true;
+  expandedTaskId = null;
+  saveTasksToLocal(); renderTasks(); pushTaskToBackend(t);
+  showToast('Task updated');
 }
 
 function editTask(id){
@@ -708,28 +862,106 @@ function dueStatus(s){
 }
 function priFlag(p){const pr=p||'med'; const ch=pr==='high'?'⚑':pr==='med'?'⚐':'·'; return `<span class="pri-flag ${pr}" title="Priority: ${pr}">${ch}</span>`;}
 
+const WORK_STATUSES = [
+  { key: 'In Progress',          cls: 'status-in-progress',   label: 'In Progress' },
+  { key: 'On Hold',              cls: 'status-on-hold',       label: 'On Hold' },
+  { key: 'Follow Up Needed',     cls: 'status-follow-up',     label: 'Follow Up Needed' },
+  { key: 'Documentation Needed', cls: 'status-documentation', label: 'Documentation Needed' },
+  { key: 'Done',                 cls: 'status-done',          label: 'Done' },
+];
+function workStatusMeta(key) {
+  return WORK_STATUSES.find(s => s.key === key) || WORK_STATUSES[0];
+}
+function formatDateShort(r){if(!r)return '';try{const d=new Date(r); if(isNaN(d))return ''; return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}catch{return '';}}
+function renderDateRange(start, due){
+  const s = formatDateShort(start);
+  const d = formatDate(due);
+  if(s && due) return `${s} → ${d}`;
+  if(due) return d;
+  if(s) return s;
+  return '';
+}
+
 function renderTaskItem(t,inArchive){
   const done=t.status==='done';
   const unsync=t._unsynced?'unsynced':'';
   const due=t.due_date?dueStatus(t.due_date):'';
-  const rc=[done?'done':'',unsync,!done?due:''].filter(Boolean).join(' ');
+  const editing = String(expandedTaskId) === String(t.id);
+  const rc=[done?'done':'',unsync,!done?due:'',editing?'editing':''].filter(Boolean).join(' ');
   const cat=inArchive?`<span class="task-cat-badge">${escapeHtml(t.category)}</span>`:'';
   const meta=inArchive?`<div class="task-meta">Completed ${formatDate(t.completed_at)}</div>`:'';
-  const dueB=t.due_date?`<span class="task-due ${due}">📅 ${formatDate(t.due_date)}</span>`:'';
-  return `<div class="task-item ${rc}" draggable="${!inArchive&&!done}" data-id="${t.id}">
-    <input type="checkbox" class="task-checkbox" ${done?'checked':''} onchange="toggleTaskDone('${t.id}')">
+  const dateLabel = renderDateRange(t.start_date, t.due_date);
+  const dueB = dateLabel
+    ? `<span class="task-due ${due}">📅 ${escapeHtml(dateLabel)}</span>`
+    : '';
+  // Work status pill — default to "In Progress" for new tasks without a work_status
+  const ws = t.work_status || 'In Progress';
+  const wsMeta = workStatusMeta(ws);
+  const statusPill = !inArchive
+    ? `<button class="task-status-pill ${wsMeta.cls}"
+         onclick="event.stopPropagation();cycleWorkStatus('${t.id}')"
+         oncontextmenu="event.preventDefault();openStatusMenu(event,'${t.id}');return false;"
+         title="Click to cycle · right-click for menu"
+         type="button">${escapeHtml(wsMeta.label)}</button>`
+    : '';
+
+  return `<div class="task-item ${rc}" draggable="${!inArchive&&!done}" data-id="${t.id}" onclick="toggleTaskEditor('${t.id}',event)">
+    <input type="checkbox" class="task-checkbox" ${done?'checked':''} onclick="event.stopPropagation()" onchange="toggleTaskDone('${t.id}')">
     <div style="flex:1;min-width:0;">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        ${cat}<span onclick="cyclePriority('${t.id}')">${priFlag(t.priority)}</span>
-        <div class="task-text" id="task-text-${t.id}" onblur="commitEdit('${t.id}',this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${escapeHtml(t.text)}</div>
+        ${cat}<span onclick="event.stopPropagation();cyclePriority('${t.id}')">${priFlag(t.priority)}</span>
+        <div class="task-text" id="task-text-${t.id}" onclick="event.stopPropagation()" onblur="commitEdit('${t.id}',this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${escapeHtml(t.text)}</div>
         ${dueB}
+        ${statusPill}
       </div>${meta}
+      ${editing ? renderTaskEditor(t) : ''}
     </div>
     <div class="task-actions">
-      <button class="task-btn" onclick="editTask('${t.id}')">✎</button>
-      <button class="task-btn delete" onclick="deleteTask('${t.id}')">🗑</button>
+      <button class="task-btn delete" onclick="event.stopPropagation();deleteTask('${t.id}')">🗑</button>
     </div></div>`;
 }
+
+function renderTaskEditor(t) {
+  return `<div class="task-editor" onclick="event.stopPropagation()">
+    <div class="task-editor-grid">
+      <div class="task-editor-field task-editor-full">
+        <span class="task-editor-label">Task</span>
+        <textarea id="edit-text-${t.id}" placeholder="Task description">${escapeHtml(t.text || '')}</textarea>
+      </div>
+      <div class="task-editor-field">
+        <span class="task-editor-label">Start Date</span>
+        <input type="date" id="edit-start-${t.id}" value="${escapeAttr(t.start_date || '')}">
+      </div>
+      <div class="task-editor-field">
+        <span class="task-editor-label">Due Date</span>
+        <input type="date" id="edit-due-${t.id}" value="${escapeAttr(t.due_date || '')}">
+      </div>
+      <div class="task-editor-field">
+        <span class="task-editor-label">Category</span>
+        <select id="edit-cat-${t.id}">
+          <option${t.category==='To Do'?' selected':''}>To Do</option>
+          <option${t.category==='Follow Up'?' selected':''}>Follow Up</option>
+          <option${t.category==='Question'?' selected':''}>Question</option>
+          <option${t.category==='Note'?' selected':''}>Note</option>
+        </select>
+      </div>
+      <div class="task-editor-field">
+        <span class="task-editor-label">Priority</span>
+        <select id="edit-pri-${t.id}">
+          <option value="low"${t.priority==='low'?' selected':''}>Low</option>
+          <option value="med"${(!t.priority||t.priority==='med')?' selected':''}>Medium</option>
+          <option value="high"${t.priority==='high'?' selected':''}>High</option>
+        </select>
+      </div>
+    </div>
+    <div class="task-editor-actions">
+      <button class="task-editor-btn secondary" onclick="event.stopPropagation();closeTaskEditor()" type="button">Cancel</button>
+      <button class="task-editor-btn primary" onclick="event.stopPropagation();saveTaskEditor('${t.id}')" type="button">Save</button>
+    </div>
+  </div>`;
+}
+
+function escapeAttr(s){return String(s==null?'':s).replace(/"/g,'&quot;').replace(/</g,'&lt;');}
 
 function renderTasks(){
   const c={'To Do':0,'Follow Up':0,'Question':0,'Note':0};
