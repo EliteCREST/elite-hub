@@ -70,55 +70,81 @@
   .container { max-width: 1280px; margin: 0 auto; padding: 24px 28px; width: 100%; flex: 1; }
 
   /* ─── KPI strip ────────────────────────────────────── */
-  .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+  /* ─── Hero greeting ─────────────────────────────────── */
+  .hero-greeting {
+    font-size: 17px; font-weight: 600; color: var(--navy);
+    margin-bottom: 16px; letter-spacing: -0.2px; line-height: 1.5;
+  }
+  .hero-greeting .hero-sub {
+    font-size: 14px; font-weight: 500; color: var(--gray-600);
+  }
+  .hero-greeting strong {
+    color: var(--navy); font-weight: 700;
+  }
+
+  /* ─── KPI strip — compact, clickable, filters the review queue ────── */
+  .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
   .kpi {
     background: white; border: 1px solid var(--gray-200);
     border-radius: var(--radius-lg);
-    padding: 16px 18px;
-    box-shadow: var(--shadow-sm);
+    padding: 10px 14px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    position: relative; overflow: hidden;
+    cursor: pointer; transition: all 0.1s;
   }
-  .kpi-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-400); margin-bottom: 6px; }
-  .kpi-value { font-size: 26px; font-weight: 800; color: var(--navy); }
+  .kpi::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--gray-300);
+  }
+  .kpi.new::before      { background: var(--amber); }
+  .kpi.follow::before   { background: var(--red); }
+  .kpi.reviewed::before { background: var(--blue); }
+  .kpi.resolved::before { background: var(--green); }
+  .kpi:hover { border-color: var(--blue); background: var(--gray-50); }
+  .kpi.active { background: var(--blue-pale); border-color: var(--blue); }
+  .kpi-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-500); }
+  .kpi-value { font-size: 24px; font-weight: 700; color: var(--navy); line-height: 1; letter-spacing: -0.5px; }
   .kpi.new   .kpi-value { color: var(--amber); }
   .kpi.follow .kpi-value { color: var(--red); }
   .kpi.reviewed .kpi-value { color: var(--blue); }
   .kpi.resolved .kpi-value { color: var(--green); }
 
-  /* ─── User switcher ────────────────────────────────── */
+  /* ─── User switcher — compact avatar chips (shown in header) ─────── */
   .user-switcher {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
-    margin-bottom: 18px;
+    display: flex; gap: 6px; align-items: center;
   }
   .user-btn {
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    background: white; border: 1px solid var(--gray-200);
-    border-radius: var(--radius-lg);
-    padding: 14px 16px;
-    text-decoration: none; color: var(--gray-600);
-    font-weight: 700; font-size: 14px; letter-spacing: 0.3px;
-    box-shadow: var(--shadow-sm);
-    transition: transform 0.08s, box-shadow 0.08s, border-color 0.08s;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(255,255,255,.1); border: 1.5px solid transparent;
+    color: rgba(255,255,255,.75);
+    text-decoration: none;
+    font-weight: 700; font-size: 12px; letter-spacing: 0.2px;
+    transition: transform 0.1s, background 0.1s, border-color 0.1s;
+    cursor: pointer; position: relative;
   }
   .user-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--blue);
-    color: var(--navy);
+    background: rgba(255,255,255,.2);
+    transform: scale(1.08);
+    color: var(--white);
   }
   .user-btn.current {
-    background: var(--blue); color: var(--white); border-color: var(--blue);
-    box-shadow: 0 4px 12px rgba(31,95,173,.35);
+    background: var(--blue); color: var(--white); border-color: rgba(255,255,255,.5);
   }
-  .user-btn.current:hover { color: var(--white); }
-  .user-btn-avatar {
-    width: 32px; height: 32px; border-radius: 50%;
-    background: var(--blue-pale); color: var(--blue);
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 13px;
+  .user-btn.current:hover { background: var(--blue); transform: none; }
+  .user-btn-name { display: none; }
+  /* Tooltip on hover for full names */
+  .user-btn::after {
+    content: attr(data-name);
+    position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    margin-top: 6px;
+    background: var(--navy); color: var(--white);
+    padding: 4px 10px; border-radius: 4px;
+    font-size: 11px; font-weight: 600; white-space: nowrap;
+    opacity: 0; pointer-events: none; transition: opacity 0.15s;
+    z-index: 10;
   }
-  .user-btn.current .user-btn-avatar {
-    background: rgba(255,255,255,.2); color: var(--white);
-  }
+  .user-btn:hover::after { opacity: 1; }
 
   /* ─── Toolbar ─────────────────────────────────────── */
   .toolbar {
@@ -520,7 +546,6 @@
 
   @media (max-width: 720px) {
     .kpi-strip { grid-template-columns: repeat(2, 1fr); }
-    .user-switcher { grid-template-columns: repeat(2, 1fr); }
     .search-wrap { min-width: 100%; }
     .toolbar { flex-direction: column; align-items: stretch; }
   }
@@ -542,6 +567,7 @@
         </div>
       </div>
       <div class="hdr-right">
+        <div class="user-switcher" id="user-switcher"></div>
         <span class="hdr-user" id="hdr-user"></span>
         <a class="hdr-link" href="javascript:history.back()">← Back</a>
       </div>
@@ -556,13 +582,14 @@
   </div>
 
   <main class="container">
-    <div class="user-switcher" id="user-switcher"></div>
+    <!-- Hero greeting + queue summary sentence -->
+    <div class="hero-greeting" id="hero-greeting"></div>
 
     <div class="kpi-strip">
-      <div class="kpi new"><div class="kpi-label">New</div><div class="kpi-value" id="kpi-new">0</div></div>
-      <div class="kpi follow"><div class="kpi-label">Needs Follow-Up</div><div class="kpi-value" id="kpi-follow">0</div></div>
-      <div class="kpi reviewed"><div class="kpi-label">Reviewed</div><div class="kpi-value" id="kpi-reviewed">0</div></div>
-      <div class="kpi resolved"><div class="kpi-label">Resolved</div><div class="kpi-value" id="kpi-resolved">0</div></div>
+      <div class="kpi new" data-filter="New" onclick="setFilterFromKpi(this)"><div class="kpi-label">New</div><div class="kpi-value" id="kpi-new">0</div></div>
+      <div class="kpi follow" data-filter="Needs Follow-Up" onclick="setFilterFromKpi(this)"><div class="kpi-label">Needs Follow-Up</div><div class="kpi-value" id="kpi-follow">0</div></div>
+      <div class="kpi reviewed" data-filter="Reviewed" onclick="setFilterFromKpi(this)"><div class="kpi-label">Reviewed</div><div class="kpi-value" id="kpi-reviewed">0</div></div>
+      <div class="kpi resolved" data-filter="Resolved" onclick="setFilterFromKpi(this)"><div class="kpi-label">Resolved</div><div class="kpi-value" id="kpi-resolved">0</div></div>
     </div>
 
     <div class="queue-cols">
@@ -661,10 +688,8 @@ function renderUserSwitcher() {
     const isCurrent = u.username === currentUser;
     return `
       <a class="user-btn ${isCurrent ? 'current' : ''}"
-         href="https://elitecrest.github.io/elite-hub/${u.username}.html">
-        <span class="user-btn-avatar">${u.initials}</span>
-        <span>${u.name}${isCurrent ? ' (You)' : ''}</span>
-      </a>
+         data-name="${u.name}${isCurrent ? ' (You)' : ''}"
+         href="https://elitecrest.github.io/elite-hub/${u.username}.html">${u.initials}</a>
     `;
   }).join('');
 }
@@ -751,6 +776,55 @@ function updateKPIs() {
   document.getElementById('kpi-follow').textContent   = counts['Needs Follow-Up'];
   document.getElementById('kpi-reviewed').textContent = counts['Reviewed'];
   document.getElementById('kpi-resolved').textContent = counts['Resolved'];
+  // Mark which KPI tile is "active" based on active review-notifications filter
+  document.querySelectorAll('.kpi-strip .kpi').forEach(k => {
+    k.classList.toggle('active', k.dataset.filter === activeFilter);
+  });
+  // Hero greeting — personalized + queue summary
+  renderHero(counts);
+}
+
+function renderHero(counts) {
+  const el = document.getElementById('hero-greeting');
+  if (!el) return;
+  const sess = getSession();
+  const name = sess && sess.user ? (sess.user.name || sess.user.username || 'there') : 'there';
+  const firstName = String(name).split(' ')[0];
+  const hour = new Date().getHours();
+  const timeOfDay = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+  // Build queue summary parts
+  const parts = [];
+  if (counts['New'] > 0)             parts.push(`<strong>${counts['New']}</strong> new submission${counts['New']===1?'':'s'}`);
+  if (counts['Needs Follow-Up'] > 0) parts.push(`<strong>${counts['Needs Follow-Up']}</strong> needing follow-up`);
+  // Contractor & insurance count
+  const notifNew = (window.allNotifications || []).filter(n => (n.status||'new').toLowerCase() === 'new').length;
+  const notifAssigned = (window.allNotifications || []).filter(n => (n.status||'').toLowerCase() === 'assigned').length;
+  if (notifNew > 0)                  parts.push(`<strong>${notifNew}</strong> new contractor${notifNew===1?'':'s'}`);
+  if (notifAssigned > 0)             parts.push(`<strong>${notifAssigned}</strong> contractor${notifAssigned===1?'':'s'} assigned`);
+  let summary;
+  if (!parts.length) {
+    summary = `Your queue is clear — inbox zero.`;
+  } else {
+    // Join with " · " separators
+    summary = `Today's queue: ${parts.join(' · ')}.`;
+  }
+  el.innerHTML = `Good ${timeOfDay}, ${escapeHtml(firstName)}. <span class="hero-sub">${summary}</span>`;
+}
+
+function setFilterFromKpi(el) {
+  const status = el.dataset.filter;
+  if (!status) return;
+  activeFilter = status;
+  // Sync the pill row too
+  document.querySelectorAll('#filter-pills .notif-pill').forEach(p => p.classList.remove('active'));
+  const pill = document.querySelector(`#filter-pills .notif-pill[data-status="${status}"]`);
+  if (pill) pill.classList.add('active');
+  expandedRowKey = null;
+  updateKPIs();   // re-syncs the active KPI highlight
+  renderQueue();
+  // Smooth-scroll the review notifications panel into view
+  const panel = document.querySelector('.inbox-section');
+  if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function getFiltered() {
@@ -1194,6 +1268,8 @@ async function loadNotifications() {
     const data2 = await res2.json();
     allNotifications = [...(data.notifications||[]), ...(data2.notifications||[])];
     renderNotifications();
+    // Refresh hero summary with contractor counts too
+    updateKPIs();
   } catch(e) {
     document.getElementById('notifList').innerHTML = '<div class="notif-empty">Could not load notifications.</div>';
   }
