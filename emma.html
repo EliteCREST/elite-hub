@@ -30,14 +30,16 @@
   .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;}
   .section-title{font-size:16px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:8px;}
   .section-sub{font-size:11px;color:var(--gray-400);font-weight:600;text-transform:uppercase;letter-spacing:1px;}
-  .kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
-  .kpi{background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:18px 20px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;}
-  .kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue);}
+  .kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px;}
+  .kpi{background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:10px 14px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;}
+  .kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--blue);}
   .kpi.danger::before{background:var(--red);} .kpi.warn::before{background:var(--amber);} .kpi.ok::before{background:var(--green);}
-  .kpi-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-400);margin-bottom:6px;}
-  .kpi-value{font-size:30px;font-weight:800;color:var(--navy);line-height:1;}
+  .kpi-label{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gray-500);margin-bottom:1px;}
+  .kpi-value{font-size:22px;font-weight:800;color:var(--navy);line-height:1;}
   .kpi.danger .kpi-value{color:var(--red);} .kpi.warn .kpi-value{color:var(--amber);} .kpi.ok .kpi-value{color:var(--green);}
-  .kpi-sub{font-size:11px;color:var(--gray-400);margin-top:6px;}
+  .kpi-sub{font-size:10px;color:var(--gray-400);margin-top:1px;}
+  .kpi-text{flex:1;min-width:0;}
+  .kpi-num{flex-shrink:0;}
   .tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:28px;}
   .tool-btn{background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:18px;text-decoration:none;color:var(--navy);box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:14px;transition:all .1s;}
   .tool-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--blue);}
@@ -94,28 +96,6 @@
   .archive-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;margin-top:14px;}
   .archive-controls input,.archive-controls select{padding:7px 10px;border:1px solid var(--gray-300);border-radius:6px;font-family:inherit;font-size:12px;color:var(--text);background:white;outline:none;}
   .archive-controls input{flex:1;min-width:180px;}
-  .notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
-  .sticky-note{padding:12px 14px 14px;border-radius:8px;min-height:110px;display:flex;flex-direction:column;box-shadow:0 2px 4px rgba(27,42,74,.06);border:1px solid rgba(0,0,0,.06);position:relative;transition:all .1s;}
-  .sticky-note:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(27,42,74,.12);}
-  .sticky-note[data-color="yellow"]{background:#FFF9C4;}
-  .sticky-note[data-color="pink"]{background:#FCE4EC;}
-  .sticky-note[data-color="blue"]{background:#E3F2FD;}
-  .sticky-note[data-color="green"]{background:#E8F5E9;}
-  .sticky-note[data-color="purple"]{background:#F3E5F5;}
-  .sticky-note-body{flex:1;font-size:13px;color:#333;line-height:1.5;outline:none;white-space:pre-wrap;word-break:break-word;}
-  .sticky-note-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;opacity:.6;}
-  .sticky-note:hover .sticky-note-foot{opacity:1;}
-  .sticky-note-colors{display:flex;gap:3px;}
-  .sticky-color-swatch{width:14px;height:14px;border-radius:50%;cursor:pointer;border:1px solid rgba(0,0,0,.15);}
-  .sticky-color-swatch[data-color="yellow"]{background:#FFF59D;}
-  .sticky-color-swatch[data-color="pink"]{background:#F8BBD0;}
-  .sticky-color-swatch[data-color="blue"]{background:#90CAF9;}
-  .sticky-color-swatch[data-color="green"]{background:#A5D6A7;}
-  .sticky-color-swatch[data-color="purple"]{background:#CE93D8;}
-  .sticky-delete{background:none;border:none;font-size:13px;color:rgba(0,0,0,.4);cursor:pointer;padding:2px 6px;border-radius:3px;}
-  .sticky-delete:hover{background:rgba(0,0,0,.08);color:var(--red);}
-  .add-note-card{border:2px dashed var(--gray-300);background:transparent;color:var(--gray-400);display:flex;align-items:center;justify-content:center;min-height:110px;cursor:pointer;font-size:13px;font-weight:700;border-radius:8px;}
-  .add-note-card:hover{border-color:var(--blue);color:var(--blue);}
   /* ─── Search bar (shared) ─────────────────────────── */
   .widget-search{display:flex;align-items:center;gap:8px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:6px;padding:6px 10px;margin-bottom:10px;}
   .widget-search input{flex:1;border:none;outline:none;background:transparent;font-family:inherit;font-size:12px;color:var(--text);}
@@ -228,10 +208,10 @@
     </div>
 
     <div class="kpi-strip">
-      <div class="kpi warn"><div class="kpi-label">Due Today</div><div class="kpi-value" id="kpi-due-today">0</div><div class="kpi-sub">Tasks with today's deadline</div></div>
-      <div class="kpi danger"><div class="kpi-label">Overdue</div><div class="kpi-value" id="kpi-overdue">0</div><div class="kpi-sub">Past deadline, not done</div></div>
-      <div class="kpi"><div class="kpi-label">Compliance Queue</div><div class="kpi-value" id="kpi-compliance">0</div><div class="kpi-sub">Open submissions (you)</div></div>
-      <div class="kpi"><div class="kpi-label">Open Legal Cases</div><div class="kpi-value" id="kpi-legal">0</div><div class="kpi-sub">Assigned to you</div></div>
+      <div class="kpi warn"><div class="kpi-text"><div class="kpi-label">Due Today</div><div class="kpi-sub">Tasks with today's deadline</div></div><div class="kpi-num"><div class="kpi-value" id="kpi-due-today">0</div></div></div>
+      <div class="kpi danger"><div class="kpi-text"><div class="kpi-label">Overdue</div><div class="kpi-sub">Past deadline, not done</div></div><div class="kpi-num"><div class="kpi-value" id="kpi-overdue">0</div></div></div>
+      <div class="kpi"><div class="kpi-text"><div class="kpi-label">Compliance Queue</div><div class="kpi-sub">Open submissions (you)</div></div><div class="kpi-num"><div class="kpi-value" id="kpi-compliance">0</div></div></div>
+      <div class="kpi"><div class="kpi-text"><div class="kpi-label">Open Legal Cases</div><div class="kpi-sub">Assigned to you</div></div><div class="kpi-num"><div class="kpi-value" id="kpi-legal">0</div></div></div>
     </div>
 
     <div class="tool-grid">
@@ -278,11 +258,6 @@
             </div>
             <div class="task-list" id="archive-list"><div class="task-empty">No completed tasks yet.</div></div>
           </div>
-        </div>
-
-        <div class="card">
-          <div class="section-head"><div class="section-title">📌 Sticky Notes</div><div class="section-sub">Free-form</div></div>
-          <div class="notes-grid" id="notes-grid"></div>
         </div>
 
         <div class="card">
@@ -370,7 +345,7 @@ let ws={notes:[],links:[],contacts:[],scratchpad:''};
   document.getElementById('app-loading').style.display='none';
   document.getElementById('app').style.display='block';
   loadTasksFromLocal(); loadWorkspaceFromLocal();
-  renderTasks(); renderNotes(); renderLinks(); renderContacts(); renderScratchpad();
+  renderTasks(); renderLinks(); renderContacts(); renderScratchpad();
   fetchTasksFromBackend(); fetchWorkspaceFromBackend(); fetchStats();
   setInterval(fetchStats,120000);
 })();
@@ -592,60 +567,11 @@ async function fetchWorkspaceFromBackend(){
     ws.contacts=Array.isArray(d.contacts)?d.contacts:ws.contacts;
     if(typeof d.scratchpad==='string')ws.scratchpad=d.scratchpad;
     saveWorkspaceToLocal();
-    renderNotes(); renderLinks(); renderContacts(); renderScratchpad();
+    renderLinks(); renderContacts(); renderScratchpad();
   }catch{}
 }
 async function saveWidgetToBackend(w){try{await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveEmmaWidget',widget:w})});}catch{}}
 async function deleteWidgetOnBackend(id){try{await fetch(BACKEND_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'deleteEmmaWidget',id})});}catch{}}
-
-/* NOTES */
-function renderNotes(){
-  const g=document.getElementById('notes-grid');
-  const items=(ws.notes||[]).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
-  g.innerHTML=items.map(n=>{
-    const c=n.color||'yellow'; const b=escapeHtml(n.content||'');
-    return `<div class="sticky-note" data-color="${c}" data-id="${n.id}">
-      <div class="sticky-note-body" contenteditable="true" oninput="noteEdit('${n.id}',this)" onblur="noteEdit('${n.id}',this,true)">${b}</div>
-      <div class="sticky-note-foot">
-        <div class="sticky-note-colors">
-          <span class="sticky-color-swatch" data-color="yellow" onclick="noteColor('${n.id}','yellow')"></span>
-          <span class="sticky-color-swatch" data-color="pink" onclick="noteColor('${n.id}','pink')"></span>
-          <span class="sticky-color-swatch" data-color="blue" onclick="noteColor('${n.id}','blue')"></span>
-          <span class="sticky-color-swatch" data-color="green" onclick="noteColor('${n.id}','green')"></span>
-          <span class="sticky-color-swatch" data-color="purple" onclick="noteColor('${n.id}','purple')"></span>
-        </div>
-        <button class="sticky-delete" onclick="deleteNote('${n.id}')">✕</button>
-      </div></div>`;
-  }).join('')+`<div class="add-note-card" onclick="addNote()">+ Add Note</div>`;
-}
-
-let noteDebounce={};
-function noteEdit(id,el,immediate){
-  const n=ws.notes.find(x=>x.id===id); if(!n)return;
-  n.content=el.innerText||''; n.updated_at=new Date().toISOString();
-  saveWorkspaceToLocal();
-  clearTimeout(noteDebounce[id]);
-  const push=()=>saveWidgetToBackend({id:n.id,widget_type:'note',sort_order:n.sort_order||0,content:n.content,color:n.color||'yellow',created_at:n.created_at});
-  if(immediate)push(); else noteDebounce[id]=setTimeout(push,800);
-}
-function noteColor(id,color){
-  const n=ws.notes.find(x=>x.id===id); if(!n)return;
-  n.color=color; n.updated_at=new Date().toISOString();
-  saveWorkspaceToLocal(); renderNotes();
-  saveWidgetToBackend({id:n.id,widget_type:'note',sort_order:n.sort_order||0,content:n.content||'',color,created_at:n.created_at});
-}
-function addNote(){
-  const now=new Date().toISOString();
-  const n={id:newId('N'),content:'',color:'yellow',sort_order:Date.now(),created_at:now,updated_at:now};
-  ws.notes.push(n); saveWorkspaceToLocal(); renderNotes();
-  saveWidgetToBackend({...n,widget_type:'note'});
-  setTimeout(()=>{const el=document.querySelector(`.sticky-note[data-id="${n.id}"] .sticky-note-body`); if(el)el.focus();},50);
-}
-function deleteNote(id){
-  if(!confirm('Delete this note?'))return;
-  ws.notes=ws.notes.filter(n=>n.id!==id);
-  saveWorkspaceToLocal(); renderNotes(); deleteWidgetOnBackend(id);
-}
 
 /* ADD-FORM TOGGLES (Links + Contacts) */
 function toggleAddForm(kind){
